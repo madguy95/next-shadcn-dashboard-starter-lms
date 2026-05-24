@@ -21,7 +21,7 @@ import {
   studentStatusLabel,
   type ClassRow,
   type ClassStatus
-} from '@/features/lms/data';
+} from '@/features/admin/data';
 import { AddClassDialog } from './add-class-dialog';
 
 function CapacityCell({ enrolled, capacity }: { enrolled: number; capacity: number }) {

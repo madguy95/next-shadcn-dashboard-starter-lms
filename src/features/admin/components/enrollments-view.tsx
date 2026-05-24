@@ -20,7 +20,7 @@ import {
   classAssignOptions,
   pendingEnrollments,
   type EnrollmentRow
-} from '@/features/lms/data';
+} from '@/features/admin/data';
 
 const statusTabs = [
   { key: 'pending', label: 'Pending', count: 12, active: true },

@@ -1,5 +1,5 @@
 import PageContainer from '@/components/layout/page-container';
-import { CoursesHeaderAction, CoursesView } from '@/features/lms/components/courses-view';
+import { CoursesHeaderAction, CoursesView } from '@/features/admin/components/courses-view';
 
 export const metadata = {
   title: 'Dashboard: LMS Courses'

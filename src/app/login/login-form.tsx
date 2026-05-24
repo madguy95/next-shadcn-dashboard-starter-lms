@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { loginAsParent } from '@/lib/auth-actions';
+import { APP_ROLES, type AppRole, roleMeta } from '@/config/nav-config';
+import { loginAs } from '@/lib/auth-actions';
 import { cn } from '@/lib/utils';
 
 type Mode = 'login' | 'register';
@@ -16,6 +17,7 @@ type Mode = 'login' | 'register';
 export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>(initialMode);
+  const [loginRole, setLoginRole] = useState<AppRole>('parent');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -50,7 +52,9 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
     if (!canSubmit) return;
     setSubmitting(true);
 
-    await loginAsParent({ name: isRegister ? name : undefined, phone });
+    // Register flow is parent-only (real flow: admin/teacher are provisioned, not self-registered).
+    const role: AppRole = isRegister ? 'parent' : loginRole;
+    await loginAs(role, { name: isRegister ? name : undefined, phone });
 
     if (isRegister) {
       toast.success('Tạo tài khoản thành công', {
@@ -58,11 +62,11 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
       });
     } else {
       toast.success('Đăng nhập thành công', {
-        description: 'Đang chuyển sang trang đăng ký khóa cho con…'
+        description: `Đang vào workspace ${roleMeta[role].label}…`
       });
     }
 
-    router.push('/parent/enrollment');
+    router.push(roleMeta[role].basePath);
     router.refresh();
   };
 
@@ -109,6 +113,39 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
       </div>
 
       <form onSubmit={handleSubmit} className='space-y-4'>
+        {!isRegister && (
+          <div className='space-y-1.5'>
+            <div className='flex items-center justify-between'>
+              <Label className='text-xs font-medium text-zinc-700'>Đăng nhập với vai trò</Label>
+              <span className='rounded bg-amber-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-amber-800'>
+                DEMO
+              </span>
+            </div>
+            <div className='grid grid-cols-3 gap-1.5'>
+              {APP_ROLES.map((r) => {
+                const RoleIcon = Icons[roleMeta[r].icon];
+                const active = loginRole === r;
+                return (
+                  <button
+                    key={r}
+                    type='button'
+                    onClick={() => setLoginRole(r)}
+                    className={cn(
+                      'inline-flex h-11 items-center justify-center gap-1.5 rounded-md border text-sm font-medium transition-all',
+                      active
+                        ? 'border-cyan-500 bg-cyan-50 text-cyan-700'
+                        : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
+                    )}
+                  >
+                    <RoleIcon className='size-4' />
+                    {roleMeta[r].label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {isRegister && (
           <div className='space-y-1.5'>
             <Label htmlFor='name' className='text-xs font-medium text-zinc-700'>

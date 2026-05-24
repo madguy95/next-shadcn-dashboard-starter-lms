@@ -1,14 +1,14 @@
 import PageContainer from '@/components/layout/page-container';
-import { LmsDashboardView } from '@/features/lms/components/lms-dashboard-view';
+import { AdminDashboardView } from '@/features/admin/components/admin-dashboard-view';
 
 export const metadata = {
   title: 'Dashboard: LMS Overview'
 };
 
-export default function LmsDashboardPage() {
+export default function AdminDashboardPage() {
   return (
     <PageContainer>
-      <LmsDashboardView />
+      <AdminDashboardView />
     </PageContainer>
   );
 }

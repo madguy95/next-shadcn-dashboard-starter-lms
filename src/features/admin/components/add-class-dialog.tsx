@@ -24,7 +24,9 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { avatarToneClass, courses, teachers, type Teacher } from '@/features/lms/data';
+import { teachers } from '@/features/admin/api/mock';
+import type { Teacher } from '@/features/admin/api/types';
+import { avatarToneClass, courses } from '@/features/admin/data';
 
 const thumbStripeStyle: React.CSSProperties = {
   backgroundImage:

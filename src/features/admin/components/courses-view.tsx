@@ -11,7 +11,7 @@ import {
   courses,
   type Course,
   type CourseCategory
-} from '@/features/lms/data';
+} from '@/features/admin/data';
 import { AddCourseDialog } from './add-course-dialog';
 
 const thumbStripeStyle: React.CSSProperties = {

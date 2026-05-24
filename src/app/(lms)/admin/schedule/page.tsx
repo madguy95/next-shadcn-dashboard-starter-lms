@@ -1,5 +1,5 @@
 import PageContainer from '@/components/layout/page-container';
-import { ScheduleHeaderAction, ScheduleView } from '@/features/lms/components/schedule-view';
+import { ScheduleHeaderAction, ScheduleView } from '@/features/admin/components/schedule-view';
 
 export const metadata = {
   title: 'Dashboard: LMS Schedule'

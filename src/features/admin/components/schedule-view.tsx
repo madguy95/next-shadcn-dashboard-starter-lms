@@ -10,7 +10,7 @@ import {
   scheduleDays,
   scheduleEvents,
   scheduleHours
-} from '@/features/lms/data';
+} from '@/features/admin/data';
 
 const HOUR_HEIGHT = 56;
 const PX_PER_MIN = HOUR_HEIGHT / 60;

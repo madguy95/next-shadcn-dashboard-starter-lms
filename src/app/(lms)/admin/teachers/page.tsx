@@ -1,5 +1,5 @@
 import PageContainer from '@/components/layout/page-container';
-import { TeachersHeaderAction, TeachersView } from '@/features/lms/components/teachers-view';
+import { TeachersHeaderAction, TeachersView } from '@/features/admin/components/teachers-view';
 
 export const metadata = {
   title: 'Dashboard: LMS Teachers'

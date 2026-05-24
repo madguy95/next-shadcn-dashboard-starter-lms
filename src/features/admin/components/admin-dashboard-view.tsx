@@ -19,7 +19,7 @@ import {
   enrollmentStatusLabel,
   recentEnrollments,
   upcomingClasses
-} from '@/features/lms/data';
+} from '@/features/admin/data';
 
 function StatChip({ delta, tone = 'positive' }: { delta: string; tone?: 'positive' | 'warning' }) {
   if (tone === 'warning') {
@@ -335,7 +335,7 @@ function CourseFillCard() {
   );
 }
 
-export function LmsDashboardView() {
+export function AdminDashboardView() {
   return (
     <div className='space-y-6'>
       <div className='flex flex-wrap items-end justify-between gap-4'>
