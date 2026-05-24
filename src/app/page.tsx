@@ -1,12 +1,298 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import { formatVND, parentCourses, type ParentCourse } from '@/features/parent/data';
 
-export default async function Page() {
-  const { userId } = await auth();
+const courseAccents: Record<string, { hue: number; chip: string }> = {
+  'sc-basic': { hue: 195, chip: 'text-cyan-300' },
+  'sc-game': { hue: 145, chip: 'text-emerald-300' },
+  'py-intro': { hue: 30, chip: 'text-orange-300' },
+  'web-junior': { hue: 270, chip: 'text-violet-300' }
+};
 
-  if (!userId) {
-    return redirect('/auth/sign-in');
-  } else {
-    redirect('/dashboard/overview');
-  }
+export const metadata = {
+  title: 'IQode Lab — Build thinking, not just coding.'
+};
+
+function BrandAsterisk({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      viewBox='0 0 64 64'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth={2}
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <circle cx='32' cy='32' r='3.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='32' y2='10' />
+      <circle cx='32' cy='10' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='32' y2='54' />
+      <circle cx='32' cy='54' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='10' y2='32' />
+      <circle cx='10' cy='32' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='54' y2='32' />
+      <circle cx='54' cy='32' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='15' y2='15' />
+      <circle cx='15' cy='15' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='49' y2='49' />
+      <circle cx='49' cy='49' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='49' y2='15' />
+      <circle cx='49' cy='15' r='2.5' fill='currentColor' stroke='none' />
+      <line x1='32' y1='32' x2='15' y2='49' />
+      <circle cx='15' cy='49' r='2.5' fill='currentColor' stroke='none' />
+    </svg>
+  );
+}
+
+function CourseCard({ course }: { course: ParentCourse }) {
+  const accent = courseAccents[course.id] ?? { hue: 200, chip: 'text-cyan-300' };
+  const ModeIcon = course.mode.includes('Online') ? Icons.video : Icons.workspace;
+  return (
+    <Link
+      href='/parent/enrollment'
+      aria-label={`Xem khóa ${course.name}`}
+      className='group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all hover:border-white/30 hover:bg-white/[0.08]'
+    >
+      <div
+        className='relative h-1.5 w-full'
+        style={{
+          background: `linear-gradient(90deg, hsl(${accent.hue} 70% 55%), hsl(${accent.hue} 80% 65%))`
+        }}
+      />
+      <div
+        className='pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full opacity-30 transition-opacity group-hover:opacity-60'
+        style={{
+          background: `radial-gradient(circle, hsl(${accent.hue} 70% 55% / 0.6), transparent 60%)`
+        }}
+      />
+
+      <div className='relative flex flex-1 flex-col gap-3 p-6'>
+        <div className='flex items-center justify-between'>
+          <span className={`font-mono text-[11px] tracking-wider ${accent.chip}`}>
+            {course.code}
+          </span>
+          <div className='flex items-center gap-1.5'>
+            {course.popular && (
+              <span className='inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-200'>
+                ★ Phổ biến
+              </span>
+            )}
+            {course.isNew && (
+              <span className='inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
+                ✨ Mới
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h3 className='text-lg leading-tight font-semibold tracking-tight text-white'>
+            {course.name}
+          </h3>
+          <div className='mt-1 text-xs text-white/50'>
+            Độ tuổi {course.ageRange} · {course.level}
+          </div>
+        </div>
+
+        <p className='text-sm leading-relaxed text-white/70'>{course.goals}</p>
+
+        <div className='mt-auto flex flex-wrap items-center gap-3 pt-3 text-[11px] text-white/50'>
+          <span className='inline-flex items-center gap-1'>
+            <Icons.book className='size-3' />
+            {course.sessions} buổi
+          </span>
+          <span className='inline-flex items-center gap-1'>
+            <Icons.clock className='size-3' />
+            {course.duration}′
+          </span>
+          <span className='inline-flex items-center gap-1'>
+            <ModeIcon className='size-3' />
+            {course.mode}
+          </span>
+          <span className='inline-flex items-center gap-1'>
+            <Icons.star className='size-3 text-amber-300' />
+            {course.rating}
+          </span>
+        </div>
+
+        <div className='flex items-baseline justify-between border-t border-white/10 pt-4'>
+          <div>
+            <div className='text-sm font-semibold text-white'>{formatVND(course.price)}</div>
+            <div className='text-[10px] text-white/40'>/khóa · {course.learners} học viên</div>
+          </div>
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-medium ${accent.chip} transition-transform group-hover:translate-x-0.5`}
+          >
+            Tìm hiểu
+            <Icons.arrowRight className='size-3' />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <div className='relative min-h-screen overflow-hidden bg-black text-white'>
+      <div
+        className='pointer-events-none absolute inset-0 opacity-[0.07]'
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px)',
+          backgroundSize: '56px 56px'
+        }}
+      />
+      <div
+        className='pointer-events-none absolute top-0 left-1/2 h-[600px] w-[800px] -translate-x-1/2 rounded-full'
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(20,210,220,0.18), transparent 60%)'
+        }}
+      />
+      <div
+        className='pointer-events-none absolute right-0 bottom-0 h-[400px] w-[500px] rounded-full'
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(244,164,96,0.12), transparent 70%)'
+        }}
+      />
+
+      <header className='relative z-10 flex items-center justify-between px-6 py-5 md:px-10'>
+        <div className='flex items-center gap-2'>
+          <span className='text-xl font-bold tracking-tight text-cyan-400'>
+            IQode<span className='font-light text-orange-300'>Lab</span>
+          </span>
+        </div>
+        <div className='flex items-center gap-3'>
+          <Link href='/login' className='text-sm text-white/70 transition-colors hover:text-white'>
+            Đăng nhập
+          </Link>
+          <Link
+            href='/login?mode=register'
+            className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-4 text-sm font-medium text-black transition-colors hover:bg-cyan-300'
+          >
+            Đăng ký
+            <Icons.arrowRight className='size-3.5' />
+          </Link>
+        </div>
+      </header>
+
+      <main className='relative z-10 flex flex-col items-center px-6 pt-16 pb-12 text-center md:pt-24'>
+        <div className='relative inline-flex items-baseline gap-3'>
+          <h1 className='text-7xl font-bold tracking-tight text-cyan-400 sm:text-8xl md:text-9xl'>
+            IQode
+          </h1>
+          <div className='relative'>
+            <span className='text-3xl font-light text-orange-300 sm:text-4xl md:text-5xl'>Lab</span>
+            <BrandAsterisk className='text-orange-300 absolute -top-6 -right-7 size-10 md:-top-8 md:-right-9 md:size-12' />
+          </div>
+        </div>
+        <p className='mt-6 max-w-xl text-base text-white/80 md:text-lg'>
+          Build thinking, not just coding.
+        </p>
+        <p className='mt-3 max-w-md text-sm text-white/50'>
+          Học viện lập trình tư duy dành cho học sinh 6 — 16 tuổi. Học bằng dự án, bằng câu hỏi,
+          bằng sự tò mò.
+        </p>
+
+        <div className='mt-10 flex flex-wrap items-center justify-center gap-3'>
+          <Button
+            asChild
+            className='h-11 rounded-md bg-cyan-400 px-6 text-base font-medium text-black hover:bg-cyan-300'
+          >
+            <Link href='/login'>Đăng nhập</Link>
+          </Button>
+          <Button
+            asChild
+            variant='outline'
+            className='h-11 rounded-md border-white/20 bg-transparent px-6 text-base font-medium text-white hover:bg-white/10 hover:text-white'
+          >
+            <Link href='/login?mode=register'>
+              Đăng ký
+              <Icons.arrowRight className='ml-1 size-4' />
+            </Link>
+          </Button>
+        </div>
+      </main>
+
+      <section className='relative z-10 px-6 pt-4 pb-16 md:px-10 md:pb-24'>
+        <div className='mx-auto max-w-6xl'>
+          <div className='mb-10 flex flex-wrap items-end justify-between gap-4'>
+            <div>
+              <div className='text-[11px] tracking-wider text-cyan-300/80 uppercase'>
+                Curriculum
+              </div>
+              <h2 className='mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl'>
+                Khóa học nổi bật
+              </h2>
+              <p className='mt-2 max-w-xl text-sm text-white/50'>
+                Lộ trình từ Scratch kéo–thả đến Python, Web và AI — thiết kế theo độ tuổi và tốc độ
+                tiếp thu của từng học sinh.
+              </p>
+            </div>
+            <Link
+              href='/parent/enrollment'
+              className='inline-flex items-center gap-1.5 text-sm text-white/70 transition-colors hover:text-white'
+            >
+              Xem tất cả khóa học
+              <Icons.arrowRight className='size-3.5' />
+            </Link>
+          </div>
+
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+            {parentCourses.map((c) => (
+              <CourseCard key={c.id} course={c} />
+            ))}
+          </div>
+
+          <div className='mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur md:p-8'>
+            <div className='flex flex-wrap items-center justify-between gap-4'>
+              <div className='flex items-start gap-4'>
+                <span className='grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-cyan-400/15 text-cyan-300 ring-1 ring-cyan-400/30'>
+                  <Icons.sparkles className='size-5' />
+                </span>
+                <div>
+                  <div className='text-base font-semibold tracking-tight text-white'>
+                    Chưa biết bắt đầu từ đâu?
+                  </div>
+                  <p className='mt-1 max-w-md text-sm text-white/60'>
+                    Đăng ký buổi học thử miễn phí — đội ngũ IQode Lab sẽ tư vấn lộ trình phù hợp
+                    nhất cho con.
+                  </p>
+                </div>
+              </div>
+              <Button
+                asChild
+                className='h-10 rounded-md bg-cyan-400 px-5 text-sm font-medium text-black hover:bg-cyan-300'
+              >
+                <Link href='/login?mode=register'>
+                  Đăng ký học thử
+                  <Icons.arrowRight className='ml-1 size-4' />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className='relative z-10 border-t border-white/10 px-6 py-6 md:px-10'>
+        <div className='mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-xs text-white/40'>
+          <span>© 2026 IQodeLab. Build thinking, not just coding.</span>
+          <div className='flex items-center gap-4'>
+            <Link href='/privacy-policy' className='hover:text-white/70'>
+              Chính sách
+            </Link>
+            <Link href='/terms-of-service' className='hover:text-white/70'>
+              Điều khoản
+            </Link>
+            <a href='mailto:iqode.file@gmail.com' className='hover:text-white/70'>
+              Liên hệ
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }

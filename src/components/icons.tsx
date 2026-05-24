@@ -5,6 +5,7 @@ import {
   IconArrowRight,
   IconBell,
   IconBold,
+  IconBook2,
   IconBox,
   IconBrandGithub,
   IconBrandTwitter,
@@ -33,6 +34,7 @@ import {
   IconDotsVertical,
   IconEdit,
   IconExternalLink,
+  IconEye,
   IconEyeOff,
   IconFile,
   IconFileText,
@@ -46,6 +48,7 @@ import {
   IconInfoCircle,
   IconItalic,
   IconLayoutDashboard,
+  IconLayoutGrid,
   IconLayoutKanban,
   IconLayoutSidebar,
   IconLoader2,
@@ -61,6 +64,7 @@ import {
   IconPhone,
   IconPhoto,
   IconPizza,
+  IconPlayerPlayFilled,
   IconPlus,
   IconProps,
   IconRosetteDiscountCheck,
@@ -126,7 +130,9 @@ export const Icons = {
   // Layout
   dashboard: IconLayoutDashboard,
   kanban: IconLayoutKanban,
+  layoutGrid: IconLayoutGrid,
   panelLeft: IconLayoutSidebar,
+  book: IconBook2,
 
   // User
   user: IconUser,
@@ -162,6 +168,7 @@ export const Icons = {
 
   // Actions
   add: IconPlus,
+  play: IconPlayerPlayFilled,
   edit: IconEdit,
   upload: IconUpload,
   share: IconShare,
@@ -189,6 +196,7 @@ export const Icons = {
   product: IconBox,
   pro: IconCrown,
   exclusive: IconStar,
+  star: IconStar,
   sparkles: IconSparkles,
   badgeCheck: IconRosetteDiscountCheck,
   lock: IconLock,
@@ -196,6 +204,7 @@ export const Icons = {
   // Data / Charts
   trendingDown: IconTrendingDown,
   trendingUp: IconTrendingUp,
+  eye: IconEye,
   eyeOff: IconEyeOff,
   adjustments: IconAdjustmentsHorizontal,
 

@@ -1,9 +1,11 @@
 'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -24,144 +26,263 @@ import {
   SidebarMenuSubItem,
   SidebarRail
 } from '@/components/ui/sidebar';
-import { UserAvatarProfile } from '@/components/user-avatar-profile';
-import { navGroups } from '@/config/nav-config';
-import { useMediaQuery } from '@/hooks/use-media-query';
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useAuth } from '@/components/auth-provider';
+import { getRoleFromPathname, navByRole, roleMeta } from '@/config/nav-config';
 import { useFilteredNavGroups } from '@/hooks/use-nav';
-import { SignOutButton } from '@clerk/nextjs';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import * as React from 'react';
+import { logout } from '@/lib/auth-actions';
 import { Icons } from '../icons';
-import { OrgSwitcher } from '../org-switcher';
+
+function IQodeRobot({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth={1.8}
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      className={className}
+      aria-hidden='true'
+    >
+      <path d='M12 2v3' />
+      <circle cx='12' cy='2' r='1' fill='currentColor' stroke='none' />
+      <rect x='4' y='5' width='16' height='14' rx='3.2' />
+      <circle cx='9' cy='11' r='1.2' fill='currentColor' stroke='none' />
+      <circle cx='15' cy='11' r='1.2' fill='currentColor' stroke='none' />
+      <path d='M9.5 14.5c1 1 3.5 1 5 0' />
+      <path d='M3 10v3M21 10v3' />
+    </svg>
+  );
+}
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const { isOpen } = useMediaQuery();
-  const { user } = useUser();
-  const { organization } = useOrganization();
   const router = useRouter();
-  const filteredGroups = useFilteredNavGroups(navGroups);
-
-  React.useEffect(() => {
-    // Side effects based on sidebar state changes
-  }, [isOpen]);
+  const { user } = useAuth();
+  // Logged-in users are locked to their account's role.
+  // Guests follow the URL so they can preview each role's UI.
+  const currentRole = user ? user.role : getRoleFromPathname(pathname);
+  const groups = navByRole[currentRole];
+  const filteredGroups = useFilteredNavGroups(groups);
+  const userInitials = user
+    ? user.name
+        .trim()
+        .split(/\s+/)
+        .slice(-2)
+        .map((w) => w[0]?.toUpperCase() ?? '')
+        .join('') || 'PH'
+    : '';
 
   return (
     <Sidebar collapsible='icon'>
-      <SidebarHeader className='group-data-[collapsible=icon]:pt-4'>
-        <OrgSwitcher />
+      <SidebarHeader className='gap-0'>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size='lg'
+              onClick={() => router.push(user ? roleMeta[user.role].basePath : '/')}
+              className='hover:bg-sidebar-accent'
+            >
+              <span className='bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-md'>
+                <IQodeRobot className='size-4' />
+              </span>
+              <div className='grid flex-1 text-left text-sm leading-tight'>
+                <span className='truncate font-semibold'>IQode Lab</span>
+                <span className='text-muted-foreground truncate text-xs'>
+                  {user ? `${roleMeta[user.role].label} workspace` : 'Khám phá'}
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent className='overflow-x-hidden'>
-        {filteredGroups.map((group) => (
-          <SidebarGroup key={group.label || 'ungrouped'} className='py-0'>
-            {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+        {!user && (
+          <SidebarGroup className='py-0 group-data-[collapsible=icon]:hidden'>
+            <div className='border-border/60 bg-muted/30 mx-2 mt-2 rounded-lg border p-4'>
+              <div className='flex items-center gap-2'>
+                <span className='bg-primary/10 text-primary grid h-7 w-7 place-items-center rounded-md'>
+                  <Icons.lock className='size-3.5' />
+                </span>
+                <div className='text-sm font-semibold tracking-tight'>Chào bạn!</div>
+              </div>
+              <p className='text-muted-foreground mt-2 text-xs leading-relaxed'>
+                Đăng nhập để xem khóa học của con, lịch học và quản lý hồ sơ gia đình.
+              </p>
+              <div className='mt-3 flex flex-col gap-1.5'>
+                <Link
+                  href='/login?mode=register'
+                  className='bg-primary text-primary-foreground inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium hover:opacity-90'
+                >
+                  <Icons.add className='size-3' />
+                  Tạo tài khoản
+                </Link>
+                <Link
+                  href='/login'
+                  className='hover:bg-accent inline-flex h-8 items-center justify-center gap-1.5 rounded-md border px-3 text-xs font-medium'
+                >
+                  <Icons.login className='size-3' />
+                  Đăng nhập
+                </Link>
+              </div>
+            </div>
+            <SidebarGroupLabel className='mt-4'>Xem demo</SidebarGroupLabel>
             <SidebarMenu>
-              {group.items.map((item) => {
-                const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-                return item?.items && item?.items?.length > 0 ? (
-                  <Collapsible
-                    key={item.title}
-                    asChild
-                    defaultOpen={item.isActive}
-                    className='group/collapsible'
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={item.title} isActive={pathname === item.url}>
-                          {item.icon && <Icon />}
-                          <span>{item.title}</span>
-                          <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                                <Link href={subItem.url}>
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      isActive={pathname === item.url}
-                    >
-                      <Link href={item.url}>
-                        <Icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip='Khóa học'
+                  isActive={pathname === '/parent/enrollment'}
+                >
+                  <Link href='/parent/enrollment'>
+                    <Icons.book />
+                    <span>Khóa học</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
-        ))}
+        )}
+        {user &&
+          filteredGroups.map((group) => (
+            <SidebarGroup key={group.label || 'ungrouped'} className='py-0'>
+              {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+                  return item?.items && item?.items?.length > 0 ? (
+                    <Collapsible
+                      key={item.title}
+                      asChild
+                      defaultOpen={item.isActive}
+                      className='group/collapsible'
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton tooltip={item.title} isActive={pathname === item.url}>
+                            {item.icon && <Icon />}
+                            <span>{item.title}</span>
+                            <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {item.items?.map((subItem) => (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
+                                  <Link href={subItem.url}>
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  ) : (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.title}
+                        isActive={pathname === item.url}
+                      >
+                        <Link href={item.url}>
+                          <Icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
       </SidebarContent>
+
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size='lg'
-                  className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size='lg'
+                    className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                  >
+                    <span className='bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold'>
+                      {userInitials}
+                    </span>
+                    <div className='grid flex-1 text-left text-sm leading-tight'>
+                      <span className='truncate font-medium'>{user.name}</span>
+                      <span className='text-muted-foreground truncate font-mono text-[11px]'>
+                        {user.phone} · {roleMeta[user.role].label}
+                      </span>
+                    </div>
+                    <Icons.chevronsUpDown className='ml-auto size-4' />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+                  side='top'
+                  align='end'
+                  sideOffset={4}
                 >
-                  {user && (
-                    <UserAvatarProfile className='h-8 w-8 rounded-lg' showInfo user={user} />
-                  )}
-                  <Icons.chevronsDown className='ml-auto size-4' />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
-                side='bottom'
-                align='end'
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className='p-0 font-normal'>
-                  <div className='px-1 py-1.5'>
-                    {user && (
-                      <UserAvatarProfile className='h-8 w-8 rounded-lg' showInfo user={user} />
-                    )}
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-                    <Icons.account className='mr-2 h-4 w-4' />
-                    Profile
+                  <DropdownMenuLabel className='p-0 font-normal'>
+                    <div className='flex items-center gap-2 px-2 py-1.5'>
+                      <span className='bg-primary text-primary-foreground grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold'>
+                        {userInitials}
+                      </span>
+                      <div className='grid flex-1 text-left text-sm leading-tight'>
+                        <span className='truncate font-medium'>{user.name}</span>
+                        <span className='text-muted-foreground truncate font-mono text-[11px]'>
+                          {user.phone}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => router.push('/parent/children')}>
+                    <Icons.user className='mr-2 h-4 w-4' />
+                    Hồ sơ con
                   </DropdownMenuItem>
-                  {organization && (
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/billing')}>
-                      <Icons.creditCard className='mr-2 h-4 w-4' />
-                      Billing
+                  <DropdownMenuItem onSelect={() => router.push('/parent/enrollment')}>
+                    <Icons.book className='mr-2 h-4 w-4' />
+                    Đăng ký khóa
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <form action={logout}>
+                    <DropdownMenuItem asChild>
+                      <button
+                        type='submit'
+                        className='text-destructive focus:text-destructive w-full'
+                      >
+                        <Icons.logout className='mr-2 h-4 w-4' />
+                        Đăng xuất
+                      </button>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={() => router.push('/dashboard/notifications')}>
-                    <Icons.notification className='mr-2 h-4 w-4' />
-                    Notifications
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Icons.logout className='mr-2 h-4 w-4' />
-                  <SignOutButton redirectUrl='/auth/sign-in' />
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <SidebarMenuButton
+                size='lg'
+                onClick={() => router.push('/login')}
+                className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+              >
+                <span className='bg-muted text-muted-foreground grid size-7 shrink-0 place-items-center rounded-full'>
+                  <Icons.user className='size-4' />
+                </span>
+                <div className='grid flex-1 text-left text-sm leading-tight'>
+                  <span className='truncate font-medium'>Khách</span>
+                  <span className='text-muted-foreground truncate text-[11px]'>
+                    Đăng nhập để theo dõi con
+                  </span>
+                </div>
+                <Icons.login className='ml-auto size-4' />
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
