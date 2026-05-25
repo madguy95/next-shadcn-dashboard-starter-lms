@@ -2,7 +2,7 @@ import PageContainer from '@/components/layout/page-container';
 import {
   EnrollmentsHeaderAction,
   EnrollmentsView
-} from '@/features/admin/components/enrollments-view';
+} from '@/features/admin/components/enrollments/enrollments-view';
 
 export const metadata = {
   title: 'Dashboard: LMS Enrollments'

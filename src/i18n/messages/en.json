@@ -1,0 +1,114 @@
+{
+  "common": {
+    "language": "Language",
+    "loading": "Loading…",
+    "updating": "Updating…",
+    "cancel": "Cancel",
+    "save": "Save",
+    "remove": "Remove",
+    "actions": "Actions"
+  },
+  "table": {
+    "noResults": "No results.",
+    "selectAll": "Select all",
+    "selectRow": "Select {name}",
+    "rowsPerPage": "Rows per page",
+    "page": "Page {current} of {total}",
+    "totalRows": "{count, plural, one {# row} other {# rows}} total.",
+    "selectedRows": "{selected} of {total} row(s) selected.",
+    "firstPage": "Go to first page",
+    "previousPage": "Go to previous page",
+    "nextPage": "Go to next page",
+    "lastPage": "Go to last page"
+  },
+  "teachers": {
+    "title": "Teachers",
+    "exportCsv": "Export CSV",
+    "addTeacher": "Add teacher",
+    "loadingList": "Loading teachers…",
+    "updatingList": "Updating…",
+    "columns": {
+      "teacher": "Teacher",
+      "phone": "Phone",
+      "subjects": "Subjects",
+      "classes": "Classes",
+      "students": "Students",
+      "rating": "Rating",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "on_leave": "On leave",
+      "pending": "Pending"
+    },
+    "tabs": {
+      "all": "All"
+    },
+    "actions": {
+      "assign": "Assign",
+      "viewProfile": "View profile",
+      "resetPassword": "Reset password",
+      "changeStatus": "Change status",
+      "remove": "Remove",
+      "menuLabel": "Actions for {name}"
+    },
+    "addDialog": {
+      "title": "Add teacher",
+      "description": "Send an invite. They'll set their own password.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Work email",
+      "phone": "Phone number",
+      "dateOfBirth": "Date of birth",
+      "dateOfBirthPlaceholder": "Pick a date",
+      "gender": "Gender",
+      "genderPlaceholder": "Select gender",
+      "avatar": "Avatar",
+      "avatarDescription": "Optional. JPG or PNG, up to 5MB.",
+      "primarySubject": "Primary subject",
+      "location": "Location",
+      "tags": "Tags",
+      "addTagPlaceholder": "Add tag…",
+      "removeTag": "Remove {tag}",
+      "sendOnboardingEmail": "Send onboarding email with class assignment & schedule.",
+      "sendInvite": "Send invite",
+      "successToast": "Invite sent to {name}.",
+      "errorToast": "Could not create teacher. Please try again.",
+      "validation": {
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Please enter a valid email.",
+        "phoneRequired": "Phone number is required.",
+        "phoneInvalid": "Please enter a valid phone number.",
+        "primarySubjectRequired": "Please select a primary subject.",
+        "locationRequired": "Please select a location.",
+        "dateOfBirthRequired": "Please select a date of birth.",
+        "dateOfBirthFuture": "Date of birth cannot be in the future.",
+        "genderRequired": "Please select a gender."
+      }
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "profile": {
+      "title": "Teacher profile",
+      "description": "Read-only overview of {name}.",
+      "notProvided": "—",
+      "sections": {
+        "personal": "Personal info",
+        "teaching": "Teaching",
+        "tags": "Tags"
+      },
+      "edit": "Edit",
+      "editTitle": "Edit teacher",
+      "editDescription": "Update {name}'s details.",
+      "save": "Save changes",
+      "saveSuccess": "Saved changes for {name}.",
+      "saveError": "Could not save changes. Please try again."
+    }
+  }
+}

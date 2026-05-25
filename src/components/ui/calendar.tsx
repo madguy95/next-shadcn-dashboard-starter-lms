@@ -6,23 +6,30 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  captionLayout,
   ...props
 }: ComponentProps<typeof DayPicker>) {
+  const isDropdown = captionLayout !== undefined && captionLayout !== 'label';
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      captionLayout={captionLayout}
       className={cn('p-3', className)}
       classNames={{
         months: 'flex flex-col sm:flex-row gap-2',
         month: 'flex flex-col gap-4',
         month_caption: 'flex justify-center pt-1 relative items-center w-full',
-        caption_label: 'text-sm font-medium',
+        caption_label: cn(
+          'text-sm font-medium',
+          isDropdown &&
+            'inline-flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 hover:bg-accent [&>svg]:size-3.5 [&>svg]:opacity-60'
+        ),
         nav: 'flex items-center gap-1',
         button_previous: cn(
           buttonVariants({ variant: 'outline' }),
@@ -32,6 +39,9 @@ function Calendar({
           buttonVariants({ variant: 'outline' }),
           'absolute right-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100'
         ),
+        dropdowns: 'flex items-center gap-1.5 text-sm font-medium',
+        dropdown_root: 'relative inline-flex items-center',
+        dropdown: 'absolute inset-0 cursor-pointer opacity-0',
         month_grid: 'w-full border-collapse space-x-1',
         weekdays: 'flex',
         weekday: 'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
@@ -56,11 +66,16 @@ function Calendar({
       }}
       components={{
         Chevron: ({ orientation }) => {
-          if (orientation === 'left') {
-            return <ChevronLeftIcon className='size-4' />;
-          }
-          return <ChevronRightIcon className='size-4' />;
-        }
+          if (orientation === 'left') return <ChevronLeftIcon className='size-4' />;
+          if (orientation === 'right') return <ChevronRightIcon className='size-4' />;
+          return <ChevronDownIcon className='size-3.5' />;
+        },
+        CaptionLabel: ({ children, ...labelProps }) => (
+          <span {...labelProps}>
+            {children}
+            {isDropdown ? <ChevronDownIcon /> : null}
+          </span>
+        )
       }}
       {...props}
     />

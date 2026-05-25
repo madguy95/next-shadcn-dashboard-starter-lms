@@ -1,0 +1,114 @@
+{
+  "common": {
+    "language": "Ngôn ngữ",
+    "loading": "Đang tải…",
+    "updating": "Đang cập nhật…",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "remove": "Xóa",
+    "actions": "Thao tác"
+  },
+  "table": {
+    "noResults": "Không có kết quả.",
+    "selectAll": "Chọn tất cả",
+    "selectRow": "Chọn {name}",
+    "rowsPerPage": "Số dòng mỗi trang",
+    "page": "Trang {current} / {total}",
+    "totalRows": "Tổng {count} dòng.",
+    "selectedRows": "Đã chọn {selected} / {total} dòng.",
+    "firstPage": "Về trang đầu",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "lastPage": "Đến trang cuối"
+  },
+  "teachers": {
+    "title": "Giáo viên",
+    "exportCsv": "Xuất CSV",
+    "addTeacher": "Thêm giáo viên",
+    "loadingList": "Đang tải danh sách giáo viên…",
+    "updatingList": "Đang cập nhật…",
+    "columns": {
+      "teacher": "Giáo viên",
+      "phone": "Số điện thoại",
+      "subjects": "Môn dạy",
+      "classes": "Lớp",
+      "students": "Học sinh",
+      "rating": "Đánh giá",
+      "status": "Trạng thái"
+    },
+    "status": {
+      "active": "Đang dạy",
+      "on_leave": "Nghỉ phép",
+      "pending": "Chờ duyệt"
+    },
+    "tabs": {
+      "all": "Tất cả"
+    },
+    "actions": {
+      "assign": "Phân công",
+      "viewProfile": "Xem hồ sơ",
+      "resetPassword": "Đặt lại mật khẩu",
+      "changeStatus": "Đổi trạng thái",
+      "remove": "Xóa",
+      "menuLabel": "Thao tác cho {name}"
+    },
+    "addDialog": {
+      "title": "Thêm giáo viên",
+      "description": "Gửi lời mời. Giáo viên sẽ tự đặt mật khẩu.",
+      "firstName": "Tên",
+      "lastName": "Họ",
+      "email": "Email công việc",
+      "phone": "Số điện thoại",
+      "dateOfBirth": "Ngày sinh",
+      "dateOfBirthPlaceholder": "Chọn ngày",
+      "gender": "Giới tính",
+      "genderPlaceholder": "Chọn giới tính",
+      "avatar": "Ảnh đại diện",
+      "avatarDescription": "Tùy chọn. JPG hoặc PNG, tối đa 5MB.",
+      "primarySubject": "Môn chính",
+      "location": "Cơ sở",
+      "tags": "Thẻ",
+      "addTagPlaceholder": "Thêm thẻ…",
+      "removeTag": "Xóa {tag}",
+      "sendOnboardingEmail": "Gửi email onboarding kèm lịch dạy và lớp được phân công.",
+      "sendInvite": "Gửi lời mời",
+      "successToast": "Đã gửi lời mời tới {name}.",
+      "errorToast": "Không thể tạo giáo viên. Vui lòng thử lại.",
+      "validation": {
+        "firstNameRequired": "Vui lòng nhập tên.",
+        "lastNameRequired": "Vui lòng nhập họ.",
+        "emailRequired": "Vui lòng nhập email.",
+        "emailInvalid": "Email không hợp lệ.",
+        "phoneRequired": "Vui lòng nhập số điện thoại.",
+        "phoneInvalid": "Số điện thoại không hợp lệ.",
+        "primarySubjectRequired": "Vui lòng chọn môn chính.",
+        "locationRequired": "Vui lòng chọn cơ sở.",
+        "dateOfBirthRequired": "Vui lòng chọn ngày sinh.",
+        "dateOfBirthFuture": "Ngày sinh không được ở tương lai.",
+        "genderRequired": "Vui lòng chọn giới tính."
+      }
+    },
+    "gender": {
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác",
+      "prefer_not_to_say": "Không nêu"
+    },
+    "profile": {
+      "title": "Hồ sơ giáo viên",
+      "description": "Xem nhanh thông tin của {name}.",
+      "notProvided": "—",
+      "sections": {
+        "personal": "Thông tin cá nhân",
+        "teaching": "Giảng dạy",
+        "tags": "Thẻ"
+      },
+      "edit": "Chỉnh sửa",
+      "editTitle": "Chỉnh sửa giáo viên",
+      "editDescription": "Cập nhật thông tin của {name}.",
+      "save": "Lưu thay đổi",
+      "saveSuccess": "Đã lưu thay đổi cho {name}.",
+      "saveError": "Không thể lưu. Vui lòng thử lại."
+    }
+  }
+}

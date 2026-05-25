@@ -1,17 +1,18 @@
 import PageContainer from '@/components/layout/page-container';
-import { TeachersHeaderAction, TeachersView } from '@/features/admin/components/teachers-view';
+import {
+  TeachersHeaderAction,
+  TeachersView
+} from '@/features/admin/components/teachers/teachers-view';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata = {
   title: 'Dashboard: LMS Teachers'
 };
 
-export default function TeachersPage() {
+export default async function TeachersPage() {
+  const t = await getTranslations('teachers');
   return (
-    <PageContainer
-      pageTitle='Teachers'
-      pageDescription='24 active · 3 on leave · 2 pending onboarding'
-      pageHeaderAction={<TeachersHeaderAction />}
-    >
+    <PageContainer pageTitle={t('title')} pageHeaderAction={<TeachersHeaderAction />}>
       <TeachersView />
     </PageContainer>
   );

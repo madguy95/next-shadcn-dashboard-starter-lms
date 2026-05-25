@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import * as React from 'react';
 import { Icons } from '@/components/icons';
@@ -11,14 +12,17 @@ import { LoadingOverlay } from '@/components/ui/loading-state';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import { teacherCountsOptions, teacherListOptions } from '@/features/admin/api/queries';
-import type { Teacher, TeacherStatus } from '@/features/admin/api/types';
-import { avatarToneClass, teacherStatusClass, teacherStatusLabel } from '@/features/admin/data';
+import { teacherListOptions, teacherStatusTabsOptions } from '@/features/admin/api/queries';
+import { isTeacherStatus, type Teacher } from '@/features/admin/api/types';
+import { avatarToneClass, teacherStatusClass } from '@/features/admin/data';
 import { useDataTable } from '@/hooks/use-data-table';
 import { cn } from '@/lib/utils';
 import { AddTeacherDialog } from './add-teacher-dialog';
+import { TeacherRowActions } from './teacher-row-actions';
 
 export function TeachersView() {
+  const t = useTranslations('teachers');
+  const tTable = useTranslations('table');
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [perPage] = useQueryState('perPage', parseAsInteger.withDefault(10));
   const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString);
@@ -31,10 +35,10 @@ export function TeachersView() {
     teacherListOptions({
       page,
       perPage,
-      status: (statusFilter ?? undefined) as TeacherStatus | undefined
+      status: isTeacherStatus(statusFilter) ? statusFilter : undefined
     })
   );
-  const { data: counts } = useQuery(teacherCountsOptions());
+  const { data: statusTabs } = useQuery(teacherStatusTabsOptions());
 
   const columns = React.useMemo<ColumnDef<Teacher>[]>(
     () => [
@@ -47,14 +51,14 @@ export function TeachersView() {
               (table.getIsSomePageRowsSelected() && 'indeterminate')
             }
             onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
-            aria-label='Select all'
+            aria-label={tTable('selectAll')}
           />
         ),
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(v) => row.toggleSelected(!!v)}
-            aria-label={`Select ${row.original.name}`}
+            aria-label={tTable('selectRow', { name: row.original.name })}
           />
         ),
         enableSorting: false,
@@ -64,31 +68,42 @@ export function TeachersView() {
       {
         id: 'teacher',
         accessorKey: 'name',
-        header: ({ column }) => <DataTableColumnHeader column={column} title='Teacher' />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('columns.teacher')} />
+        ),
         cell: ({ row }) => {
-          const t = row.original;
+          const teacher = row.original;
           return (
             <div className='flex items-center gap-2.5'>
               <span
                 className={cn(
                   'grid h-8 w-8 place-items-center rounded-full text-[11px] font-semibold',
-                  avatarToneClass[t.tone]
+                  avatarToneClass[teacher.tone]
                 )}
               >
-                {t.initials}
+                {teacher.initials}
               </span>
               <div className='leading-tight'>
-                <div className='font-medium'>{t.name}</div>
-                <div className='text-muted-foreground font-mono text-[11px]'>{t.email}</div>
+                <div className='font-medium'>{teacher.name}</div>
+                <div className='text-muted-foreground font-mono text-[11px]'>{teacher.email}</div>
               </div>
             </div>
           );
         }
       },
       {
+        id: 'phone',
+        accessorKey: 'phone',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('columns.phone')} />
+        ),
+        cell: ({ row }) => <span className='font-mono text-[12px]'>{row.original.phone}</span>,
+        enableSorting: false
+      },
+      {
         id: 'subjects',
         accessorKey: 'subjects',
-        header: 'Subjects',
+        header: t('columns.subjects'),
         cell: ({ row }) => (
           <div className='flex flex-wrap gap-1'>
             {row.original.subjects.map((s) => (
@@ -103,13 +118,17 @@ export function TeachersView() {
       {
         id: 'classCount',
         accessorKey: 'classCount',
-        header: ({ column }) => <DataTableColumnHeader column={column} title='Classes' />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('columns.classes')} />
+        ),
         cell: ({ row }) => <span className='font-mono text-[12px]'>{row.original.classCount}</span>
       },
       {
         id: 'studentCount',
         accessorKey: 'studentCount',
-        header: ({ column }) => <DataTableColumnHeader column={column} title='Students' />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('columns.students')} />
+        ),
         cell: ({ row }) => (
           <span className='font-mono text-[12px]'>{row.original.studentCount}</span>
         )
@@ -117,7 +136,9 @@ export function TeachersView() {
       {
         id: 'rating',
         accessorKey: 'rating',
-        header: ({ column }) => <DataTableColumnHeader column={column} title='Rating' />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('columns.rating')} />
+        ),
         cell: ({ row }) => (
           <div className='flex items-center gap-1'>
             <Icons.star className='size-3.5 fill-amber-500 text-amber-500' />
@@ -128,7 +149,7 @@ export function TeachersView() {
       {
         id: 'status',
         accessorKey: 'status',
-        header: 'Status',
+        header: t('columns.status'),
         cell: ({ row }) => (
           <span
             className={cn(
@@ -136,28 +157,19 @@ export function TeachersView() {
               teacherStatusClass[row.original.status]
             )}
           >
-            {teacherStatusLabel[row.original.status]}
+            {t(`status.${row.original.status}`)}
           </span>
         ),
         enableSorting: false
       },
       {
         id: 'actions',
-        cell: () => (
-          <div className='inline-flex justify-end gap-1'>
-            <Button variant='ghost' size='sm' className='h-7 px-2 text-[12px]'>
-              Assign
-            </Button>
-            <Button variant='ghost' size='icon' className='h-7 w-7'>
-              <Icons.ellipsis className='size-3.5' />
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => <TeacherRowActions teacher={row.original} />,
         enableSorting: false,
         enableHiding: false
       }
     ],
-    []
+    [t, tTable]
   );
 
   const { table } = useDataTable({
@@ -179,23 +191,17 @@ export function TeachersView() {
         }}
       >
         <TabsList className='h-8'>
-          <TabsTrigger value='all' className='h-6 px-2.5 text-[12px]'>
-            All <span className='ml-1 font-mono opacity-60'>{counts?.all ?? '–'}</span>
-          </TabsTrigger>
-          <TabsTrigger value='active' className='h-6 px-2.5 text-[12px]'>
-            Active <span className='ml-1 font-mono opacity-60'>{counts?.active ?? '–'}</span>
-          </TabsTrigger>
-          <TabsTrigger value='on_leave' className='h-6 px-2.5 text-[12px]'>
-            On leave <span className='ml-1 font-mono opacity-60'>{counts?.on_leave ?? '–'}</span>
-          </TabsTrigger>
-          <TabsTrigger value='pending' className='h-6 px-2.5 text-[12px]'>
-            Pending <span className='ml-1 font-mono opacity-60'>{counts?.pending ?? '–'}</span>
-          </TabsTrigger>
+          {(statusTabs ?? []).map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} className='h-6 px-2.5 text-[12px]'>
+              {tab.value === 'all' ? t('tabs.all') : t(`status.${tab.value}`)}{' '}
+              <span className='ml-1 font-mono opacity-60'>{tab.count}</span>
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
       <LoadingOverlay
         visible={isLoading || isFetching}
-        message={isLoading ? 'Đang tải danh sách giáo viên…' : 'Đang cập nhật…'}
+        message={isLoading ? t('loadingList') : t('updatingList')}
       >
         <DataTable table={table} />
       </LoadingOverlay>
@@ -204,11 +210,12 @@ export function TeachersView() {
 }
 
 export function TeachersHeaderAction() {
+  const t = useTranslations('teachers');
   return (
     <div className='flex items-center gap-2'>
       <Button variant='outline' size='sm' className='h-9'>
         <Icons.upload className='size-3.5 rotate-180' />
-        Export CSV
+        {t('exportCsv')}
       </Button>
       <AddTeacherDialog />
     </div>

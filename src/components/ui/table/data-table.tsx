@@ -1,4 +1,5 @@
 import { type Table as TanstackTable, flexRender } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
 import type * as React from 'react';
 
 import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
@@ -19,6 +20,7 @@ interface DataTableProps<TData> extends React.ComponentProps<'div'> {
 }
 
 export function DataTable<TData>({ table, actionBar, children }: DataTableProps<TData>) {
+  const t = useTranslations('table');
   return (
     <div className='flex flex-1 flex-col space-y-4'>
       {children}
@@ -64,7 +66,7 @@ export function DataTable<TData>({ table, actionBar, children }: DataTableProps<
                 ) : (
                   <TableRow>
                     <TableCell colSpan={table.getAllColumns().length} className='h-24 text-center'>
-                      No results.
+                      {t('noResults')}
                     </TableCell>
                   </TableRow>
                 )}
