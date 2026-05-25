@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Course } from '@/features/admin/api/types';
+import type { Course } from '@/api/courses';
 import { cn } from '@/lib/utils';
 import { thumbStripeStyle } from './shared';
 
@@ -58,7 +58,7 @@ export function CourseCard({
         </div>
         <div className='mt-2 text-[15px] font-semibold tracking-tight'>{course.title}</div>
         <div className='text-muted-foreground mt-0.5 text-[12px]'>
-          {course.ageRange} · {course.tagline}
+          Ages {course.minAge}–{course.maxAge} · {course.tagline}
         </div>
         <div className='mt-3 grid grid-cols-3 gap-1 text-center font-mono text-[11px]'>
           <div className='bg-muted/50 rounded py-1'>

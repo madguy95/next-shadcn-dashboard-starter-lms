@@ -10,8 +10,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAppForm, useFormFields } from '@/components/ui/tanstack-form';
-import { GENDERS, type Gender } from '@/features/admin/api/types';
-import { locationOptions, subjectOptions } from '@/features/admin/constants/teacher-options';
+import { GENDERS, type Gender } from '@/api/teachers';
+import { locationOptions, subjectOptions } from '@/constants/teacher-options';
 import { cn } from '@/lib/utils';
 
 export type TeacherFormValues = {

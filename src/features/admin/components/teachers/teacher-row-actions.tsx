@@ -14,8 +14,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import type { Teacher } from '@/features/admin/api/types';
-import { TEACHER_STATUSES } from '@/features/admin/api/types';
+import { TEACHER_STATUSES, type Teacher } from '@/api/teachers';
 import { TeacherProfileSheet } from './teacher-profile-sheet';
 
 export function TeacherRowActions({ teacher }: { teacher: Teacher }) {

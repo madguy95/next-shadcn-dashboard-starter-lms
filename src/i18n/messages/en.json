@@ -142,6 +142,7 @@
     },
     "detail": {
       "edit": "Edit",
+      "watchIntro": "Watch intro",
       "duration": "Duration",
       "ages": "Ages",
       "tuition": "Tuition",
@@ -151,7 +152,14 @@
       "curriculumUnits": "Curriculum · {count} units",
       "editOutline": "Edit outline",
       "openCourse": "Open course",
-      "duplicate": "Duplicate"
+      "duplicate": "Duplicate",
+      "discountsHeading": "Discounts & offers",
+      "discountConditions": {
+        "none": "Always available",
+        "before_date": "Before",
+        "has_sibling": "With sibling enrolled",
+        "trial_only": "Trial session only"
+      }
     },
     "addDialog": {
       "section": "Curriculum library",
@@ -307,6 +315,19 @@
         "discountDateRequired": "Discount #{n} needs a date.",
         "discountDatePast": "Discount #{n} date cannot be in the past."
       }
+    },
+    "editDialog": {
+      "section": "Edit course",
+      "title": "Edit course details",
+      "description": "Update basic info, media, curriculum, and pricing in one place.",
+      "basicsHeading": "Basic information",
+      "basicsDescription": "Core details shown to students browsing the course.",
+      "mediaHeading": "Cover & intro video",
+      "mediaDescription": "Optional. Upload a new file to replace the current one.",
+      "publishedNotice": "This course is published — fields that affect open classes or enrolled students are locked. Unpublish first to edit them.",
+      "submit": "Save changes",
+      "successToast": "Course {title} updated.",
+      "errorToast": "Could not update course. Please try again."
     }
   }
 }

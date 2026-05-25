@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import PageContainer from '@/components/layout/page-container';
-import { getCourseStats } from '@/features/admin/api/service';
+import { getCourseStats } from '@/api/courses';
 import { CoursesHeaderAction, CoursesView } from '@/features/admin/components/courses/courses-view';
 
 export const metadata = {

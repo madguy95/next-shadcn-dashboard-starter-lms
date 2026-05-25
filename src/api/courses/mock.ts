@@ -1,0 +1,448 @@
+import type { Course, CourseCategoryFilter } from './types';
+
+export const courses: Course[] = [
+  {
+    id: 'c-1',
+    code: 'CODE-101',
+    title: 'Scratch Foundations',
+    minAge: 7,
+    maxAge: 10,
+    tagline: 'Block-based intro',
+    weeks: 12,
+    classes: 3,
+    enrolled: 46,
+    capacity: 50,
+    status: 'published',
+    category: 'coding',
+    level: 'beginner',
+    cover: 'SCRATCH · COVER',
+    version: 'v2.3',
+    tuitionAmount: 3240000,
+    originalTuitionAmount: 3600000,
+    perClassCapacity: 12,
+    description:
+      'A block-based introduction to programming. Students build games & stories using motion, looks, events and variables.',
+    curriculum: [
+      'Sprites & stage',
+      'Motion & looks',
+      'Events & broadcasts',
+      'Variables & lists',
+      '… 8 more units'
+    ],
+    discounts: [
+      {
+        name: 'Early Bird',
+        type: 'percentage',
+        value: 10,
+        condition: 'before_date',
+        conditionDate: '2026-06-30'
+      },
+      { name: 'Sibling discount', type: 'fixed', value: 200000, condition: 'has_sibling' },
+      {
+        name: 'Free trial week',
+        type: 'special',
+        value: '1 trial session',
+        condition: 'trial_only'
+      }
+    ],
+    pricingNotes: 'Refundable within 7 days if you cancel before the first session.'
+  },
+  {
+    id: 'c-2',
+    code: 'CODE-201',
+    title: 'Python for Kids',
+    minAge: 10,
+    maxAge: 13,
+    tagline: 'Text-based intro',
+    weeks: 16,
+    classes: 4,
+    enrolled: 39,
+    capacity: 50,
+    status: 'published',
+    category: 'coding',
+    level: 'beginner',
+    cover: 'PYTHON · COVER',
+    version: 'v1.8',
+    tuitionAmount: 3780000,
+    originalTuitionAmount: 4200000,
+    perClassCapacity: 14,
+    description:
+      'Move from blocks to real code. Students write Python scripts to solve puzzles, build small games and explore data.',
+    curriculum: [
+      'Hello, Python',
+      'Variables & types',
+      'Conditionals',
+      'Loops & iteration',
+      '… 12 more units'
+    ],
+    discounts: [
+      {
+        name: 'Summer promo',
+        type: 'percentage',
+        value: 10,
+        condition: 'before_date',
+        conditionDate: '2026-07-15'
+      },
+      { name: 'Returning student', type: 'fixed', value: 300000, condition: 'none' }
+    ]
+  },
+  {
+    id: 'c-3',
+    code: 'DSGN-110',
+    title: 'Web Design Studio',
+    minAge: 11,
+    maxAge: 14,
+    tagline: 'HTML & CSS',
+    weeks: 10,
+    classes: 3,
+    enrolled: 32,
+    capacity: 50,
+    status: 'published',
+    category: 'design',
+    level: 'intermediate',
+    cover: 'WEB · COVER',
+    version: 'v1.4',
+    tuitionAmount: 3200000,
+    perClassCapacity: 12,
+    description:
+      'Design and build personal websites with HTML, CSS, and responsive layout fundamentals.',
+    curriculum: [
+      'HTML structure',
+      'CSS basics',
+      'Flexbox & grid',
+      'Responsive design',
+      '… 6 more units'
+    ]
+  },
+  {
+    id: 'c-4',
+    code: 'ROBO-220',
+    title: 'Robotics with Arduino',
+    minAge: 12,
+    maxAge: 15,
+    tagline: 'Hardware',
+    weeks: 14,
+    classes: 2,
+    enrolled: 16,
+    capacity: 40,
+    status: 'published',
+    category: 'robotics',
+    level: 'intermediate',
+    cover: 'ROBO · COVER',
+    version: 'v2.0',
+    tuitionAmount: 4860000,
+    originalTuitionAmount: 5400000,
+    perClassCapacity: 10,
+    description:
+      'Hands-on robotics: students build and program Arduino kits, control motors, read sensors and design mini-robots.',
+    curriculum: [
+      'Circuits & wiring',
+      'Arduino IDE',
+      'Sensors',
+      'Motors & servos',
+      '… 10 more units'
+    ],
+    discounts: [
+      { name: 'Hardware bundle', type: 'percentage', value: 10, condition: 'none' },
+      {
+        name: 'Free Arduino kit',
+        type: 'special',
+        value: 'Includes a starter kit',
+        condition: 'none'
+      }
+    ],
+    pricingNotes: 'Tuition includes the Arduino starter kit (worth ₫800,000).'
+  },
+  {
+    id: 'c-5',
+    code: 'GAME-310',
+    title: 'Game Dev with Unity',
+    minAge: 13,
+    maxAge: 16,
+    tagline: 'C#',
+    weeks: 18,
+    classes: 2,
+    enrolled: 21,
+    capacity: 50,
+    status: 'draft',
+    category: 'game',
+    level: 'advanced',
+    cover: 'UNITY · COVER',
+    version: 'v0.9',
+    tuitionAmount: 5800000,
+    perClassCapacity: 10,
+    description:
+      'Build 2D and 3D games in Unity using C#. Capstone: ship a small playable game to itch.io.',
+    curriculum: [
+      'Unity editor tour',
+      'C# fundamentals',
+      'Sprites & physics',
+      'Scenes & prefabs',
+      '… 14 more units'
+    ]
+  },
+  {
+    id: 'c-6',
+    code: 'AI-150',
+    title: 'AI Explorers',
+    minAge: 12,
+    maxAge: 15,
+    tagline: 'No-code AI',
+    weeks: 8,
+    classes: 2,
+    enrolled: 24,
+    capacity: 40,
+    status: 'published',
+    category: 'stem',
+    level: 'beginner',
+    cover: 'AI · COVER',
+    version: 'v1.0',
+    tuitionAmount: 3000000,
+    perClassCapacity: 12,
+    description:
+      'Hands-on intro to machine learning with no-code tools. Train models for images, sound, and text.',
+    curriculum: [
+      'What is AI',
+      'Teachable Machine',
+      'Image models',
+      'Bias & fairness',
+      '… 4 more units'
+    ]
+  },
+  {
+    id: 'c-7',
+    code: 'LANG-101',
+    title: 'English Storytellers',
+    minAge: 8,
+    maxAge: 11,
+    tagline: 'Reading & writing',
+    weeks: 12,
+    classes: 3,
+    enrolled: 28,
+    capacity: 45,
+    status: 'published',
+    category: 'language',
+    level: 'beginner',
+    cover: 'ENG · COVER',
+    version: 'v1.2',
+    tuitionAmount: 3400000,
+    perClassCapacity: 15,
+    description:
+      'Build confidence in English through stories, role-play and creative writing prompts.',
+    curriculum: [
+      'Story arcs',
+      'Character voice',
+      'Descriptive writing',
+      'Reading aloud',
+      '… 8 more units'
+    ]
+  },
+  {
+    id: 'c-8',
+    code: 'CODE-301',
+    title: 'JavaScript Builders',
+    minAge: 13,
+    maxAge: 16,
+    tagline: 'Web apps',
+    weeks: 14,
+    classes: 2,
+    enrolled: 18,
+    capacity: 40,
+    status: 'published',
+    category: 'coding',
+    level: 'advanced',
+    cover: 'JS · COVER',
+    version: 'v1.5',
+    tuitionAmount: 4800000,
+    perClassCapacity: 12,
+    description:
+      'Modern JavaScript from variables to fetch. Students ship a small web app deployed to the cloud.',
+    curriculum: [
+      'JS fundamentals',
+      'DOM & events',
+      'Fetch & APIs',
+      'State patterns',
+      '… 10 more units'
+    ]
+  },
+  {
+    id: 'c-9',
+    code: 'DSGN-210',
+    title: 'UI/UX Workshop',
+    minAge: 12,
+    maxAge: 15,
+    tagline: 'Figma',
+    weeks: 10,
+    classes: 2,
+    enrolled: 14,
+    capacity: 30,
+    status: 'draft',
+    category: 'design',
+    level: 'intermediate',
+    cover: 'UIUX · COVER',
+    version: 'v0.6',
+    tuitionAmount: 3800000,
+    perClassCapacity: 10,
+    description:
+      'Design thinking, wireframes and high-fidelity mockups in Figma. Culminates in a portfolio piece.',
+    curriculum: ['Design thinking', 'Wireframing', 'Components', 'Prototyping', '… 6 more units']
+  },
+  {
+    id: 'c-10',
+    code: 'ROBO-110',
+    title: 'Lego Robotics',
+    minAge: 8,
+    maxAge: 11,
+    tagline: 'WeDo / SPIKE',
+    weeks: 10,
+    classes: 4,
+    enrolled: 38,
+    capacity: 60,
+    status: 'published',
+    category: 'robotics',
+    level: 'beginner',
+    cover: 'LEGO · COVER',
+    version: 'v1.7',
+    tuitionAmount: 3990000,
+    originalTuitionAmount: 4200000,
+    perClassCapacity: 12,
+    description:
+      'Build & program Lego robots to solve missions. Introduces motors, sensors and event-based logic.',
+    curriculum: ['Build basics', 'Motors & timing', 'Sensors', 'Missions', '… 6 more units'],
+    discounts: [
+      { name: 'Sibling discount', type: 'fixed', value: 210000, condition: 'has_sibling' }
+    ]
+  },
+  {
+    id: 'c-11',
+    code: 'STEM-120',
+    title: 'Math Olympiad Prep',
+    minAge: 10,
+    maxAge: 13,
+    tagline: 'Problem solving',
+    weeks: 16,
+    classes: 3,
+    enrolled: 30,
+    capacity: 45,
+    status: 'published',
+    category: 'stem',
+    level: 'intermediate',
+    cover: 'MATH · COVER',
+    version: 'v2.1',
+    tuitionAmount: 3600000,
+    perClassCapacity: 12,
+    description:
+      'Sharpen problem-solving skills with classic Olympiad-style questions and mathematical reasoning.',
+    curriculum: [
+      'Number theory',
+      'Combinatorics',
+      'Geometry tricks',
+      'Logic puzzles',
+      '… 12 more units'
+    ]
+  },
+  {
+    id: 'c-12',
+    code: 'GAME-210',
+    title: 'Roblox Studio',
+    minAge: 10,
+    maxAge: 13,
+    tagline: 'Lua',
+    weeks: 12,
+    classes: 3,
+    enrolled: 33,
+    capacity: 45,
+    status: 'published',
+    category: 'game',
+    level: 'intermediate',
+    cover: 'ROBLOX · COVER',
+    version: 'v1.3',
+    tuitionAmount: 4000000,
+    perClassCapacity: 12,
+    description:
+      'Build games in Roblox Studio with Lua scripting, terrain editing, and multiplayer basics.',
+    curriculum: ['Studio tour', 'Lua basics', 'Parts & scripts', 'Multiplayer', '… 8 more units']
+  },
+  {
+    id: 'c-13',
+    code: 'LANG-201',
+    title: 'Public Speaking Lab',
+    minAge: 11,
+    maxAge: 14,
+    tagline: 'Confidence',
+    weeks: 8,
+    classes: 2,
+    enrolled: 12,
+    capacity: 30,
+    status: 'draft',
+    category: 'language',
+    level: 'beginner',
+    cover: 'SPEAK · COVER',
+    version: 'v0.4',
+    tuitionAmount: 2800000,
+    perClassCapacity: 10,
+    description:
+      'Voice, body language, and structure. Weekly speech challenges build real-stage confidence.',
+    curriculum: ['Voice & posture', 'Structure', 'Story hooks', 'Q&A handling', '… 4 more units']
+  },
+  {
+    id: 'c-14',
+    code: 'CODE-150',
+    title: 'micro:bit Tinkerers',
+    minAge: 9,
+    maxAge: 12,
+    tagline: 'Hardware coding',
+    weeks: 10,
+    classes: 2,
+    enrolled: 22,
+    capacity: 30,
+    status: 'published',
+    category: 'coding',
+    level: 'beginner',
+    cover: 'MICROBIT · COVER',
+    version: 'v1.1',
+    tuitionAmount: 3200000,
+    perClassCapacity: 10,
+    description:
+      'Program the BBC micro:bit to react to motion, light and buttons. Hands-on intro to physical computing.',
+    curriculum: [
+      'Editor tour',
+      'Inputs & outputs',
+      'Loops & logic',
+      'Radio messaging',
+      '… 6 more units'
+    ]
+  },
+  {
+    id: 'c-15',
+    code: 'STEM-220',
+    title: 'Data Science Junior',
+    minAge: 13,
+    maxAge: 16,
+    tagline: 'Pandas & charts',
+    weeks: 12,
+    classes: 1,
+    enrolled: 8,
+    capacity: 20,
+    status: 'draft',
+    category: 'stem',
+    level: 'advanced',
+    cover: 'DATA · COVER',
+    version: 'v0.3',
+    tuitionAmount: 4400000,
+    perClassCapacity: 8,
+    description:
+      'Wrangle real datasets in Python with Pandas. Learn to ask questions, plot answers and tell data stories.',
+    curriculum: ['CSV & DataFrames', 'Cleaning', 'Plotting', 'Storytelling', '… 8 more units']
+  }
+];
+
+export const courseCategoryTabConfig: { value: CourseCategoryFilter }[] = [
+  { value: 'all' },
+  { value: 'coding' },
+  { value: 'design' },
+  { value: 'robotics' },
+  { value: 'stem' },
+  { value: 'language' },
+  { value: 'game' }
+];

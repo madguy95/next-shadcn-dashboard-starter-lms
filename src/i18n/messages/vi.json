@@ -142,6 +142,7 @@
     },
     "detail": {
       "edit": "Chỉnh sửa",
+      "watchIntro": "Xem giới thiệu",
       "duration": "Thời lượng",
       "ages": "Độ tuổi",
       "tuition": "Học phí",
@@ -151,7 +152,14 @@
       "curriculumUnits": "Giáo trình · {count} chương",
       "editOutline": "Sửa đề cương",
       "openCourse": "Mở khóa học",
-      "duplicate": "Nhân bản"
+      "duplicate": "Nhân bản",
+      "discountsHeading": "Ưu đãi & khuyến mãi",
+      "discountConditions": {
+        "none": "Luôn áp dụng",
+        "before_date": "Trước ngày",
+        "has_sibling": "Có anh/chị/em đang học",
+        "trial_only": "Chỉ buổi học thử"
+      }
     },
     "addDialog": {
       "section": "Thư viện giáo trình",
@@ -307,6 +315,19 @@
         "discountDateRequired": "Ưu đãi #{n} cần chọn ngày.",
         "discountDatePast": "Ưu đãi #{n}: ngày không được ở quá khứ."
       }
+    },
+    "editDialog": {
+      "section": "Chỉnh sửa khóa học",
+      "title": "Chỉnh sửa thông tin khóa học",
+      "description": "Cập nhật thông tin cơ bản, media, giáo trình và giá trong một nơi.",
+      "basicsHeading": "Thông tin cơ bản",
+      "basicsDescription": "Thông tin chính hiển thị cho học viên khi xem khóa học.",
+      "mediaHeading": "Ảnh bìa & video giới thiệu",
+      "mediaDescription": "Tuỳ chọn. Tải file mới lên để thay thế file hiện tại.",
+      "publishedNotice": "Khóa học đang xuất bản — các trường ảnh hưởng đến lớp đang mở hoặc học viên đã đăng ký sẽ bị khóa. Gỡ xuất bản trước nếu cần chỉnh.",
+      "submit": "Lưu thay đổi",
+      "successToast": "Đã cập nhật khóa học {title}.",
+      "errorToast": "Không thể cập nhật khóa học. Vui lòng thử lại."
     }
   }
 }

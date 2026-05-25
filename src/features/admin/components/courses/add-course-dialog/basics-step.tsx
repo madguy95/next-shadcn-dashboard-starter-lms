@@ -163,8 +163,8 @@ export function BasicsStep({
                 icon={<Icons.media className='size-4' />}
                 value={(field.state.value as File[]) ?? []}
                 onChange={(files: File[]) => field.handleChange(files)}
-                replaceLabel={tDialog('dropToReplace')}
-                removeLabel={tDialog('removeFile')}
+                replaceLabel={tDialog('fields.dropToReplace')}
+                removeLabel={tDialog('fields.removeFile')}
               />
             )}
           </form.AppField>
@@ -183,8 +183,8 @@ export function BasicsStep({
                 icon={<Icons.video className='size-4' />}
                 value={(field.state.value as File[]) ?? []}
                 onChange={(files: File[]) => field.handleChange(files)}
-                replaceLabel={tDialog('dropToReplace')}
-                removeLabel={tDialog('removeFile')}
+                replaceLabel={tDialog('fields.dropToReplace')}
+                removeLabel={tDialog('fields.removeFile')}
               />
             )}
           </form.AppField>

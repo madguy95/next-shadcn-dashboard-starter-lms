@@ -15,9 +15,8 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { useCreateTeacher } from '@/features/admin/api/queries';
-import type { Gender } from '@/features/admin/api/types';
-import { locations, subjects } from '@/features/admin/constants/teacher-options';
+import { useCreateTeacher, type Gender } from '@/api/teachers';
+import { locations, subjects } from '@/constants/teacher-options';
 import { TeacherForm, type TeacherFormValues } from './teacher-form';
 
 const FORM_ID = 'add-teacher-form';

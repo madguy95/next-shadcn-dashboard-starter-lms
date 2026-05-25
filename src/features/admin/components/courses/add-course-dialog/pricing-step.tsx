@@ -21,9 +21,9 @@ import {
   DISCOUNT_TYPES,
   type DiscountCondition,
   type DiscountType
-} from '@/features/admin/api/types';
+} from '@/api/courses';
 import { cn } from '@/lib/utils';
-import { formatVnd } from '../shared';
+import { formatVnd } from '@/lib/format-vnd';
 import { blankDiscount, type BaseSchema, type DiscountValue } from './schema';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

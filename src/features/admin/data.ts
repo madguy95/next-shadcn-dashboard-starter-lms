@@ -1,13 +1,7 @@
-export type AvatarTone = 'rose' | 'sky' | 'amber' | 'violet' | 'emerald' | 'foreground';
-
-export const avatarToneClass: Record<AvatarTone, string> = {
-  rose: 'bg-rose-200 text-rose-900',
-  sky: 'bg-sky-200 text-sky-900',
-  amber: 'bg-amber-200 text-amber-900',
-  violet: 'bg-violet-200 text-violet-900',
-  emerald: 'bg-emerald-200 text-emerald-900',
-  foreground: 'bg-foreground text-background'
-};
+// AvatarTone + avatarToneClass moved to @/constants/avatar (shared with api layer).
+// Re-exported here for legacy importers — prefer the new path in new code.
+import { avatarToneClass, type AvatarTone } from '@/constants/avatar';
+export { avatarToneClass, type AvatarTone };
 
 export type EnrollmentStatus = 'pending' | 'active' | 'waitlist' | 'rejected';
 
@@ -175,9 +169,9 @@ export const courseFill: CourseFill[] = [
   { id: 'ROBO-220', name: 'Robotics with Arduino', enrolled: 16, capacity: 40 }
 ];
 
-// Teacher domain types + data moved to ./api/{types,mock,service,queries}.
+// Teacher domain types + data moved to @/api/teachers/.
 // UI metadata for teacher status stays here (presentation concern, not server data).
-import type { TeacherStatus } from './api/types';
+import type { TeacherStatus } from '@/api/teachers';
 
 export const teacherStatusLabel: Record<TeacherStatus, string> = {
   active: 'Active',
@@ -191,12 +185,12 @@ export const teacherStatusClass: Record<TeacherStatus, string> = {
   pending: 'bg-amber-50 text-amber-800 border-amber-200'
 };
 
-// Course domain types + data moved to ./api/{types,mock,service,queries}.
+// Course domain types + data moved to @/api/courses/.
 // UI metadata for course status stays here (presentation concern, not server data).
-import type { CourseStatus } from './api/types';
+import type { CourseStatus } from '@/api/courses';
 // Re-exported for legacy imports (e.g. add-class-dialog) that still pull `courses` from this module.
-export { courses } from './api/mock';
-export type { Course, CourseCategory, CourseStatus } from './api/types';
+export { courses } from '@/api/courses';
+export type { Course, CourseCategory, CourseStatus } from '@/api/courses';
 
 export const courseStatusClass: Record<CourseStatus, string> = {
   published: 'bg-emerald-50 text-emerald-700 border-emerald-100',

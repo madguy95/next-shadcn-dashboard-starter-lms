@@ -8,9 +8,12 @@ import { Icons } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { LoadingOverlay } from '@/components/ui/loading-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { courseCategoryTabsOptions, courseListOptions } from '@/features/admin/api/queries';
-import { isCourseCategory, type CourseCategoryFilter } from '@/features/admin/api/types';
+import {
+  courseCategoryTabsOptions,
+  courseListOptions,
+  isCourseCategory,
+  type CourseCategoryFilter
+} from '@/api/courses';
 import { cn } from '@/lib/utils';
 import { AddCourseDialog } from './add-course-dialog';
 import { CourseCard, CourseCardSkeleton } from './course-card';
@@ -126,22 +129,5 @@ export function CoursesView() {
 }
 
 export function CoursesHeaderAction() {
-  const t = useTranslations('courses');
-  return (
-    <div className='flex items-center gap-2'>
-      <Tabs defaultValue='cards'>
-        <TabsList className='h-9'>
-          <TabsTrigger value='cards' className='h-7 px-3 text-sm'>
-            <Icons.layoutGrid className='size-3.5' />
-            {t('viewCards')}
-          </TabsTrigger>
-          <TabsTrigger value='table' className='h-7 px-3 text-sm'>
-            <Icons.kanban className='size-3.5' />
-            {t('viewTable')}
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <AddCourseDialog />
-    </div>
-  );
+  return <AddCourseDialog />;
 }

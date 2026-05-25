@@ -8,8 +8,9 @@ import {
   type CourseCategory,
   type CourseLevel,
   type DiscountCondition,
+  type DiscountRuleInput,
   type DiscountType
-} from '@/features/admin/api/types';
+} from '@/api/courses';
 
 export const MAX_DESC = 240;
 export const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -248,3 +249,17 @@ export const zodPathToFieldName = (path: readonly PropertyKey[]) =>
     if (i === 0) return String(segment);
     return typeof segment === 'number' ? `${acc}[${segment}]` : `${acc}.${String(segment)}`;
   }, '');
+
+// Map a form-shaped discount (everything is a string) into the API-shaped one
+// (numeric value for percentage/fixed). Shared by the add and edit dialogs.
+export function toDiscountRuleInput(d: DiscountValue): DiscountRuleInput {
+  const base = {
+    name: d.name.trim(),
+    condition: d.condition,
+    conditionDate: d.conditionDate || undefined
+  };
+  if (d.type === 'special') {
+    return { ...base, type: 'special', value: d.value.trim() };
+  }
+  return { ...base, type: d.type, value: Number(d.value) };
+}

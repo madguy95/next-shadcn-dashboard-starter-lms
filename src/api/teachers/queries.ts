@@ -1,20 +1,6 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  createCourse,
-  createTeacher,
-  getCourseCategoryTabs,
-  getCourses,
-  getTeacherStatusTabs,
-  getTeachers,
-  updateTeacher
-} from './service';
-import type {
-  CourseListParams,
-  CreateCourseInput,
-  CreateTeacherInput,
-  TeacherListParams,
-  UpdateTeacherInput
-} from './types';
+import { createTeacher, getTeacherStatusTabs, getTeachers, updateTeacher } from './service';
+import type { CreateTeacherInput, TeacherListParams, UpdateTeacherInput } from './types';
 
 export const teacherKeys = {
   all: ['admin', 'teachers'] as const,
@@ -56,37 +42,6 @@ export function useUpdateTeacher() {
       updateTeacher(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: teacherKeys.all });
-    }
-  });
-}
-
-export const courseKeys = {
-  all: ['admin', 'courses'] as const,
-  list: (params: CourseListParams) => [...courseKeys.all, 'list', params] as const,
-  categoryTabs: () => [...courseKeys.all, 'categoryTabs'] as const
-};
-
-export function courseListOptions(params: CourseListParams) {
-  return queryOptions({
-    queryKey: courseKeys.list(params),
-    queryFn: () => getCourses(params),
-    placeholderData: keepPreviousData
-  });
-}
-
-export function courseCategoryTabsOptions() {
-  return queryOptions({
-    queryKey: courseKeys.categoryTabs(),
-    queryFn: getCourseCategoryTabs
-  });
-}
-
-export function useCreateCourse() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: CreateCourseInput) => createCourse(input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: courseKeys.all });
     }
   });
 }

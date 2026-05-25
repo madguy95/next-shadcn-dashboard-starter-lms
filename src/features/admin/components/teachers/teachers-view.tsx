@@ -12,8 +12,12 @@ import { LoadingOverlay } from '@/components/ui/loading-state';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
-import { teacherListOptions, teacherStatusTabsOptions } from '@/features/admin/api/queries';
-import { isTeacherStatus, type Teacher } from '@/features/admin/api/types';
+import {
+  isTeacherStatus,
+  teacherListOptions,
+  teacherStatusTabsOptions,
+  type Teacher
+} from '@/api/teachers';
 import { avatarToneClass, teacherStatusClass } from '@/features/admin/data';
 import { useDataTable } from '@/hooks/use-data-table';
 import { cn } from '@/lib/utils';

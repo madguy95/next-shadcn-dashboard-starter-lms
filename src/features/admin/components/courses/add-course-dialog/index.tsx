@@ -18,12 +18,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { scrollToFirstError, useAppForm } from '@/components/ui/tanstack-form';
-import { useCreateCourse } from '@/features/admin/api/queries';
-import {
-  COURSE_CATEGORIES,
-  COURSE_LEVELS,
-  type DiscountRuleInput
-} from '@/features/admin/api/types';
+import { COURSE_CATEGORIES, COURSE_LEVELS, useCreateCourse } from '@/api/courses';
 import { cn } from '@/lib/utils';
 import { BasicsStep } from './basics-step';
 import { OutlineStep } from './outline-step';
@@ -34,6 +29,7 @@ import {
   defaultValues,
   stepFieldNames,
   stepKeys,
+  toDiscountRuleInput,
   zodPathToFieldName,
   type CourseFormValues,
   type DiscountValue,
@@ -94,23 +90,7 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
             description: s.description.trim()
           })),
           tuitionAmount: Number(value.tuitionAmount),
-          discounts: value.discounts.map((d) =>
-            d.type === 'special'
-              ? ({
-                  name: d.name.trim(),
-                  type: 'special' as const,
-                  value: d.value.trim(),
-                  condition: d.condition,
-                  conditionDate: d.conditionDate || undefined
-                } satisfies DiscountRuleInput)
-              : ({
-                  name: d.name.trim(),
-                  type: d.type,
-                  value: Number(d.value),
-                  condition: d.condition,
-                  conditionDate: d.conditionDate || undefined
-                } satisfies DiscountRuleInput)
-          ),
+          discounts: value.discounts.map(toDiscountRuleInput),
           pricingNotes: value.pricingNotes.trim() || undefined
         });
         toast.success(tDialog('successToast', { title: course.title }));

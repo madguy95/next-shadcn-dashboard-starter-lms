@@ -14,9 +14,8 @@ import {
   SheetHeader,
   SheetTitle
 } from '@/components/ui/sheet';
-import { useUpdateTeacher } from '@/features/admin/api/queries';
-import type { Gender, Teacher } from '@/features/admin/api/types';
-import { locations, subjects as subjectsConst } from '@/features/admin/constants/teacher-options';
+import { useUpdateTeacher, type Gender, type Teacher } from '@/api/teachers';
+import { locations, subjects as subjectsConst } from '@/constants/teacher-options';
 import { avatarToneClass, teacherStatusClass } from '@/features/admin/data';
 import { cn } from '@/lib/utils';
 import { TeacherForm, type TeacherFormValues } from './teacher-form';

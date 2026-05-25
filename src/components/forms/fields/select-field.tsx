@@ -23,6 +23,7 @@ interface SelectFieldProps {
   label: string;
   description?: string;
   required?: boolean;
+  disabled?: boolean;
   options: Option[];
   placeholder?: string;
 }
@@ -31,6 +32,7 @@ export function SelectField({
   label,
   description,
   required,
+  disabled,
   options,
   placeholder = 'Select an option'
 }: SelectFieldProps) {
@@ -49,6 +51,7 @@ export function SelectField({
         <Select
           value={value}
           onValueChange={field.handleChange}
+          disabled={disabled}
           onOpenChange={(open) => {
             if (!open) field.handleBlur();
           }}
