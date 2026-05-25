@@ -1,4 +1,9 @@
 import type {
+  Course,
+  CourseCategoryTab,
+  CourseListParams,
+  CourseStats,
+  CreateCourseInput,
   CreateTeacherInput,
   Paginated,
   Teacher,
@@ -7,7 +12,7 @@ import type {
   UpdateTeacherInput
 } from './types';
 import type { AvatarTone } from '../data';
-import { teacherStatusTabConfig, teachers } from './mock';
+import { courseCategoryTabConfig, courses, teacherStatusTabConfig, teachers } from './mock';
 
 // Simulated network latency so loading states are exercised during development.
 const MOCK_LATENCY_MS = 3000;
@@ -109,4 +114,91 @@ export async function getTeacherStatusTabs(): Promise<TeacherStatusTab[]> {
     count:
       tab.value === 'all' ? teachers.length : teachers.filter((t) => t.status === tab.value).length
   }));
+}
+
+export async function getCourses(params: CourseListParams): Promise<Paginated<Course>> {
+  await sleep(MOCK_LATENCY_MS);
+
+  let filtered = courses;
+  if (params.category) {
+    filtered = filtered.filter((c) => c.category === params.category);
+  }
+  if (params.search) {
+    const q = params.search.toLowerCase();
+    filtered = filtered.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        c.code.toLowerCase().includes(q) ||
+        c.tagline.toLowerCase().includes(q)
+    );
+  }
+
+  return { data: filtered, total: filtered.length, pageCount: 1 };
+}
+
+export async function getCourseCategoryTabs(): Promise<CourseCategoryTab[]> {
+  await sleep(MOCK_LATENCY_MS);
+  return courseCategoryTabConfig.map((tab) => ({
+    ...tab,
+    count:
+      tab.value === 'all' ? courses.length : courses.filter((c) => c.category === tab.value).length
+  }));
+}
+
+// Header stats — kept fast so the server-rendered page description doesn't block on mock latency.
+export async function getCourseStats(): Promise<CourseStats> {
+  return {
+    total: courses.length,
+    published: courses.filter((c) => c.status === 'published').length,
+    drafts: courses.filter((c) => c.status === 'draft').length
+  };
+}
+
+const COURSE_COVER_BY_CATEGORY: Record<string, string> = {
+  coding: 'CODE',
+  design: 'DSGN',
+  robotics: 'ROBO',
+  stem: 'STEM',
+  language: 'LANG',
+  game: 'GAME'
+};
+
+const VND_FORMATTER = new Intl.NumberFormat('vi-VN');
+
+export async function createCourse(input: CreateCourseInput): Promise<Course> {
+  await sleep(MOCK_LATENCY_MS);
+  const id = `c-${courses.length + 1}`;
+  const coverPrefix = COURSE_COVER_BY_CATEGORY[input.category] ?? 'COURSE';
+  const curriculum = input.sessions.map((s, i) => s.title.trim() || `Session ${i + 1}`).slice(0, 8);
+  if (input.sessions.length > curriculum.length) {
+    curriculum.push(`… ${input.sessions.length - curriculum.length} more sessions`);
+  }
+  // Apply numeric discount rules (percentage/fixed) in declaration order;
+  // "special" rules don't change the headline tuition.
+  const discounted = input.discounts.reduce((acc, rule) => {
+    if (rule.type === 'percentage') return Math.max(0, Math.round(acc * (1 - rule.value / 100)));
+    if (rule.type === 'fixed') return Math.max(0, acc - rule.value);
+    return acc;
+  }, input.tuitionAmount);
+  const course: Course = {
+    id,
+    code: input.code.trim(),
+    title: input.title.trim(),
+    ageRange: `Ages ${input.minAge}–${input.maxAge}`,
+    tagline: input.tags[0] ?? input.level,
+    weeks: input.weeks,
+    classes: 0,
+    enrolled: 0,
+    capacity: input.perClassCapacity * Math.max(1, input.sessionsPerWeek),
+    status: 'draft',
+    category: input.category,
+    cover: `${coverPrefix} · COVER`,
+    version: 'v0.1',
+    tuition: `${VND_FORMATTER.format(discounted)}₫`,
+    perClassCapacity: input.perClassCapacity,
+    description: input.description.trim(),
+    curriculum: curriculum.length ? curriculum : ['Outline pending']
+  };
+  courses.unshift(course);
+  return course;
 }

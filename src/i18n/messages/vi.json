@@ -110,5 +110,203 @@
       "saveSuccess": "Đã lưu thay đổi cho {name}.",
       "saveError": "Không thể lưu. Vui lòng thử lại."
     }
+  },
+  "courses": {
+    "title": "Khóa học",
+    "pageDescription": "{published} đã xuất bản · {drafts} bản nháp · thư viện giáo trình",
+    "newCourse": "Thêm khóa học",
+    "viewCards": "Thẻ",
+    "viewTable": "Bảng",
+    "loadingList": "Đang tải khóa học…",
+    "updatingList": "Đang cập nhật…",
+    "searchPlaceholder": "Tìm khóa học…",
+    "noResults": "Không có khóa học phù hợp.",
+    "selectedBadge": "ĐANG CHỌN",
+    "categories": {
+      "all": "Tất cả",
+      "coding": "Lập trình",
+      "design": "Thiết kế",
+      "robotics": "Robotics",
+      "stem": "STEM",
+      "language": "Ngôn ngữ",
+      "game": "Game"
+    },
+    "status": {
+      "published": "đã xuất bản",
+      "draft": "bản nháp"
+    },
+    "card": {
+      "weeks": "tuần",
+      "classes": "lớp",
+      "enrolled": "học viên"
+    },
+    "detail": {
+      "edit": "Chỉnh sửa",
+      "duration": "Thời lượng",
+      "ages": "Độ tuổi",
+      "tuition": "Học phí",
+      "capacityPerClass": "Sĩ số / lớp",
+      "weeksUnit": "{count} tuần",
+      "studentsUnit": "{count} học viên",
+      "curriculumUnits": "Giáo trình · {count} chương",
+      "editOutline": "Sửa đề cương",
+      "openCourse": "Mở khóa học",
+      "duplicate": "Nhân bản"
+    },
+    "addDialog": {
+      "section": "Thư viện giáo trình",
+      "title": "Tạo khóa học mới",
+      "description": "Định nghĩa giáo trình một lần — sau đó tạo nhiều lớp từ đây.",
+      "steps": {
+        "basics": "Cơ bản",
+        "outline": "Đề cương",
+        "pricing": "Học phí"
+      },
+      "fields": {
+        "title": "Tên khóa học",
+        "code": "Mã",
+        "description": "Mô tả ngắn",
+        "category": "Danh mục",
+        "level": "Trình độ",
+        "minAge": "Tuổi tối thiểu",
+        "maxAge": "Tuổi tối đa",
+        "duration": "Thời lượng",
+        "sessions": "Buổi / tuần",
+        "capacity": "Sĩ số mặc định",
+        "tags": "Thẻ",
+        "addTag": "Thêm thẻ…",
+        "removeTag": "Xóa {tag}",
+        "cover": "Ảnh bìa",
+        "coverDescription": "Tùy chọn. PNG hoặc JPG, tối đa 5MB.",
+        "coverHint": "Kéo thả ảnh 1200×400 PNG/JPG, hoặc bấm để chọn",
+        "introVideo": "Video giới thiệu",
+        "introVideoDescription": "Tùy chọn. MP4, WebM hoặc MOV, tối đa 100MB.",
+        "introVideoHint": "Kéo thả MP4, WebM hoặc MOV, hoặc bấm để chọn",
+        "dropToReplace": "Thả để thay thế",
+        "removeFile": "Xóa tệp"
+      },
+      "cover": {
+        "title": "Thả ảnh bìa 1200×400 vào đây",
+        "format": "PNG hoặc JPG",
+        "browse": "chọn tệp"
+      },
+      "units": {
+        "weeks": "tuần",
+        "perWeek": "× 75 phút",
+        "students": "học viên"
+      },
+      "level": {
+        "beginner": "Cơ bản",
+        "intermediate": "Trung cấp",
+        "advanced": "Nâng cao"
+      },
+      "preview": {
+        "label": "Xem trước",
+        "untitledCourse": "Khóa học chưa đặt tên",
+        "ages": "Độ tuổi {min}–{max} · {level}",
+        "weeks": "tuần",
+        "sessions": "buổi",
+        "capacity": "sĩ số",
+        "coverPlaceholder": "{category} · COVER"
+      },
+      "next": {
+        "label": "Bước tiếp theo",
+        "step1": "Khóa học được lưu dưới dạng bản nháp trong thư viện.",
+        "step2": "Thêm chương theo tuần & bài tập ở bước tiếp theo.",
+        "step3": "Xuất bản, sau đó tạo một hoặc nhiều lớp từ khóa học."
+      },
+      "footer": {
+        "saveDraft": "Lưu nháp",
+        "submit": "Tạo khóa học",
+        "back": "Quay lại",
+        "continue": "Tiếp tục"
+      },
+      "successToast": "Đã tạo khóa học {title} (bản nháp).",
+      "errorToast": "Không thể tạo khóa học. Vui lòng thử lại.",
+      "outline": {
+        "heading": "Nội dung từng buổi",
+        "description": "Mô tả nội dung từng buổi — học viên sẽ thấy khi xem khóa học.",
+        "totalCount": "Đã có {count} buổi",
+        "regenerate": "Tạo lại theo thời lượng",
+        "addSession": "Thêm buổi",
+        "sessionNumber": "Buổi {n}",
+        "sessionTitle": "Tiêu đề buổi",
+        "sessionTitlePlaceholder": "ví dụ: Vòng lặp và lặp",
+        "sessionDescription": "Học viên sẽ học gì",
+        "sessionDescriptionPlaceholder": "Mục tiêu, hoạt động hoặc tài liệu…",
+        "removeSession": "Xóa buổi {n}",
+        "empty": "Chưa có buổi nào. Bấm \"Tạo lại\" để tự sinh danh sách theo lịch trình."
+      },
+      "pricing": {
+        "heading": "Học phí & ưu đãi",
+        "description": "Đặt học phí cơ bản. Có thể tùy chỉnh theo lớp sau.",
+        "tuition": "Học phí (VND)",
+        "tuitionHelp": "Tổng học phí cho toàn khóa.",
+        "notes": "Ghi chú học phí (tùy chọn)",
+        "notesPlaceholder": "Chính sách hoàn tiền, học bổng, gói đặc biệt…",
+        "discounts": {
+          "heading": "Quy tắc ưu đãi",
+          "description": "Thêm các ưu đãi — sẽ hiển thị khi đăng ký.",
+          "add": "Thêm ưu đãi",
+          "empty": "Chưa có ưu đãi nào. Bấm \"Thêm ưu đãi\" để tạo.",
+          "cardTitle": "Ưu đãi #{n}",
+          "remove": "Xóa ưu đãi",
+          "name": "Tên",
+          "namePlaceholder": "ví dụ: Early Bird",
+          "type": "Loại",
+          "value": "Giá trị",
+          "condition": "Điều kiện",
+          "beforeDateLabel": "Trước ngày",
+          "datePlaceholder": "Chọn ngày",
+          "types": {
+            "percentage": "Phần trăm",
+            "fixed": "Số tiền cố định",
+            "special": "Đặc biệt"
+          },
+          "valueSuffix": {
+            "percentage": "%",
+            "fixed": "VND",
+            "special": ""
+          },
+          "valuePlaceholder": {
+            "special": "ví dụ: Miễn phí 1 buổi"
+          },
+          "conditions": {
+            "none": "Không điều kiện",
+            "before_date": "Trước một ngày",
+            "has_sibling": "Có anh/chị/em trong hệ thống",
+            "trial_only": "Chỉ đăng ký học thử"
+          }
+        },
+        "summary": "Tóm tắt",
+        "summaryBase": "Học phí gốc",
+        "summaryFinal": "Sau ưu đãi",
+        "summarySpecialPerks": "Bao gồm"
+      },
+      "validation": {
+        "titleRequired": "Vui lòng nhập tên khóa học.",
+        "codeRequired": "Vui lòng nhập mã khóa học.",
+        "codeFormat": "Mã gồm 3–10 ký tự chữ in hoa, số hoặc dấu gạch.",
+        "descriptionRequired": "Vui lòng nhập mô tả.",
+        "descriptionMax": "Mô tả tối đa {max} ký tự.",
+        "categoryRequired": "Vui lòng chọn danh mục.",
+        "levelRequired": "Vui lòng chọn trình độ.",
+        "minAgeRange": "Tuổi tối thiểu phải từ 3 đến 99.",
+        "maxAgeRange": "Tuổi tối đa phải từ 3 đến 99.",
+        "ageOrder": "Tuổi tối đa phải lớn hơn hoặc bằng tuổi tối thiểu.",
+        "weeksMin": "Thời lượng tối thiểu 1 tuần.",
+        "sessionsMin": "Tối thiểu 1 buổi mỗi tuần.",
+        "capacityMin": "Sĩ số tối thiểu là 1.",
+        "sessionsRequired": "Thêm ít nhất 1 buổi.",
+        "sessionTitleRequired": "Buổi {n} cần có tiêu đề.",
+        "tuitionMin": "Học phí phải >= 0.",
+        "discountNameRequired": "Ưu đãi #{n} cần có tên.",
+        "discountPercentRange": "Ưu đãi #{n}: % phải từ 0 đến 100.",
+        "discountAmountMin": "Ưu đãi #{n}: số tiền phải >= 0.",
+        "discountSpecialValueRequired": "Ưu đãi #{n} cần có mô tả.",
+        "discountDateRequired": "Ưu đãi #{n} cần chọn ngày.",
+        "discountDatePast": "Ưu đãi #{n}: ngày không được ở quá khứ."
+      }
+    }
   }
 }

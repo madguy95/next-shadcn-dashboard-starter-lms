@@ -110,5 +110,203 @@
       "saveSuccess": "Saved changes for {name}.",
       "saveError": "Could not save changes. Please try again."
     }
+  },
+  "courses": {
+    "title": "Courses",
+    "pageDescription": "{published} published · {drafts} drafts · curriculum library",
+    "newCourse": "New course",
+    "viewCards": "Cards",
+    "viewTable": "Table",
+    "loadingList": "Loading courses…",
+    "updatingList": "Updating…",
+    "searchPlaceholder": "Search courses…",
+    "noResults": "No courses match your filters.",
+    "selectedBadge": "SELECTED",
+    "categories": {
+      "all": "All",
+      "coding": "Coding",
+      "design": "Design",
+      "robotics": "Robotics",
+      "stem": "STEM",
+      "language": "Language",
+      "game": "Game"
+    },
+    "status": {
+      "published": "published",
+      "draft": "draft"
+    },
+    "card": {
+      "weeks": "weeks",
+      "classes": "classes",
+      "enrolled": "enrolled"
+    },
+    "detail": {
+      "edit": "Edit",
+      "duration": "Duration",
+      "ages": "Ages",
+      "tuition": "Tuition",
+      "capacityPerClass": "Capacity / class",
+      "weeksUnit": "{count} weeks",
+      "studentsUnit": "{count} students",
+      "curriculumUnits": "Curriculum · {count} units",
+      "editOutline": "Edit outline",
+      "openCourse": "Open course",
+      "duplicate": "Duplicate"
+    },
+    "addDialog": {
+      "section": "Curriculum library",
+      "title": "Create a new course",
+      "description": "Define the curriculum once — spin up classes from it later.",
+      "steps": {
+        "basics": "Basics",
+        "outline": "Outline",
+        "pricing": "Pricing"
+      },
+      "fields": {
+        "title": "Course title",
+        "code": "Code",
+        "description": "Short description",
+        "category": "Category",
+        "level": "Level",
+        "minAge": "Min age",
+        "maxAge": "Max age",
+        "duration": "Duration",
+        "sessions": "Sessions / week",
+        "capacity": "Default capacity",
+        "tags": "Tags",
+        "addTag": "Add tag…",
+        "removeTag": "Remove {tag}",
+        "cover": "Cover image",
+        "coverDescription": "Optional. PNG or JPG, up to 5MB.",
+        "coverHint": "Drop a 1200×400 PNG or JPG, or click to browse",
+        "introVideo": "Intro video",
+        "introVideoDescription": "Optional. MP4, WebM or MOV, up to 100MB.",
+        "introVideoHint": "Drop an MP4, WebM or MOV, or click to browse",
+        "dropToReplace": "Drop to replace",
+        "removeFile": "Remove file"
+      },
+      "cover": {
+        "title": "Drop a 1200×400 cover here",
+        "format": "PNG or JPG",
+        "browse": "browse files"
+      },
+      "units": {
+        "weeks": "weeks",
+        "perWeek": "× 75 min",
+        "students": "students"
+      },
+      "level": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "preview": {
+        "label": "Preview",
+        "untitledCourse": "Untitled course",
+        "ages": "Ages {min}–{max} · {level}",
+        "weeks": "weeks",
+        "sessions": "sessions",
+        "capacity": "capacity",
+        "coverPlaceholder": "{category} · COVER"
+      },
+      "next": {
+        "label": "What happens next",
+        "step1": "Course is saved as a draft in the curriculum library.",
+        "step2": "Add weekly units & assignments on the next step.",
+        "step3": "Publish, then create one or more classes from it."
+      },
+      "footer": {
+        "saveDraft": "Save as draft",
+        "submit": "Create course",
+        "back": "Back",
+        "continue": "Continue"
+      },
+      "successToast": "Course {title} created as draft.",
+      "errorToast": "Could not create course. Please try again.",
+      "outline": {
+        "heading": "Weekly sessions",
+        "description": "Outline each session — students see this when browsing the course.",
+        "totalCount": "{count, plural, one {# session} other {# sessions}} planned",
+        "regenerate": "Regenerate from duration",
+        "addSession": "Add session",
+        "sessionNumber": "Session {n}",
+        "sessionTitle": "Session title",
+        "sessionTitlePlaceholder": "e.g. Loops and iteration",
+        "sessionDescription": "What students will learn",
+        "sessionDescriptionPlaceholder": "Brief outcomes, activities, or materials…",
+        "removeSession": "Remove session {n}",
+        "empty": "No sessions yet. Click \"Regenerate\" to create one per session in your schedule."
+      },
+      "pricing": {
+        "heading": "Tuition & discounts",
+        "description": "Set the base tuition. You can override these per class later.",
+        "tuition": "Tuition (VND)",
+        "tuitionHelp": "Total fee for the full course.",
+        "notes": "Pricing notes (optional)",
+        "notesPlaceholder": "Refund policy, scholarships, custom packages…",
+        "discounts": {
+          "heading": "Discount rules",
+          "description": "Add reusable discounts — they'll be offered at enrollment.",
+          "add": "Add discount",
+          "empty": "No discounts yet. Click \"Add discount\" to create one.",
+          "cardTitle": "Discount #{n}",
+          "remove": "Remove discount",
+          "name": "Name",
+          "namePlaceholder": "e.g. Early Bird",
+          "type": "Type",
+          "value": "Value",
+          "condition": "Condition",
+          "beforeDateLabel": "Before date",
+          "datePlaceholder": "Pick a date",
+          "types": {
+            "percentage": "Percentage",
+            "fixed": "Fixed amount",
+            "special": "Special"
+          },
+          "valueSuffix": {
+            "percentage": "%",
+            "fixed": "VND",
+            "special": ""
+          },
+          "valuePlaceholder": {
+            "special": "e.g. Free 1 session"
+          },
+          "conditions": {
+            "none": "No condition",
+            "before_date": "Before a date",
+            "has_sibling": "If has sibling in system",
+            "trial_only": "Trial enrollment only"
+          }
+        },
+        "summary": "Summary",
+        "summaryBase": "Base tuition",
+        "summaryFinal": "After discounts",
+        "summarySpecialPerks": "Includes"
+      },
+      "validation": {
+        "titleRequired": "Course title is required.",
+        "codeRequired": "Course code is required.",
+        "codeFormat": "Use 3–10 uppercase letters, digits or dash.",
+        "descriptionRequired": "Description is required.",
+        "descriptionMax": "Description must be at most {max} characters.",
+        "categoryRequired": "Please select a category.",
+        "levelRequired": "Please select a level.",
+        "minAgeRange": "Min age must be between 3 and 99.",
+        "maxAgeRange": "Max age must be between 3 and 99.",
+        "ageOrder": "Max age must be greater than or equal to min age.",
+        "weeksMin": "Duration must be at least 1 week.",
+        "sessionsMin": "Sessions per week must be at least 1.",
+        "capacityMin": "Capacity must be at least 1.",
+        "sessionsRequired": "Add at least one session.",
+        "sessionTitleRequired": "Session {n} needs a title.",
+        "tuitionMin": "Tuition must be at least 0.",
+        "discountNameRequired": "Discount #{n} needs a name.",
+        "discountPercentRange": "Discount #{n} percentage must be between 0 and 100.",
+        "discountAmountMin": "Discount #{n} amount must be at least 0.",
+        "discountSpecialValueRequired": "Discount #{n} description is required.",
+        "discountDateRequired": "Discount #{n} needs a date.",
+        "discountDatePast": "Discount #{n} date cannot be in the past."
+      }
+    }
   }
 }

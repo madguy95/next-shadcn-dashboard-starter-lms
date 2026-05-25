@@ -1,0 +1,241 @@
+'use client';
+
+import { useStore } from '@tanstack/react-form';
+import type { useTranslations } from 'next-intl';
+import * as React from 'react';
+import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import type { SessionValue } from './schema';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+interface OutlineStepProps {
+  tDialog: ReturnType<typeof useTranslations>;
+  form: any;
+  weeksValue: number | '';
+  sessionsPerWeekValue: number | '';
+}
+
+export function OutlineStep({ tDialog, form, weeksValue, sessionsPerWeekValue }: OutlineStepProps) {
+  const sessions = useStore(form.store, (s: any) => s.values.sessions as SessionValue[]);
+  const expected =
+    Math.max(0, Number(weeksValue) || 0) * Math.max(0, Number(sessionsPerWeekValue) || 0);
+
+  const regenerate = () => {
+    form.setFieldValue(
+      'sessions',
+      Array.from({ length: expected }, (_, i) => ({
+        title: sessions[i]?.title ?? '',
+        description: sessions[i]?.description ?? ''
+      }))
+    );
+  };
+
+  return (
+    <div className='space-y-4'>
+      <div className='flex items-start justify-between gap-3'>
+        <div className='min-w-0'>
+          <h3 className='text-[14px] font-semibold tracking-tight'>{tDialog('outline.heading')}</h3>
+          <p className='text-muted-foreground text-[12px]'>{tDialog('outline.description')}</p>
+          <p className='text-muted-foreground mt-1 font-mono text-[11px]'>
+            {tDialog('outline.totalCount', { count: sessions.length })}
+          </p>
+        </div>
+        <div className='flex shrink-0 items-center gap-2'>
+          <Button
+            type='button'
+            variant='outline'
+            size='sm'
+            className='h-8'
+            onClick={regenerate}
+            disabled={expected === 0}
+          >
+            <Icons.refresh className='size-3.5' />
+            {tDialog('outline.regenerate')}
+          </Button>
+        </div>
+      </div>
+
+      <form.AppField name='sessions' mode='array'>
+        {(field: any) => {
+          const values = (field.state.value ?? []) as SessionValue[];
+          if (values.length === 0) {
+            return (
+              <div className='text-muted-foreground rounded-md border border-dashed py-8 text-center text-[12px]'>
+                {tDialog('outline.empty')}
+              </div>
+            );
+          }
+          return (
+            <ul className='space-y-2'>
+              {values.map((value, i) => (
+                <SessionCard
+                  key={i}
+                  index={i}
+                  initiallyExpanded={!value.title && !value.description}
+                  form={form}
+                  tDialog={tDialog}
+                  onRemove={() => field.removeValue(i)}
+                />
+              ))}
+            </ul>
+          );
+        }}
+      </form.AppField>
+
+      <form.AppField name='sessions'>
+        {(field: any) => (
+          <div className='flex justify-center'>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              className='h-8'
+              onClick={() =>
+                field.handleChange([
+                  ...((field.state.value as SessionValue[]) ?? []),
+                  { title: '', description: '' }
+                ])
+              }
+            >
+              <Icons.add className='size-3.5' />
+              {tDialog('outline.addSession')}
+            </Button>
+          </div>
+        )}
+      </form.AppField>
+    </div>
+  );
+}
+
+function SessionCard({
+  index,
+  initiallyExpanded,
+  form,
+  tDialog,
+  onRemove
+}: {
+  index: number;
+  initiallyExpanded: boolean;
+  form: any;
+  tDialog: ReturnType<typeof useTranslations>;
+  onRemove: () => void;
+}) {
+  const [expanded, setExpanded] = React.useState(initiallyExpanded);
+  const titlePath = `sessions[${index}].title`;
+  const descriptionPath = `sessions[${index}].description`;
+
+  const title = useStore(form.store, (s: any) => s.values.sessions?.[index]?.title as string);
+  const description = useStore(
+    form.store,
+    (s: any) => s.values.sessions?.[index]?.description as string
+  );
+  const hasError = useStore(form.store, (s: any) => {
+    const titleErrs = s.fieldMeta?.[titlePath]?.errors?.length ?? 0;
+    const descErrs = s.fieldMeta?.[descriptionPath]?.errors?.length ?? 0;
+    return titleErrs + descErrs > 0;
+  });
+
+  // Auto-expand when validation surfaces an error on a collapsed card.
+  React.useEffect(() => {
+    if (hasError && !expanded) setExpanded(true);
+  }, [hasError, expanded]);
+
+  return (
+    <li
+      className={cn(
+        'bg-card overflow-hidden rounded-md border transition-colors',
+        hasError && 'border-destructive ring-destructive/20 border-2 ring-2'
+      )}
+    >
+      <div
+        role='button'
+        tabIndex={0}
+        onClick={() => setExpanded((e) => !e)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded((prev) => !prev);
+          }
+        }}
+        className='hover:bg-muted/30 flex cursor-pointer items-center gap-2 px-3 py-2'
+      >
+        <Icons.chevronRight
+          className={cn(
+            'text-muted-foreground size-3.5 shrink-0 transition',
+            expanded && 'rotate-90'
+          )}
+        />
+        <span className='text-muted-foreground shrink-0 font-mono text-[11px]'>
+          {tDialog('outline.sessionNumber', { n: index + 1 })}
+        </span>
+        <span
+          className={cn(
+            'min-w-0 flex-1 truncate text-[13px]',
+            !title && 'text-muted-foreground italic'
+          )}
+        >
+          {title || tDialog('outline.sessionTitlePlaceholder')}
+        </span>
+        {description && !expanded && (
+          <span className='text-muted-foreground/70 shrink-0 font-mono text-[10px]'>
+            {description.length}c
+          </span>
+        )}
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          className='size-7 shrink-0'
+          aria-label={tDialog('outline.removeSession', { n: index + 1 })}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+        >
+          <Icons.close className='size-3.5' />
+        </Button>
+      </div>
+      {expanded && (
+        <div className='space-y-2 border-t p-3'>
+          <form.AppField name={titlePath}>
+            {(field: any) => (
+              <field.FieldSet>
+                <field.Field>
+                  <Input
+                    value={field.state.value ?? ''}
+                    placeholder={tDialog('outline.sessionTitlePlaceholder')}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
+                    className='h-8 text-[13px]'
+                  />
+                </field.Field>
+                <field.FieldError />
+              </field.FieldSet>
+            )}
+          </form.AppField>
+          <form.AppField name={descriptionPath}>
+            {(field: any) => (
+              <field.FieldSet>
+                <field.Field>
+                  <Textarea
+                    rows={3}
+                    value={field.state.value ?? ''}
+                    placeholder={tDialog('outline.sessionDescriptionPlaceholder')}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    className='resize-none text-[12px]'
+                  />
+                </field.Field>
+              </field.FieldSet>
+            )}
+          </form.AppField>
+        </div>
+      )}
+    </li>
+  );
+}

@@ -67,6 +67,7 @@ import {
   IconPlayerPlayFilled,
   IconPlus,
   IconProps,
+  IconRefresh,
   IconRosetteDiscountCheck,
   IconSearch,
   IconSelector,
@@ -114,6 +115,7 @@ export const Icons = {
   info: IconInfoCircle,
   spinner: IconLoader2,
   search: IconSearch,
+  refresh: IconRefresh,
   settings: IconSettings,
   trash: IconTrash,
 

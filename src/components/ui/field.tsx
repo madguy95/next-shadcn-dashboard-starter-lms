@@ -191,27 +191,14 @@ function FieldError({
       return null;
     }
 
-    // Normalize errors to strings, handling both string and {message} formats
-    const messages = errors
-      .map((error) => {
-        if (typeof error === 'string') return error;
-        return error?.message;
-      })
-      .filter(Boolean) as string[];
-
-    const uniqueMessages = Array.from(new Set(messages));
-
-    if (uniqueMessages.length === 1) {
-      return uniqueMessages[0];
+    // Normalize errors to strings, handling both string and {message} formats.
+    // Only the first message is shown so fields don't grow vertically when several
+    // rules fail at once.
+    for (const error of errors) {
+      const message = typeof error === 'string' ? error : error?.message;
+      if (message) return message;
     }
-
-    return (
-      <ul className='ml-4 flex list-disc flex-col gap-1'>
-        {uniqueMessages.map((msg, index) => (
-          <li key={index}>{msg}</li>
-        ))}
-      </ul>
-    );
+    return null;
   }, [children, errors]);
 
   if (!content) {
