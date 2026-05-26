@@ -329,5 +329,130 @@
       "successToast": "Course {title} updated.",
       "errorToast": "Could not update course. Please try again."
     }
+  },
+  "classes": {
+    "title": "Classes",
+    "pageDescription": "{running} running · {upcoming} upcoming · select a class to see students",
+    "newClass": "New class",
+    "filters": "Filters",
+    "loadingList": "Loading classes…",
+    "updatingList": "Updating…",
+    "searchPlaceholder": "Search classes…",
+    "noResults": "No classes match your filters.",
+    "ofTotal": "{count} of {total}",
+    "tabs": {
+      "all": "All"
+    },
+    "status": {
+      "running": "Running",
+      "upcoming": "Upcoming",
+      "ended": "Ended"
+    },
+    "studentStatus": {
+      "on_track": "on track",
+      "at_risk": "at risk",
+      "absent_x3": "absent ×3"
+    },
+    "columns": {
+      "class": "Class",
+      "teacher": "Teacher",
+      "schedule": "Schedule",
+      "capacity": "Capacity"
+    },
+    "table": {
+      "selected": "selected →",
+      "open": "Open"
+    },
+    "detail": {
+      "weekProgress": "Week {current} of {total}",
+      "teacher": "Teacher",
+      "schedule": "Schedule",
+      "capacity": "Capacity",
+      "students": "Students",
+      "markAttendance": "Mark attendance",
+      "addStudent": "Add student",
+      "studentMeta": "grade {grade} · age {age}",
+      "attendancePct": "{value}% attendance",
+      "moreStudents": "{count, plural, one {# more student…} other {# more students…}}",
+      "noStudents": "No students enrolled yet.",
+      "empty": "Select a class to see its roster."
+    },
+    "addDialog": {
+      "section": "Summer Term 2026",
+      "title": "Create a new class",
+      "description": "Spin up a class from a course, pick a teacher, and lock the schedule.",
+      "fields": {
+        "course": "Course",
+        "coursePlaceholder": "Select a course",
+        "courseSearchPlaceholder": "Search courses…",
+        "courseEmpty": "No course matches.",
+        "classLabel": "Class label",
+        "teacher": "Teacher",
+        "teacherPlaceholder": "Select a teacher",
+        "teacherSearchPlaceholder": "Search teachers…",
+        "teacherEmpty": "No teacher matches.",
+        "teacherActiveClasses": "{count, plural, one {# active class} other {# active classes}}",
+        "location": "Location",
+        "locationPlaceholder": "Select a location",
+        "schedule": "Weekly schedule",
+        "scheduleHint": "Pick days, then set each day's time.",
+        "scheduleEmpty": "Pick at least one day to set a time.",
+        "scheduleSummary": "{count, plural, one {# session} other {# sessions}} / week",
+        "startTime": "Start",
+        "endTime": "End",
+        "starts": "Starts",
+        "ends": "Ends",
+        "endsHint": "Auto · start + {weeks} weeks",
+        "endsHintEmpty": "Auto · pick a course & start date",
+        "datePlaceholder": "Pick a date",
+        "capacity": "Capacity",
+        "capacityUnit": "students",
+        "visibility": "Visibility"
+      },
+      "days": {
+        "Sun": "Sun",
+        "Mon": "Mon",
+        "Tue": "Tue",
+        "Wed": "Wed",
+        "Thu": "Thu",
+        "Fri": "Fri",
+        "Sat": "Sat"
+      },
+      "locations": {
+        "Room 204": "Room 204",
+        "Room 101": "Room 101",
+        "Online": "Online"
+      },
+      "visibilities": {
+        "public_enrollable": "Public · enrollable",
+        "public_view": "Public · view-only",
+        "private": "Private"
+      },
+      "summary": "Will create {count} sessions across the term.",
+      "conflict": {
+        "title": "{teacher} already teaches {className} at this time.",
+        "body": "Pick another time slot or reassign the existing class to keep them under the 16 hr/week cap."
+      },
+      "footer": {
+        "saveDraft": "Save as draft",
+        "submit": "Create class"
+      },
+      "successToast": "Class {name} created.",
+      "errorToast": "Could not create class. Please try again.",
+      "validation": {
+        "courseRequired": "Please select a course.",
+        "labelRequired": "Class label is required.",
+        "teacherRequired": "Please select a teacher.",
+        "locationRequired": "Please select a location.",
+        "daysRequired": "Pick at least one day of the week.",
+        "timeFormat": "Use 24h time (e.g. 09:00).",
+        "timeOrder": "End time must be after start time.",
+        "startDateRequired": "Please pick a start date.",
+        "endDateRequired": "Please pick an end date.",
+        "dateOrder": "End date must be after start date.",
+        "capacityMin": "Capacity must be at least 1.",
+        "visibilityRequired": "Please pick a visibility."
+      }
+    }
   }
 }

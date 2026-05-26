@@ -1,10 +1,18 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createTeacher, getTeacherStatusTabs, getTeachers, updateTeacher } from './service';
+import {
+  createTeacher,
+  getTeacherOptions,
+  getTeacherStatusTabs,
+  getTeachers,
+  updateTeacher,
+  type TeacherOptionsParams
+} from './service';
 import type { CreateTeacherInput, TeacherListParams, UpdateTeacherInput } from './types';
 
 export const teacherKeys = {
   all: ['admin', 'teachers'] as const,
   list: (params: TeacherListParams) => [...teacherKeys.all, 'list', params] as const,
+  options: (params: TeacherOptionsParams) => [...teacherKeys.all, 'options', params] as const,
   statusTabs: () => [...teacherKeys.all, 'statusTabs'] as const
 };
 
@@ -14,6 +22,14 @@ export function teacherListOptions(params: TeacherListParams) {
     queryFn: () => getTeachers(params),
     // Keep previous page's data visible while fetching the next — enables overlay UX
     // instead of clearing the table on every page/filter change.
+    placeholderData: keepPreviousData
+  });
+}
+
+export function teacherOptionsQuery(params: TeacherOptionsParams = {}) {
+  return queryOptions({
+    queryKey: teacherKeys.options(params),
+    queryFn: () => getTeacherOptions(params),
     placeholderData: keepPreviousData
   });
 }

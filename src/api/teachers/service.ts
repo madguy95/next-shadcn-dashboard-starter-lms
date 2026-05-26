@@ -99,6 +99,20 @@ export async function updateTeacher(id: string, input: UpdateTeacherInput): Prom
   return updated;
 }
 
+// Lightweight, non-paginated list for selectors (class assignment, scheduling, etc.).
+export type TeacherOptionsParams = { search?: string };
+export async function getTeacherOptions(params: TeacherOptionsParams = {}): Promise<Teacher[]> {
+  await sleep(MOCK_LATENCY_MS);
+  if (!params.search) return teachers;
+  const q = params.search.toLowerCase();
+  return teachers.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.email.toLowerCase().includes(q) ||
+      t.subjects.some((s) => s.toLowerCase().includes(q))
+  );
+}
+
 export async function getTeacherStatusTabs(): Promise<TeacherStatusTab[]> {
   await sleep(MOCK_LATENCY_MS);
   return teacherStatusTabConfig.map((tab) => ({

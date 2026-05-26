@@ -329,5 +329,130 @@
       "successToast": "Đã cập nhật khóa học {title}.",
       "errorToast": "Không thể cập nhật khóa học. Vui lòng thử lại."
     }
+  },
+  "classes": {
+    "title": "Lớp học",
+    "pageDescription": "{running} đang chạy · {upcoming} sắp khai giảng · chọn một lớp để xem học viên",
+    "newClass": "Thêm lớp",
+    "filters": "Bộ lọc",
+    "loadingList": "Đang tải danh sách lớp…",
+    "updatingList": "Đang cập nhật…",
+    "searchPlaceholder": "Tìm lớp…",
+    "noResults": "Không có lớp phù hợp.",
+    "ofTotal": "{count} / {total}",
+    "tabs": {
+      "all": "Tất cả"
+    },
+    "status": {
+      "running": "Đang chạy",
+      "upcoming": "Sắp khai giảng",
+      "ended": "Đã kết thúc"
+    },
+    "studentStatus": {
+      "on_track": "đúng tiến độ",
+      "at_risk": "cần lưu ý",
+      "absent_x3": "vắng ×3"
+    },
+    "columns": {
+      "class": "Lớp",
+      "teacher": "Giáo viên",
+      "schedule": "Lịch học",
+      "capacity": "Sĩ số"
+    },
+    "table": {
+      "selected": "đang chọn →",
+      "open": "Mở"
+    },
+    "detail": {
+      "weekProgress": "Tuần {current} / {total}",
+      "teacher": "Giáo viên",
+      "schedule": "Lịch học",
+      "capacity": "Sĩ số",
+      "students": "Học viên",
+      "markAttendance": "Điểm danh",
+      "addStudent": "Thêm học viên",
+      "studentMeta": "lớp {grade} · {age} tuổi",
+      "attendancePct": "Chuyên cần {value}%",
+      "moreStudents": "Còn {count} học viên khác…",
+      "noStudents": "Lớp chưa có học viên nào.",
+      "empty": "Chọn một lớp để xem danh sách học viên."
+    },
+    "addDialog": {
+      "section": "Học kỳ Hè 2026",
+      "title": "Tạo lớp học mới",
+      "description": "Tạo lớp từ một khóa học, chọn giáo viên và chốt lịch học.",
+      "fields": {
+        "course": "Khóa học",
+        "coursePlaceholder": "Chọn khóa học",
+        "courseSearchPlaceholder": "Tìm khóa học…",
+        "courseEmpty": "Không có khóa học phù hợp.",
+        "classLabel": "Mã lớp",
+        "teacher": "Giáo viên",
+        "teacherPlaceholder": "Chọn giáo viên",
+        "teacherSearchPlaceholder": "Tìm giáo viên…",
+        "teacherEmpty": "Không có giáo viên phù hợp.",
+        "teacherActiveClasses": "{count} lớp đang dạy",
+        "location": "Địa điểm",
+        "locationPlaceholder": "Chọn địa điểm",
+        "schedule": "Lịch hằng tuần",
+        "scheduleHint": "Chọn ngày học, rồi đặt giờ cho từng ngày.",
+        "scheduleEmpty": "Chọn ít nhất một ngày để đặt giờ.",
+        "scheduleSummary": "{count} buổi / tuần",
+        "startTime": "Bắt đầu",
+        "endTime": "Kết thúc",
+        "starts": "Bắt đầu",
+        "ends": "Kết thúc",
+        "endsHint": "Tự động · ngày bắt đầu + {weeks} tuần",
+        "endsHintEmpty": "Tự động · hãy chọn khóa học & ngày bắt đầu",
+        "datePlaceholder": "Chọn ngày",
+        "capacity": "Sĩ số",
+        "capacityUnit": "học viên",
+        "visibility": "Hiển thị"
+      },
+      "days": {
+        "Sun": "CN",
+        "Mon": "T2",
+        "Tue": "T3",
+        "Wed": "T4",
+        "Thu": "T5",
+        "Fri": "T6",
+        "Sat": "T7"
+      },
+      "locations": {
+        "Room 204": "Phòng 204",
+        "Room 101": "Phòng 101",
+        "Online": "Trực tuyến"
+      },
+      "visibilities": {
+        "public_enrollable": "Công khai · cho đăng ký",
+        "public_view": "Công khai · chỉ xem",
+        "private": "Riêng tư"
+      },
+      "summary": "Sẽ tạo {count} buổi học trong học kỳ.",
+      "conflict": {
+        "title": "{teacher} đang có lớp {className} vào khung giờ này.",
+        "body": "Hãy chọn khung giờ khác hoặc xếp lại lớp hiện tại để giáo viên không vượt 16 giờ/tuần."
+      },
+      "footer": {
+        "saveDraft": "Lưu nháp",
+        "submit": "Tạo lớp"
+      },
+      "successToast": "Đã tạo lớp {name}.",
+      "errorToast": "Không thể tạo lớp. Vui lòng thử lại.",
+      "validation": {
+        "courseRequired": "Vui lòng chọn khóa học.",
+        "labelRequired": "Vui lòng nhập mã lớp.",
+        "teacherRequired": "Vui lòng chọn giáo viên.",
+        "locationRequired": "Vui lòng chọn địa điểm.",
+        "daysRequired": "Chọn ít nhất 1 ngày trong tuần.",
+        "timeFormat": "Dùng định dạng 24h (ví dụ 09:00).",
+        "timeOrder": "Giờ kết thúc phải sau giờ bắt đầu.",
+        "startDateRequired": "Vui lòng chọn ngày bắt đầu.",
+        "endDateRequired": "Vui lòng chọn ngày kết thúc.",
+        "dateOrder": "Ngày kết thúc phải sau ngày bắt đầu.",
+        "capacityMin": "Sĩ số tối thiểu là 1.",
+        "visibilityRequired": "Vui lòng chọn quyền hiển thị."
+      }
+    }
   }
 }

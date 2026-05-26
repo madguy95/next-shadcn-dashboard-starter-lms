@@ -197,124 +197,23 @@ export const courseStatusClass: Record<CourseStatus, string> = {
   draft: 'bg-amber-50 text-amber-800 border-amber-200'
 };
 
-export type ClassStatus = 'running' | 'upcoming' | 'ended';
+// Class domain types + data moved to @/api/classes/.
+// UI metadata for class & student status stays here (presentation concern, not server data).
+import type { ClassStatus, StudentStatus } from '@/api/classes';
+// Re-exported for legacy importers (e.g. add-class-dialog, enrollments-view).
+export { classRows, classStudents, classAssignOptions } from '@/api/classes';
+export type {
+  ClassRow,
+  ClassStatus,
+  ClassStudent,
+  StudentStatus,
+  ClassAssignOption
+} from '@/api/classes';
 
-export type ClassRow = {
-  id: string;
-  name: string;
-  courseTitle: string;
-  location: string;
-  teacherInitials: string;
-  teacherShort: string;
-  teacherTone: AvatarTone;
-  schedule: string;
-  enrolled: number;
-  capacity: number;
-  status: ClassStatus;
-  selected?: boolean;
-};
-
-export const classRows: ClassRow[] = [
-  {
-    id: 'cl-1',
-    name: 'Scratch · A1',
-    courseTitle: 'Scratch Foundations',
-    location: 'Room 204',
-    teacherInitials: 'LN',
-    teacherShort: 'Linh N.',
-    teacherTone: 'rose',
-    schedule: 'Mon · Wed · 09:00',
-    enrolled: 12,
-    capacity: 12,
-    status: 'running',
-    selected: true
-  },
-  {
-    id: 'cl-2',
-    name: 'Scratch · A2',
-    courseTitle: 'Scratch Foundations',
-    location: 'Online',
-    teacherInitials: 'LN',
-    teacherShort: 'Linh N.',
-    teacherTone: 'rose',
-    schedule: 'Tue · Thu · 17:30',
-    enrolled: 10,
-    capacity: 12,
-    status: 'running'
-  },
-  {
-    id: 'cl-3',
-    name: 'Python · B3',
-    courseTitle: 'Python for Kids',
-    location: 'Online',
-    teacherInitials: 'QV',
-    teacherShort: 'Quang V.',
-    teacherTone: 'sky',
-    schedule: 'Mon · Wed · 10:30',
-    enrolled: 14,
-    capacity: 14,
-    status: 'running'
-  },
-  {
-    id: 'cl-4',
-    name: 'Web Design · W2',
-    courseTitle: 'Web Design Studio',
-    location: 'Room 101',
-    teacherInitials: 'MH',
-    teacherShort: 'Mai H.',
-    teacherTone: 'violet',
-    schedule: 'Tue · Fri · 14:00',
-    enrolled: 10,
-    capacity: 12,
-    status: 'running'
-  },
-  {
-    id: 'cl-5',
-    name: 'Robotics · R1',
-    courseTitle: 'Robotics with Arduino',
-    location: 'Lab 3',
-    teacherInitials: 'DA',
-    teacherShort: 'Đức A.',
-    teacherTone: 'amber',
-    schedule: 'Sat · 09:00 · 14:00',
-    enrolled: 8,
-    capacity: 10,
-    status: 'running'
-  },
-  {
-    id: 'cl-6',
-    name: 'Game Dev · G1',
-    courseTitle: 'Game Dev with Unity',
-    location: 'Room 305',
-    teacherInitials: 'TT',
-    teacherShort: 'Tùng V.',
-    teacherTone: 'emerald',
-    schedule: 'Wed · Fri · 16:00',
-    enrolled: 6,
-    capacity: 10,
-    status: 'upcoming'
-  },
-  {
-    id: 'cl-7',
-    name: 'AI Explorers · X1',
-    courseTitle: 'AI Explorers',
-    location: 'Room 207',
-    teacherInitials: 'HG',
-    teacherShort: 'Hà G.',
-    teacherTone: 'foreground',
-    schedule: 'Thu · 17:00',
-    enrolled: 9,
-    capacity: 12,
-    status: 'running'
-  }
-];
-
-export type StudentStatus = 'on_track' | 'at_risk' | 'absent_x3';
-
-export const studentStatusLabel: Record<StudentStatus, string> = {
-  on_track: 'on track',
-  at_risk: 'at risk',
-  absent_x3: 'absent ×3'
+export const classStatusClass: Record<ClassStatus, string> = {
+  running: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  upcoming: 'bg-sky-50 text-sky-800 border-sky-200',
+  ended: 'bg-slate-50 text-slate-700 border-slate-200'
 };
 
 export const studentStatusClass: Record<StudentStatus, string> = {
@@ -322,90 +221,6 @@ export const studentStatusClass: Record<StudentStatus, string> = {
   at_risk: 'bg-amber-50 text-amber-800 border-amber-200',
   absent_x3: 'bg-rose-50 text-rose-800 border-rose-200'
 };
-
-export type ClassStudent = {
-  id: string;
-  name: string;
-  initials: string;
-  tone: AvatarTone;
-  grade: number;
-  age: number;
-  attendance: number;
-  status: StudentStatus;
-};
-
-export const classStudents: ClassStudent[] = [
-  {
-    id: 's-1',
-    name: 'Minh An Trần',
-    initials: 'MA',
-    tone: 'rose',
-    grade: 4,
-    age: 9,
-    attendance: 94,
-    status: 'on_track'
-  },
-  {
-    id: 's-2',
-    name: 'Đăng Khoa Phạm',
-    initials: 'DK',
-    tone: 'sky',
-    grade: 4,
-    age: 9,
-    attendance: 88,
-    status: 'on_track'
-  },
-  {
-    id: 's-3',
-    name: 'Quỳnh Hương Lê',
-    initials: 'QH',
-    tone: 'amber',
-    grade: 4,
-    age: 9,
-    attendance: 72,
-    status: 'at_risk'
-  },
-  {
-    id: 's-4',
-    name: 'Tuệ Lâm Nguyễn',
-    initials: 'TL',
-    tone: 'violet',
-    grade: 3,
-    age: 8,
-    attendance: 100,
-    status: 'on_track'
-  },
-  {
-    id: 's-5',
-    name: 'Bảo Long Phan',
-    initials: 'BL',
-    tone: 'emerald',
-    grade: 4,
-    age: 10,
-    attendance: 81,
-    status: 'on_track'
-  },
-  {
-    id: 's-6',
-    name: 'Yến Nhi Đỗ',
-    initials: 'YN',
-    tone: 'rose',
-    grade: 3,
-    age: 9,
-    attendance: 93,
-    status: 'on_track'
-  },
-  {
-    id: 's-7',
-    name: 'Hữu Thắng Nguyễn',
-    initials: 'HT',
-    tone: 'sky',
-    grade: 4,
-    age: 9,
-    attendance: 66,
-    status: 'absent_x3'
-  }
-];
 
 export type EnrollmentRow = {
   id: string;
@@ -480,44 +295,6 @@ export const pendingEnrollments: EnrollmentRow[] = [
     requestedCourse: 'Game Dev with Unity',
     note: 'age below recommended',
     submittedAt: '3d ago'
-  }
-];
-
-export type ClassAssignOption = {
-  id: string;
-  label: string;
-  schedule: string;
-  detail: string;
-  enrolled: number;
-  capacity: number;
-  disabled?: boolean;
-};
-
-export const classAssignOptions: ClassAssignOption[] = [
-  {
-    id: 'opt-a1',
-    label: 'Scratch · A1',
-    schedule: 'Mon · Wed · 09:00',
-    detail: 'Linh N. · Room 204 · 1 seat available',
-    enrolled: 11,
-    capacity: 12
-  },
-  {
-    id: 'opt-a2',
-    label: 'Scratch · A2',
-    schedule: 'Tue · Thu · 17:30',
-    detail: 'Linh N. · Online · 2 seats',
-    enrolled: 10,
-    capacity: 12
-  },
-  {
-    id: 'opt-a3',
-    label: 'Scratch · A3',
-    schedule: 'Sat · 10:00',
-    detail: 'Phương T. · Room 102 · full',
-    enrolled: 12,
-    capacity: 12,
-    disabled: true
   }
 ];
 
