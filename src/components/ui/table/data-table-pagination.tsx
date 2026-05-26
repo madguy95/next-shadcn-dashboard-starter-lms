@@ -41,15 +41,22 @@ export function DataTablePagination<TData>({
           : t('totalRows', { count: totalCount })}
       </div>
       <div className='flex items-center gap-2 sm:gap-6 lg:gap-8'>
-        <div className='hidden items-center space-x-2 sm:flex'>
-          <p className='text-sm font-medium whitespace-nowrap'>{t('rowsPerPage')}</p>
+        <div className='flex items-center gap-2'>
+          {/* "Rows per page" label is hidden on mobile to save space — the
+              select itself stays visible at every viewport. */}
+          <p className='hidden text-sm font-medium whitespace-nowrap sm:block'>
+            {t('rowsPerPage')}
+          </p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className='h-8 w-[4.5rem] [&[data-size]]:h-8'>
+            <SelectTrigger
+              className='h-8 w-[4.5rem] [&[data-size]]:h-8'
+              aria-label={t('rowsPerPage')}
+            >
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side='top'>

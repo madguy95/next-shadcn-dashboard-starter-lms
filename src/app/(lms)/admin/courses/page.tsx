@@ -17,6 +17,9 @@ export default async function CoursesPage() {
         drafts: stats.drafts
       })}
       pageHeaderAction={<CoursesHeaderAction />}
+      // CoursesView owns its scroll so the detail panel stays pinned on the
+      // right while the card grid scrolls on the left.
+      scrollable={false}
     >
       <CoursesView />
     </PageContainer>

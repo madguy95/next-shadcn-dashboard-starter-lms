@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
+import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 import {
   isTeacherStatus,
@@ -25,6 +26,7 @@ import { useDataTable } from '@/hooks/use-data-table';
 import { cn } from '@/lib/utils';
 import { AddTeacherDialog } from './add-teacher-dialog';
 import { TeacherRowActions } from './teacher-row-actions';
+import { TeachersCardList, TeachersCardListSkeleton } from './teachers-card-list';
 
 export function TeachersView() {
   const t = useTranslations('teachers');
@@ -187,8 +189,11 @@ export function TeachersView() {
     }
   });
 
+  const rows = result?.data ?? [];
+
   return (
     <div className='flex flex-1 flex-col gap-4'>
+      {/* Status tabs — horizontally scrollable so they don't wrap on narrow viewports. */}
       {statusTabs ? (
         <Tabs
           value={statusFilter ?? 'all'}
@@ -196,6 +201,7 @@ export function TeachersView() {
             void setStatusFilter(v === 'all' ? null : v);
             void setPage(1);
           }}
+          className='-mx-1 min-w-0 max-w-full overflow-x-auto px-1'
         >
           <TabsList className='h-8'>
             {statusTabs.map((tab) => (
@@ -213,18 +219,34 @@ export function TeachersView() {
           ))}
         </div>
       )}
-      {isLoading ? (
-        <DataTableSkeleton
-          columnCount={9}
-          rowCount={perPage}
-          withViewOptions={false}
-          withPagination
-        />
-      ) : (
-        <LoadingOverlay visible={isFetching} message={t('updatingList')}>
-          <DataTable table={table} />
-        </LoadingOverlay>
-      )}
+
+      {/* md+ : DataTable (own pagination) */}
+      <div className='hidden md:flex md:flex-1 md:flex-col'>
+        {isLoading ? (
+          <DataTableSkeleton
+            columnCount={9}
+            rowCount={perPage}
+            withViewOptions={false}
+            withPagination
+          />
+        ) : (
+          <LoadingOverlay visible={isFetching} message={t('updatingList')}>
+            <DataTable table={table} />
+          </LoadingOverlay>
+        )}
+      </div>
+
+      {/* < md : card list + separate pagination, sharing the same table instance */}
+      <div className='flex flex-col gap-2.5 md:hidden'>
+        {isLoading ? (
+          <TeachersCardListSkeleton rowCount={perPage} />
+        ) : (
+          <LoadingOverlay visible={isFetching} message={t('updatingList')}>
+            <TeachersCardList rows={rows} />
+          </LoadingOverlay>
+        )}
+        <DataTablePagination table={table} />
+      </div>
     </div>
   );
 }

@@ -46,10 +46,13 @@ interface LoadingOverlayProps {
  */
 export function LoadingOverlay({ visible, message, children, className }: LoadingOverlayProps) {
   return (
-    <div className={cn('relative flex flex-1 flex-col', className)}>
+    // min-h-0 lets this overlay be a well-behaved flex item in a constrained
+    // column — without it, a tall child would push the overlay past its parent
+    // and break sibling layouts (e.g. internal scroll areas).
+    <div className={cn('relative flex min-h-0 flex-1 flex-col', className)}>
       <div
         className={cn(
-          'flex flex-1 flex-col transition-opacity duration-200',
+          'flex min-h-0 flex-1 flex-col transition-opacity duration-200',
           visible && 'pointer-events-none opacity-40 select-none'
         )}
         aria-busy={visible}

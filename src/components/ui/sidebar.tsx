@@ -130,7 +130,9 @@ function SidebarProvider({
             } as React.CSSProperties
           }
           className={cn(
-            'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full',
+            // h-svh + overflow-hidden makes the admin shell viewport-bound so
+            // descendant scroll containers can engage instead of the document.
+            'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex h-svh w-full overflow-hidden',
             className
           )}
           {...props}

@@ -206,7 +206,12 @@ function InfobarProvider({
               ...style
             } as React.CSSProperties
           }
-          className={cn('group/infobar-wrapper flex flex-1 w-full', className)}
+          className={cn(
+            // min-h-0 keeps the wrapper from stretching beyond its flex-col
+            // parent so child scroll areas can take the remaining space.
+            'group/infobar-wrapper flex min-h-0 w-full flex-1',
+            className
+          )}
           {...props}
         >
           {children}

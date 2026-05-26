@@ -54,7 +54,7 @@ export function AddTeacherDialog() {
           {t('addTeacher')}
         </Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-[560px]'>
+      <DialogContent className='max-h-[92vh] overflow-y-auto sm:max-w-[560px]'>
         <DialogHeader>
           <DialogTitle>{t('addDialog.title')}</DialogTitle>
           <DialogDescription>{t('addDialog.description')}</DialogDescription>

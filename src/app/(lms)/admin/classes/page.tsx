@@ -17,6 +17,9 @@ export default async function ClassesPage() {
         upcoming: stats.upcoming
       })}
       pageHeaderAction={<ClassesHeaderAction />}
+      // ClassesView owns its scroll so the detail panel stays pinned on the
+      // right while the list scrolls on the left.
+      scrollable={true}
     >
       <ClassesView />
     </PageContainer>

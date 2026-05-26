@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useStore } from '@tanstack/react-form';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
@@ -316,7 +318,6 @@ export function EditCourseDialog({
               )}
 
               <BasicsFields
-                form={form}
                 baseSchema={baseSchema}
                 tAddDialog={tAddDialog}
                 tDialog={tDialog}
@@ -366,7 +367,6 @@ export function EditCourseDialog({
 }
 
 function BasicsFields({
-  form,
   baseSchema,
   tAddDialog,
   tDialog,
@@ -374,8 +374,6 @@ function BasicsFields({
   levelOptions,
   isLocked
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
   baseSchema: BaseSchema;
   tAddDialog: ReturnType<typeof useTranslations>;
   tDialog: ReturnType<typeof useTranslations>;
@@ -545,7 +543,6 @@ function MediaFields({
               </span>
             </div>
           )}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form.AppField name='cover'>
             {(field: any) => (
               <CompactDropzone
@@ -577,7 +574,6 @@ function MediaFields({
               <span className='text-muted-foreground ml-auto font-mono text-[10px]'>↗</span>
             </a>
           )}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form.AppField name='introVideo'>
             {(field: any) => (
               <CompactDropzone

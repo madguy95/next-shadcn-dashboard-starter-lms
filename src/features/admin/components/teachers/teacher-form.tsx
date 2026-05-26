@@ -110,7 +110,7 @@ export function TeacherForm({
       <form.Form id={formId} className='md:p-0'>
         <fieldset
           disabled={isPending}
-          className='grid min-w-0 grid-cols-2 gap-4 border-0 p-0 py-2 disabled:opacity-60'
+          className='grid min-w-0 grid-cols-1 gap-4 border-0 p-0 py-2 md:grid-cols-2 disabled:opacity-60'
         >
           <FormTextField
             name='firstName'
@@ -124,7 +124,7 @@ export function TeacherForm({
             required
             validators={{ onBlur: schema.shape.lastName }}
           />
-          <div className='col-span-2'>
+          <div className='md:col-span-2'>
             <FormTextField
               name='email'
               type='email'
@@ -134,7 +134,7 @@ export function TeacherForm({
               validators={{ onBlur: schema.shape.email }}
             />
           </div>
-          <div className='col-span-2'>
+          <div className='md:col-span-2'>
             <FormTextField
               name='phone'
               type='tel'
@@ -217,7 +217,7 @@ export function TeacherForm({
             options={locationOptions}
           />
 
-          <div className='col-span-2'>
+          <div className='md:col-span-2'>
             <FormFileUploadField
               name='avatar'
               label={t('addDialog.avatar')}
@@ -238,7 +238,7 @@ export function TeacherForm({
                 }
               };
               return (
-                <field.FieldSet className='col-span-2'>
+                <field.FieldSet className='md:col-span-2'>
                   <field.Field>
                     <field.FieldLabel className='text-muted-foreground text-[12px]'>
                       {t('addDialog.tags')}
@@ -282,7 +282,7 @@ export function TeacherForm({
           </form.AppField>
 
           {showOnboardingEmail && (
-            <div className='col-span-2'>
+            <div className='md:col-span-2'>
               <FormCheckboxField
                 name='sendOnboardingEmail'
                 label={t('addDialog.sendOnboardingEmail')}

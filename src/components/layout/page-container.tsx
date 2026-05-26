@@ -1,10 +1,11 @@
 import React from 'react';
 import { Heading } from '../ui/heading';
 import type { InfobarContent } from '@/components/ui/infobar';
+import { cn } from '@/lib/utils';
 
 function PageSkeleton() {
   return (
-    <div className='flex flex-1 animate-pulse flex-col gap-4 p-4 md:px-6'>
+    <div className='flex flex-1 animate-pulse flex-col gap-4'>
       <div className='flex items-center justify-between'>
         <div>
           <div className='bg-muted mb-2 h-8 w-48 rounded' />
@@ -17,6 +18,23 @@ function PageSkeleton() {
   );
 }
 
+/**
+ * Page shell for admin routes.
+ *
+ * The shell is viewport-bound (root wrapper uses `h-svh overflow-hidden`), so
+ * tall pages must scroll internally rather than the document.
+ *
+ * - `scrollable` (default `true`): the content area becomes `overflow-y-auto`.
+ *   Use this for pages whose content has natural height (dashboard, schedule,
+ *   master-detail pages where the whole page can scroll).
+ *
+ * - `scrollable={false}`: the content area is just a fixed-height flex column.
+ *   Use this when the page itself implements internal scroll regions — e.g.
+ *   teachers where the DataTable owns its scroll and pagination stays pinned.
+ *
+ * The page heading stays outside the scroll area in both modes so it never
+ * scrolls away with the content.
+ */
 export default function PageContainer({
   children,
   isLoading = false,
@@ -25,7 +43,8 @@ export default function PageContainer({
   pageTitle,
   pageDescription,
   infoContent,
-  pageHeaderAction
+  pageHeaderAction,
+  scrollable = true
 }: {
   children: React.ReactNode;
   isLoading?: boolean;
@@ -35,6 +54,7 @@ export default function PageContainer({
   pageDescription?: string;
   infoContent?: InfobarContent;
   pageHeaderAction?: React.ReactNode;
+  scrollable?: boolean;
 }) {
   if (!access) {
     return (
@@ -53,18 +73,28 @@ export default function PageContainer({
   const hasHeader = pageTitle || pageHeaderAction;
 
   return (
-    <div className='flex flex-1 flex-col px-4 pt-2 pb-4 md:px-6 md:pt-4'>
+    // min-w-0 is critical here: PageContainer is a flex-row item inside
+    // InfobarProvider (alongside the right InfoSidebar). Without it, wide page
+    // content forces this column past the viewport edge on narrow screens.
+    <div className='flex min-h-0 w-full min-w-0 flex-1 flex-col px-4 pt-2 md:px-6 md:pt-4'>
       {hasHeader && (
-        <div className='mb-4 flex items-start justify-between gap-4'>
-          <Heading
-            title={pageTitle ?? ''}
-            description={pageDescription ?? ''}
-            infoContent={infoContent}
-          />
+        // Stack title + actions on mobile so a long page description can't
+        // push the action buttons past the right edge. min-w-0 on the heading
+        // wrapper lets the description wrap instead of forcing the row wider.
+        <div className='mb-4 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4'>
+          <div className='min-w-0 flex-1'>
+            <Heading
+              title={pageTitle ?? ''}
+              description={pageDescription ?? ''}
+              infoContent={infoContent}
+            />
+          </div>
           {pageHeaderAction && <div className='shrink-0'>{pageHeaderAction}</div>}
         </div>
       )}
-      {content}
+      <div className={cn('flex min-h-0 flex-1 flex-col pb-4', scrollable && 'overflow-y-auto')}>
+        {content}
+      </div>
     </div>
   );
 }

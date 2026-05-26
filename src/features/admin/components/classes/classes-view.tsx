@@ -3,17 +3,26 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingOverlay } from '@/components/ui/loading-state';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle
+} from '@/components/ui/sheet';
 import {
   classListOptions,
   classStatusTabsOptions,
   isClassStatus,
   type ClassStatusFilter
 } from '@/api/classes';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { AddClassDialog } from './add-class-dialog';
 import { ClassDetailPanel, ClassDetailPanelSkeleton } from './class-detail-panel';
 import { ClassesTable, ClassesTableSkeleton } from './classes-table';
@@ -23,6 +32,11 @@ export function ClassesView() {
   const [statusParam, setStatusParam] = useQueryState('status', parseAsString);
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [selectedId, setSelectedId] = useQueryState('selected', parseAsString);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+
+  // The split layout kicks in at lg; below it, the detail lives in a Sheet
+  // that opens on row tap. Matching breakpoints in JS + CSS keeps the two in sync.
+  const isBelowLg = useMediaQuery('(max-width: 1023px)');
 
   const filter: ClassStatusFilter = isClassStatus(statusParam) ? statusParam : 'all';
 
@@ -52,10 +66,16 @@ export function ClassesView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, setSelectedId, visibleIds]);
 
+  const handleSelect = (id: string) => {
+    void setSelectedId(id);
+    if (isBelowLg) setMobileDetailOpen(true);
+  };
+
   return (
-    <div className='flex flex-1 flex-col gap-4'>
-      <div className='flex flex-wrap items-center gap-2'>
-        <div className='relative ml-auto w-64'>
+    <div className='flex min-h-0 flex-1 flex-col gap-4'>
+      {/* Search bar pinned at the top. */}
+      <div className='flex shrink-0 flex-wrap items-center gap-2'>
+        <div className='relative w-full sm:ml-auto sm:w-64'>
           <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2' />
           <Input
             value={search}
@@ -66,8 +86,13 @@ export function ClassesView() {
         </div>
       </div>
 
-      <div className='grid grid-cols-12 gap-4'>
-        <div className='col-span-12 xl:col-span-7'>
+      {/* Master-detail area: list on the left scrolls internally; on lg+ the
+          detail panel is pinned on the right and scrolls independently.
+          min-w-0 on the row + list column keeps the card from being pushed past
+          the viewport edge on narrow screens (flex items default to min-width:auto
+          which lets wide content grow the column). */}
+      <div className='flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 lg:flex-row'>
+        <div className='flex min-h-0 w-full min-w-0 flex-1 flex-col lg:flex-[7]'>
           {isLoading ? (
             <ClassesTableSkeleton />
           ) : (
@@ -75,7 +100,7 @@ export function ClassesView() {
               <ClassesTable
                 rows={visible}
                 selectedId={selected?.id ?? null}
-                onSelect={(id) => void setSelectedId(id)}
+                onSelect={handleSelect}
                 filter={filter}
                 onFilterChange={(v) => {
                   void setStatusParam(v === 'all' ? null : v);
@@ -86,22 +111,62 @@ export function ClassesView() {
             </LoadingOverlay>
           )}
         </div>
-        <div className='col-span-12 xl:col-span-5'>
+
+        {/* lg+ : inline detail panel — column is pinned, panel content scrolls
+            inside a wrapper under LoadingOverlay (same pattern as CoursesView). */}
+        <div className='hidden min-h-0 flex-col lg:flex lg:flex-[5]'>
           {isLoading ? (
             <ClassDetailPanelSkeleton />
           ) : (
             <LoadingOverlay visible={isFetching} message={t('updatingList')}>
-              {selected ? (
-                <ClassDetailPanel cls={selected} />
-              ) : (
-                <div className='bg-card text-muted-foreground grid min-h-[320px] place-items-center rounded-lg border border-dashed text-sm shadow-sm'>
-                  {t('detail.empty')}
-                </div>
-              )}
+              <div className='min-h-0 flex-1 overflow-auto pr-1'>
+                {selected ? (
+                  <ClassDetailPanel cls={selected} />
+                ) : (
+                  <div className='bg-card text-muted-foreground grid min-h-[320px] place-items-center rounded-lg border border-dashed text-sm shadow-sm'>
+                    {t('detail.empty')}
+                  </div>
+                )}
+              </div>
             </LoadingOverlay>
           )}
         </div>
       </div>
+
+      {/* < lg : detail in a Sheet — opened by row tap. The default sheet X
+          (top-right) is hidden because it overlapped content on the panel; a
+          dedicated grab-bar with close button replaces it. The panel renders
+          the same component as the inline desktop view, but we strip its outer
+          chrome (border/rounded/shadow) so it blends into the sheet surface. */}
+      <Sheet open={isBelowLg && mobileDetailOpen} onOpenChange={setMobileDetailOpen}>
+        <SheetContent
+          side='bottom'
+          className='h-[92vh] gap-0 overflow-hidden rounded-t-lg p-0 [&>button:last-of-type]:hidden'
+        >
+          <SheetHeader className='sr-only'>
+            <SheetTitle>{selected?.name ?? t('detail.empty')}</SheetTitle>
+            <SheetDescription>
+              {selected ? `${selected.courseTitle} · ${selected.courseCode}` : ''}
+            </SheetDescription>
+          </SheetHeader>
+          <div className='relative flex shrink-0 items-center justify-center border-b py-2.5'>
+            <div className='bg-muted h-1 w-10 rounded-full' />
+            <SheetClose className='hover:bg-muted absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 transition-colors'>
+              <Icons.close className='size-4' />
+              <span className='sr-only'>Close</span>
+            </SheetClose>
+          </div>
+          <div className='min-h-0 flex-1 overflow-auto [&>div]:rounded-none [&>div]:border-0 [&>div]:shadow-none'>
+            {selected ? (
+              <ClassDetailPanel cls={selected} />
+            ) : (
+              <div className='text-muted-foreground grid min-h-[320px] place-items-center p-6 text-sm'>
+                {t('detail.empty')}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
