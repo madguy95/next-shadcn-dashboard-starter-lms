@@ -9,9 +9,11 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { LoadingOverlay } from '@/components/ui/loading-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableColumnHeader } from '@/components/ui/table/data-table-column-header';
+import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 import {
   isTeacherStatus,
   teacherListOptions,
@@ -187,28 +189,42 @@ export function TeachersView() {
 
   return (
     <div className='flex flex-1 flex-col gap-4'>
-      <Tabs
-        value={statusFilter ?? 'all'}
-        onValueChange={(v) => {
-          void setStatusFilter(v === 'all' ? null : v);
-          void setPage(1);
-        }}
-      >
-        <TabsList className='h-8'>
-          {(statusTabs ?? []).map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className='h-6 px-2.5 text-[12px]'>
-              {tab.value === 'all' ? t('tabs.all') : t(`status.${tab.value}`)}{' '}
-              <span className='ml-1 font-mono opacity-60'>{tab.count}</span>
-            </TabsTrigger>
+      {statusTabs ? (
+        <Tabs
+          value={statusFilter ?? 'all'}
+          onValueChange={(v) => {
+            void setStatusFilter(v === 'all' ? null : v);
+            void setPage(1);
+          }}
+        >
+          <TabsList className='h-8'>
+            {statusTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className='h-6 px-2.5 text-[12px]'>
+                {tab.value === 'all' ? t('tabs.all') : t(`status.${tab.value}`)}{' '}
+                <span className='ml-1 font-mono opacity-60'>{tab.count}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      ) : (
+        <div className='flex h-8 items-center gap-1'>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className='h-6 w-20 rounded-md' />
           ))}
-        </TabsList>
-      </Tabs>
-      <LoadingOverlay
-        visible={isLoading || isFetching}
-        message={isLoading ? t('loadingList') : t('updatingList')}
-      >
-        <DataTable table={table} />
-      </LoadingOverlay>
+        </div>
+      )}
+      {isLoading ? (
+        <DataTableSkeleton
+          columnCount={9}
+          rowCount={perPage}
+          withViewOptions={false}
+          withPagination
+        />
+      ) : (
+        <LoadingOverlay visible={isFetching} message={t('updatingList')}>
+          <DataTable table={table} />
+        </LoadingOverlay>
+      )}
     </div>
   );
 }
