@@ -15,14 +15,12 @@ import type { SessionValue } from './schema';
 interface OutlineStepProps {
   tDialog: ReturnType<typeof useTranslations>;
   form: any;
-  weeksValue: number | '';
-  sessionsPerWeekValue: number | '';
+  totalSessionsValue: number | '';
 }
 
-export function OutlineStep({ tDialog, form, weeksValue, sessionsPerWeekValue }: OutlineStepProps) {
+export function OutlineStep({ tDialog, form, totalSessionsValue }: OutlineStepProps) {
   const sessions = useStore(form.store, (s: any) => s.values.sessions as SessionValue[]);
-  const expected =
-    Math.max(0, Number(weeksValue) || 0) * Math.max(0, Number(sessionsPerWeekValue) || 0);
+  const expected = Math.max(0, Number(totalSessionsValue) || 0);
 
   const regenerate = () => {
     form.setFieldValue(

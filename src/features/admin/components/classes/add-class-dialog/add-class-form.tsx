@@ -137,22 +137,27 @@ export function AddClassForm({
     initialTeachers.find((tt) => tt.id === teacherId);
 
   const sortedSchedules = React.useMemo(() => sortDaySchedules(daySchedules), [daySchedules]);
-  const courseWeeks = selectedCourse?.weeks ?? 0;
-  const sessionsTotal = daySchedules.length * courseWeeks;
+  const courseTotalSessions = selectedCourse?.totalSessions ?? 0;
+  const sessionsPerWeek = daySchedules.length;
+  // End date is derived from total sessions + sessions/week. Round up so the
+  // last (partial) week is included. Falls back to 0 weeks when the schedule
+  // isn't picked yet, in which case the effect below simply won't run.
+  const computedWeeks = sessionsPerWeek > 0 ? Math.ceil(courseTotalSessions / sessionsPerWeek) : 0;
+  const sessionsTotal = courseTotalSessions;
 
   // End date is derived from start date + the course's duration. The field is
   // read-only in the UI — this effect keeps submit values in sync.
   React.useEffect(() => {
-    if (!startDate || !courseWeeks) return;
+    if (!startDate || !computedWeeks) return;
     const start = new Date(startDate);
     if (Number.isNaN(start.getTime())) return;
     const end = new Date(start);
-    end.setDate(end.getDate() + courseWeeks * 7);
+    end.setDate(end.getDate() + computedWeeks * 7);
     const nextIso = end.toISOString();
     if (form.getFieldValue('endDate') !== nextIso) {
       form.setFieldValue('endDate', nextIso);
     }
-  }, [startDate, courseWeeks, form]);
+  }, [startDate, computedWeeks, form]);
 
   const hasConflict = detectMockConflict(selectedTeacher?.id, daySchedules);
 
@@ -196,7 +201,7 @@ export function AddClassForm({
                           <span className='flex flex-col items-start leading-tight sm:flex-row sm:items-center sm:gap-1'>
                             <span className='font-medium'>{c.title}</span>
                             <span className='text-muted-foreground font-mono text-[11px]'>
-                              {c.code} · {c.weeks} wks
+                              {c.code} · {c.totalSessions} sessions
                             </span>
                           </span>
                         </span>
@@ -354,8 +359,8 @@ export function AddClassForm({
               placeholder={tDialog('fields.datePlaceholder')}
               disabled
               description={
-                courseWeeks
-                  ? tDialog('fields.endsHint', { weeks: courseWeeks })
+                computedWeeks
+                  ? tDialog('fields.endsHint', { weeks: computedWeeks })
                   : tDialog('fields.endsHintEmpty')
               }
             />

@@ -37,8 +37,8 @@ export type CourseFormValues = {
   level: CourseLevel;
   minAge: number | '';
   maxAge: number | '';
-  weeks: number | '';
-  sessionsPerWeek: number | '';
+  totalSessions: number | '';
+  sessionDurationMinutes: number | '';
   perClassCapacity: number | '';
   tags: string[];
   cover: File[];
@@ -57,8 +57,8 @@ export const defaultValues: CourseFormValues = {
   level: 'intermediate',
   minAge: 12,
   maxAge: 15,
-  weeks: 10,
-  sessionsPerWeek: 2,
+  totalSessions: 20,
+  sessionDurationMinutes: 75,
   perClassCapacity: 12,
   tags: [],
   cover: [],
@@ -86,8 +86,8 @@ export const stepFieldNames: Record<StepKey, (keyof CourseFormValues)[]> = {
     'level',
     'minAge',
     'maxAge',
-    'weeks',
-    'sessionsPerWeek',
+    'totalSessions',
+    'sessionDurationMinutes',
     'perClassCapacity',
     'tags',
     'cover',
@@ -124,14 +124,14 @@ export function buildBaseSchema(tValidation: ValidationT) {
       .int()
       .min(3, tValidation('maxAgeRange'))
       .max(99, tValidation('maxAgeRange')),
-    weeks: z
-      .number({ error: tValidation('weeksMin') })
+    totalSessions: z
+      .number({ error: tValidation('totalSessionsMin') })
       .int()
-      .min(1, tValidation('weeksMin')),
-    sessionsPerWeek: z
-      .number({ error: tValidation('sessionsMin') })
+      .min(1, tValidation('totalSessionsMin')),
+    sessionDurationMinutes: z
+      .number({ error: tValidation('sessionDurationMin') })
       .int()
-      .min(1, tValidation('sessionsMin')),
+      .min(1, tValidation('sessionDurationMin')),
     perClassCapacity: z
       .number({ error: tValidation('capacityMin') })
       .int()

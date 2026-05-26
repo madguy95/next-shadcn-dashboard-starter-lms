@@ -19,6 +19,98 @@
   }
 }
 
+/* ---- Robot mascot (used by the first-visit splash) ---- */
+@keyframes robot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes robot-antenna {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes robot-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  94%,
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes robot-chest {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes robot-arm-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-14deg);
+  }
+}
+@keyframes robot-arm-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+
+.animate-robot-float {
+  animation: robot-float 2.4s ease-in-out infinite;
+}
+.animate-robot-antenna {
+  animation: robot-antenna 1.6s ease-in-out infinite;
+}
+.animate-robot-blink {
+  animation: robot-blink 3.6s ease-in-out infinite;
+}
+.animate-robot-chest {
+  animation: robot-chest 1.2s ease-in-out infinite;
+}
+.animate-robot-arm-l {
+  animation: robot-arm-l 1.6s ease-in-out infinite;
+}
+.animate-robot-arm-r {
+  animation: robot-arm-r 1.6s ease-in-out infinite;
+}
+
+/* Splash visibility — driven by `data-splash` on <html>. The inline script in
+   the document head sets `done` pre-paint when the user has already seen the
+   splash this session, eliminating any flash. */
+#iqode-splash {
+  opacity: 1;
+  transition: opacity 500ms ease-in-out;
+}
+html[data-splash='leaving'] #iqode-splash {
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-splash='done'] #iqode-splash {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

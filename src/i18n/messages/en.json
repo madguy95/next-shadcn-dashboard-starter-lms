@@ -136,20 +136,22 @@
       "draft": "draft"
     },
     "card": {
-      "weeks": "weeks",
+      "sessions": "sessions",
       "classes": "classes",
       "enrolled": "enrolled"
     },
     "detail": {
       "edit": "Edit",
       "watchIntro": "Watch intro",
-      "duration": "Duration",
+      "totalSessions": "Total sessions",
+      "sessionDuration": "Session duration",
       "ages": "Ages",
       "tuition": "Tuition",
       "capacityPerClass": "Capacity / class",
-      "weeksUnit": "{count} weeks",
+      "sessionsUnit": "{count} sessions",
+      "minutesUnit": "{count} min",
       "studentsUnit": "{count} students",
-      "curriculumUnits": "Curriculum · {count} units",
+      "curriculumUnits": "Curriculum · {count} sessions",
       "editOutline": "Edit outline",
       "openCourse": "Open course",
       "duplicate": "Duplicate",
@@ -178,8 +180,8 @@
         "level": "Level",
         "minAge": "Min age",
         "maxAge": "Max age",
-        "duration": "Duration",
-        "sessions": "Sessions / week",
+        "totalSessions": "Total sessions",
+        "sessionDuration": "Minutes / session",
         "capacity": "Default capacity",
         "tags": "Tags",
         "addTag": "Add tag…",
@@ -199,8 +201,8 @@
         "browse": "browse files"
       },
       "units": {
-        "weeks": "weeks",
-        "perWeek": "× 75 min",
+        "sessions": "sessions",
+        "minutes": "min / session",
         "students": "students"
       },
       "level": {
@@ -212,15 +214,15 @@
         "label": "Preview",
         "untitledCourse": "Untitled course",
         "ages": "Ages {min}–{max} · {level}",
-        "weeks": "weeks",
-        "sessions": "sessions",
+        "totalSessions": "sessions",
+        "sessionDuration": "min / session",
         "capacity": "capacity",
         "coverPlaceholder": "{category} · COVER"
       },
       "next": {
         "label": "What happens next",
         "step1": "Course is saved as a draft in the curriculum library.",
-        "step2": "Add weekly units & assignments on the next step.",
+        "step2": "Add session-by-session units & assignments on the next step.",
         "step3": "Publish, then create one or more classes from it."
       },
       "footer": {
@@ -302,8 +304,8 @@
         "minAgeRange": "Min age must be between 3 and 99.",
         "maxAgeRange": "Max age must be between 3 and 99.",
         "ageOrder": "Max age must be greater than or equal to min age.",
-        "weeksMin": "Duration must be at least 1 week.",
-        "sessionsMin": "Sessions per week must be at least 1.",
+        "totalSessionsMin": "Total sessions must be at least 1.",
+        "sessionDurationMin": "Session duration must be at least 1 minute.",
         "capacityMin": "Capacity must be at least 1.",
         "sessionsRequired": "Add at least one session.",
         "sessionTitleRequired": "Session {n} needs a title.",
@@ -364,7 +366,7 @@
       "open": "Open"
     },
     "detail": {
-      "weekProgress": "Week {current} of {total}",
+      "sessionProgress": "Session {current} of {total}",
       "teacher": "Teacher",
       "schedule": "Schedule",
       "capacity": "Capacity",

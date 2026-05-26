@@ -1,4 +1,5 @@
 import Providers from '@/components/layout/providers';
+import { SPLASH_INIT_SCRIPT, SplashScreen } from '@/components/layout/splash-screen';
 import { Toaster } from '@/components/ui/sonner';
 import { fontVariables } from '@/components/themes/font.config';
 import { DEFAULT_THEME, THEMES } from '@/components/themes/theme.config';
@@ -38,6 +39,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} suppressHydrationWarning data-theme={themeToApply}>
       <head>
+        {/* Splash pre-paint hide: must run BEFORE anything else so the splash
+            never flashes when the user has already seen it this session. */}
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_INIT_SCRIPT }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -68,6 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               enableColorScheme
             >
               <Providers activeThemeValue={themeToApply}>
+                <SplashScreen />
                 <Toaster />
                 {children}
               </Providers>

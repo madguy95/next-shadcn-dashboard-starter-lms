@@ -145,7 +145,7 @@ function EnrollmentDetailPanel({ row }: { row: EnrollmentRow }) {
             <div className='min-w-0 flex-1'>
               <div className='text-sm font-medium'>{row.requestedCourse}</div>
               <div className='text-muted-foreground font-mono text-[11px]'>
-                CODE-101 · 12 weeks · ages 7–10
+                CODE-101 · 24 sessions · ages 7–10
               </div>
             </div>
             <span className='inline-flex items-center rounded border border-emerald-100 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] text-emerald-700'>

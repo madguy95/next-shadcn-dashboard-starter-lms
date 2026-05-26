@@ -52,7 +52,8 @@ type EditCourseFormValues = {
   level: CourseLevel;
   minAge: number | '';
   maxAge: number | '';
-  weeks: number | '';
+  totalSessions: number | '';
+  sessionDurationMinutes: number | '';
   perClassCapacity: number | '';
   cover: File[];
   introVideo: File[];
@@ -90,7 +91,8 @@ function buildDefaults(course: Course): EditCourseFormValues {
     level: course.level,
     minAge: course.minAge,
     maxAge: course.maxAge,
-    weeks: course.weeks,
+    totalSessions: course.totalSessions,
+    sessionDurationMinutes: course.sessionDurationMinutes,
     perClassCapacity: course.perClassCapacity,
     cover: [],
     introVideo: [],
@@ -150,7 +152,8 @@ export function EditCourseDialog({
           level: true,
           minAge: true,
           maxAge: true,
-          weeks: true,
+          totalSessions: true,
+          sessionDurationMinutes: true,
           perClassCapacity: true,
           cover: true,
           introVideo: true,
@@ -185,7 +188,8 @@ export function EditCourseDialog({
             level: value.level,
             minAge: Number(value.minAge),
             maxAge: Number(value.maxAge),
-            weeks: Number(value.weeks),
+            totalSessions: Number(value.totalSessions),
+            sessionDurationMinutes: Number(value.sessionDurationMinutes),
             perClassCapacity: Number(value.perClassCapacity),
             cover: value.cover[0],
             introVideo: value.introVideo[0],
@@ -233,7 +237,8 @@ export function EditCourseDialog({
         'level',
         'minAge',
         'maxAge',
-        'weeks',
+        'totalSessions',
+        'sessionDurationMinutes',
         'perClassCapacity',
         'cover',
         'introVideo',
@@ -459,16 +464,26 @@ function BasicsFields({
         />
       </div>
 
-      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
         <FormTextField
-          name='weeks'
+          name='totalSessions'
           type='number'
-          label={tAddDialog('fields.duration')}
+          label={tAddDialog('fields.totalSessions')}
           required
           inputMode='numeric'
           className='font-mono'
           disabled={isLocked}
-          validators={{ onBlur: shape.weeks }}
+          validators={{ onBlur: shape.totalSessions }}
+        />
+        <FormTextField
+          name='sessionDurationMinutes'
+          type='number'
+          label={tAddDialog('fields.sessionDuration')}
+          required
+          inputMode='numeric'
+          className='font-mono'
+          disabled={isLocked}
+          validators={{ onBlur: shape.sessionDurationMinutes }}
         />
         <FormTextField
           name='perClassCapacity'
@@ -493,20 +508,14 @@ function OutlineSection({
   form: any;
   tAddDialog: ReturnType<typeof useTranslations>;
 }) {
-  // Course doesn't persist `sessionsPerWeek`, so use 1 for the "regenerate from
-  // duration" preset — it produces `weeks` sessions, which is a reasonable
-  // starting point. Users can still add more manually.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const weeksValue = useStore(form.store, (s: any) => s.values.weeks as number | '');
-
-  return (
-    <OutlineStep
-      tDialog={tAddDialog}
-      form={form}
-      weeksValue={weeksValue}
-      sessionsPerWeekValue={1}
-    />
+  const totalSessionsValue = useStore(
+    form.store,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (s: any) => s.values.totalSessions as number | ''
   );
+
+  return <OutlineStep tDialog={tAddDialog} form={form} totalSessionsValue={totalSessionsValue} />;
 }
 
 function MediaFields({

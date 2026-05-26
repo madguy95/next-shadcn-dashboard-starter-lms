@@ -34,8 +34,8 @@ interface BasicsStepProps {
     level: string;
     minAge: number | '';
     maxAge: number | '';
-    weeks: number | '';
-    sessionsPerWeek: number | '';
+    totalSessions: number | '';
+    sessionDurationMinutes: number | '';
     perClassCapacity: number | '';
     coverPreviewUrl: string | null;
   };
@@ -123,22 +123,22 @@ export function BasicsStep({
 
         <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
           <FormTextField
-            name='weeks'
+            name='totalSessions'
             type='number'
-            label={tDialog('fields.duration')}
+            label={tDialog('fields.totalSessions')}
             required
             inputMode='numeric'
             className='font-mono'
-            validators={{ onBlur: baseSchema.shape.weeks }}
+            validators={{ onBlur: baseSchema.shape.totalSessions }}
           />
           <FormTextField
-            name='sessionsPerWeek'
+            name='sessionDurationMinutes'
             type='number'
-            label={tDialog('fields.sessions')}
+            label={tDialog('fields.sessionDuration')}
             required
             inputMode='numeric'
             className='font-mono'
-            validators={{ onBlur: baseSchema.shape.sessionsPerWeek }}
+            validators={{ onBlur: baseSchema.shape.sessionDurationMinutes }}
           />
           <FormTextField
             name='perClassCapacity'
@@ -307,12 +307,14 @@ function BasicsPreview({
           </div>
           <div className='mt-3 grid grid-cols-3 gap-1 text-center font-mono text-[11px]'>
             <PreviewStat
-              value={preview.weeks === '' ? '—' : String(preview.weeks)}
-              label={tDialog('preview.weeks')}
+              value={preview.totalSessions === '' ? '—' : String(preview.totalSessions)}
+              label={tDialog('preview.totalSessions')}
             />
             <PreviewStat
-              value={`${preview.sessionsPerWeek === '' ? '—' : preview.sessionsPerWeek}/wk`}
-              label={tDialog('preview.sessions')}
+              value={
+                preview.sessionDurationMinutes === '' ? '—' : `${preview.sessionDurationMinutes}m`
+              }
+              label={tDialog('preview.sessionDuration')}
             />
             <PreviewStat
               value={preview.perClassCapacity === '' ? '—' : String(preview.perClassCapacity)}

@@ -7,15 +7,15 @@ import { cn } from '@/lib/utils';
 
 export function ClassStatusBadge({
   status,
-  weekIndex,
-  weeksTotal
+  currentSessionIndex,
+  totalSessions
 }: {
   status: ClassStatus;
-  weekIndex?: number;
-  weeksTotal?: number;
+  currentSessionIndex?: number;
+  totalSessions?: number;
 }) {
   const t = useTranslations('classes');
-  const showProgress = status === 'running' && weekIndex && weeksTotal;
+  const showProgress = status === 'running' && currentSessionIndex && totalSessions;
   return (
     <span
       className={cn(
@@ -26,7 +26,7 @@ export function ClassStatusBadge({
       {t(`status.${status}`)}
       {showProgress && (
         <span className='ml-1 opacity-80'>
-          · {t('detail.weekProgress', { current: weekIndex, total: weeksTotal })}
+          · {t('detail.sessionProgress', { current: currentSessionIndex, total: totalSessions })}
         </span>
       )}
     </span>

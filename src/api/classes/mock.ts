@@ -14,8 +14,8 @@ export const classRows: ClassRow[] = [
     enrolled: 12,
     capacity: 12,
     status: 'running',
-    weekIndex: 4,
-    weeksTotal: 12
+    currentSessionIndex: 8,
+    totalSessions: 24
   },
   {
     id: 'cl-2',
@@ -30,8 +30,8 @@ export const classRows: ClassRow[] = [
     enrolled: 10,
     capacity: 12,
     status: 'running',
-    weekIndex: 3,
-    weeksTotal: 12
+    currentSessionIndex: 6,
+    totalSessions: 24
   },
   {
     id: 'cl-3',
@@ -46,8 +46,8 @@ export const classRows: ClassRow[] = [
     enrolled: 14,
     capacity: 14,
     status: 'running',
-    weekIndex: 6,
-    weeksTotal: 16
+    currentSessionIndex: 12,
+    totalSessions: 32
   },
   {
     id: 'cl-4',
@@ -62,8 +62,8 @@ export const classRows: ClassRow[] = [
     enrolled: 10,
     capacity: 12,
     status: 'running',
-    weekIndex: 2,
-    weeksTotal: 10
+    currentSessionIndex: 4,
+    totalSessions: 20
   },
   {
     id: 'cl-5',
@@ -78,8 +78,8 @@ export const classRows: ClassRow[] = [
     enrolled: 8,
     capacity: 10,
     status: 'running',
-    weekIndex: 5,
-    weeksTotal: 14
+    currentSessionIndex: 10,
+    totalSessions: 28
   },
   {
     id: 'cl-6',
@@ -94,7 +94,7 @@ export const classRows: ClassRow[] = [
     enrolled: 6,
     capacity: 10,
     status: 'upcoming',
-    weeksTotal: 18
+    totalSessions: 36
   },
   {
     id: 'cl-7',
@@ -109,8 +109,8 @@ export const classRows: ClassRow[] = [
     enrolled: 9,
     capacity: 12,
     status: 'running',
-    weekIndex: 2,
-    weeksTotal: 8
+    currentSessionIndex: 4,
+    totalSessions: 16
   },
   {
     id: 'cl-8',
@@ -125,8 +125,8 @@ export const classRows: ClassRow[] = [
     enrolled: 10,
     capacity: 12,
     status: 'ended',
-    weekIndex: 10,
-    weeksTotal: 10
+    currentSessionIndex: 20,
+    totalSessions: 20
   }
 ];
 

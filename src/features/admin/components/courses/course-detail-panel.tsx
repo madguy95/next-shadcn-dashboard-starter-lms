@@ -84,9 +84,17 @@ export function CourseDetailPanel({ course }: { course: Course }) {
         <div className='mt-4 grid grid-cols-2 gap-2 text-[12px]'>
           <div className='rounded-md border p-2.5'>
             <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
-              {t('duration')}
+              {t('totalSessions')}
             </div>
-            <div className='font-medium'>{t('weeksUnit', { count: course.weeks })}</div>
+            <div className='font-medium'>{t('sessionsUnit', { count: course.totalSessions })}</div>
+          </div>
+          <div className='rounded-md border p-2.5'>
+            <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
+              {t('sessionDuration')}
+            </div>
+            <div className='font-medium'>
+              {t('minutesUnit', { count: course.sessionDurationMinutes })}
+            </div>
           </div>
           <div className='rounded-md border p-2.5'>
             <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
@@ -97,6 +105,14 @@ export function CourseDetailPanel({ course }: { course: Course }) {
             </div>
           </div>
           <div className='rounded-md border p-2.5'>
+            <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
+              {t('capacityPerClass')}
+            </div>
+            <div className='font-medium'>
+              {t('studentsUnit', { count: course.perClassCapacity })}
+            </div>
+          </div>
+          <div className='col-span-2 rounded-md border p-2.5'>
             <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
               {t('tuition')}
             </div>
@@ -109,19 +125,11 @@ export function CourseDetailPanel({ course }: { course: Course }) {
               )}
             </div>
           </div>
-          <div className='rounded-md border p-2.5'>
-            <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
-              {t('capacityPerClass')}
-            </div>
-            <div className='font-medium'>
-              {t('studentsUnit', { count: course.perClassCapacity })}
-            </div>
-          </div>
         </div>
 
         <div className='mt-5'>
           <div className='mb-2 text-[12px] font-medium'>
-            {t('curriculumUnits', { count: course.weeks })}
+            {t('curriculumUnits', { count: course.totalSessions })}
           </div>
           <ul className='divide-y rounded-md border text-[12.5px]'>
             {course.curriculum.map((unit, i) => {

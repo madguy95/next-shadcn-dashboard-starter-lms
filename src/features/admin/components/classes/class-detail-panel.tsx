@@ -31,8 +31,8 @@ export function ClassDetailPanel({ cls }: { cls: ClassRow }) {
           <h2 className='text-[18px] font-semibold tracking-tight sm:text-[20px]'>{cls.name}</h2>
           <ClassStatusBadge
             status={cls.status}
-            weekIndex={cls.weekIndex}
-            weeksTotal={cls.weeksTotal}
+            currentSessionIndex={cls.currentSessionIndex}
+            totalSessions={cls.totalSessions}
           />
         </div>
         <div className='mt-3 grid grid-cols-2 gap-2 text-[12px] sm:grid-cols-3'>

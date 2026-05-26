@@ -27,8 +27,8 @@ export type ClassRow = {
   enrolled: number;
   capacity: number;
   status: ClassStatus;
-  weekIndex?: number;
-  weeksTotal?: number;
+  currentSessionIndex?: number;
+  totalSessions?: number;
 };
 
 export type ClassStudent = {

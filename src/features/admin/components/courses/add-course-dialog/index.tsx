@@ -79,8 +79,8 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
           level: value.level,
           minAge: Number(value.minAge),
           maxAge: Number(value.maxAge),
-          weeks: Number(value.weeks),
-          sessionsPerWeek: Number(value.sessionsPerWeek),
+          totalSessions: Number(value.totalSessions),
+          sessionDurationMinutes: Number(value.sessionDurationMinutes),
           perClassCapacity: Number(value.perClassCapacity),
           tags: value.tags,
           cover: value.cover[0],
@@ -111,8 +111,8 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
   const levelValue = useStore(form.store, (s) => s.values.level);
   const minAgeValue = useStore(form.store, (s) => s.values.minAge);
   const maxAgeValue = useStore(form.store, (s) => s.values.maxAge);
-  const weeksValue = useStore(form.store, (s) => s.values.weeks);
-  const sessionsValue = useStore(form.store, (s) => s.values.sessionsPerWeek);
+  const totalSessionsValue = useStore(form.store, (s) => s.values.totalSessions);
+  const sessionDurationValue = useStore(form.store, (s) => s.values.sessionDurationMinutes);
   const capacityValue = useStore(form.store, (s) => s.values.perClassCapacity);
   const coverFile = useStore(form.store, (s) => s.values.cover[0]);
 
@@ -208,9 +208,7 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
       if (!validateStep(step)) return;
       if (nextStep === 'outline') {
         const current = form.getFieldValue('sessions') as SessionValue[];
-        const weeks = Number(form.getFieldValue('weeks')) || 0;
-        const perWeek = Number(form.getFieldValue('sessionsPerWeek')) || 0;
-        const total = weeks * perWeek;
+        const total = Number(form.getFieldValue('totalSessions')) || 0;
         if (current.length === 0 && total > 0) {
           form.setFieldValue(
             'sessions',
@@ -288,8 +286,8 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
                   level: levelValue,
                   minAge: minAgeValue,
                   maxAge: maxAgeValue,
-                  weeks: weeksValue,
-                  sessionsPerWeek: sessionsValue,
+                  totalSessions: totalSessionsValue,
+                  sessionDurationMinutes: sessionDurationValue,
                   perClassCapacity: capacityValue,
                   coverPreviewUrl
                 }}
@@ -301,8 +299,7 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
                   <OutlineStep
                     tDialog={tDialog}
                     form={form}
-                    weeksValue={weeksValue}
-                    sessionsPerWeekValue={sessionsValue}
+                    totalSessionsValue={totalSessionsValue}
                   />
                 </div>
               )}

@@ -64,7 +64,8 @@ export type Course = {
   minAge: number;
   maxAge: number;
   tagline: string;
-  weeks: number;
+  totalSessions: number;
+  sessionDurationMinutes: number;
   classes: number;
   enrolled: number;
   capacity: number;
@@ -117,8 +118,8 @@ export type CreateCourseInput = {
   level: CourseLevel;
   minAge: number;
   maxAge: number;
-  weeks: number;
-  sessionsPerWeek: number;
+  totalSessions: number;
+  sessionDurationMinutes: number;
   perClassCapacity: number;
   tags: string[];
   cover?: File;

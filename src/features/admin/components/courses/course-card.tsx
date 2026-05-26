@@ -62,8 +62,8 @@ export function CourseCard({
         </div>
         <div className='mt-3 grid grid-cols-3 gap-1 text-center font-mono text-[11px]'>
           <div className='bg-muted/50 rounded py-1'>
-            <div className='text-foreground font-semibold'>{course.weeks}</div>
-            <div className='opacity-60'>{t('card.weeks')}</div>
+            <div className='text-foreground font-semibold'>{course.totalSessions}</div>
+            <div className='opacity-60'>{t('card.sessions')}</div>
           </div>
           <div className='bg-muted/50 rounded py-1'>
             <div className='text-foreground font-semibold'>{course.classes}</div>

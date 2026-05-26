@@ -119,7 +119,7 @@ export async function createClass(input: CreateClassInput): Promise<ClassRow> {
     enrolled: 0,
     capacity: input.capacity,
     status: 'upcoming',
-    weeksTotal: course?.weeks
+    totalSessions: course?.totalSessions
   };
   classRows.unshift(row);
   return row;
