@@ -22,7 +22,7 @@ export const parentCourses: ParentCourse[] = [
   {
     id: 'sc-basic',
     code: 'SC-101',
-    name: 'Scratch Cơ bản',
+    name: 'Scratch Cơ bản2',
     ageRange: '6–8',
     level: 'Beginner',
     mode: 'Offline',
