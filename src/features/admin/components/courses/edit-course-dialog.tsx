@@ -72,6 +72,26 @@ function deriveSessionsFromCurriculum(curriculum: string[]): SessionValue[] {
     .map((title) => ({ title, description: '' }));
 }
 
+// Keep the outline (sessions) length in sync with totalSessions: preserve any
+// titles/descriptions the user has typed by slicing the tail on shrink and
+// appending blanks on grow.
+function syncSessionsToTotal(form: any, total: number): void {
+  const current = (form.getFieldValue('sessions') as SessionValue[]) ?? [];
+  const target = Math.max(0, Math.floor(total));
+  if (current.length === target) return;
+  const next =
+    target > current.length
+      ? [
+          ...current,
+          ...Array.from({ length: target - current.length }, () => ({
+            title: '',
+            description: ''
+          }))
+        ]
+      : current.slice(0, target);
+  form.setFieldValue('sessions', next);
+}
+
 function discountToFormValue(rule: DiscountRule): DiscountValue {
   return {
     name: rule.name,
@@ -270,11 +290,13 @@ export function EditCourseDialog({
       const f = form as any;
       targetPaths.forEach((name) => {
         const errors = grouped.get(name);
-        f.setFieldMeta(name, (prev: { errorMap?: Record<string, unknown> }) => ({
-          ...prev,
+        // `prev` is undefined for fields that haven't mounted yet (e.g. newly
+        // grown session entries before their inputs render).
+        f.setFieldMeta(name, (prev: { errorMap?: Record<string, unknown> } | undefined) => ({
+          ...(prev ?? {}),
           isTouched: true,
           errorMap: {
-            ...prev.errorMap,
+            ...(prev?.errorMap ?? {}),
             onSubmit: errors && errors.length ? errors : undefined
           }
         }));
@@ -323,6 +345,7 @@ export function EditCourseDialog({
               )}
 
               <BasicsFields
+                form={form}
                 baseSchema={baseSchema}
                 tAddDialog={tAddDialog}
                 tDialog={tDialog}
@@ -372,6 +395,7 @@ export function EditCourseDialog({
 }
 
 function BasicsFields({
+  form,
   baseSchema,
   tAddDialog,
   tDialog,
@@ -379,6 +403,7 @@ function BasicsFields({
   levelOptions,
   isLocked
 }: {
+  form: any;
   baseSchema: BaseSchema;
   tAddDialog: ReturnType<typeof useTranslations>;
   tDialog: ReturnType<typeof useTranslations>;
@@ -474,6 +499,19 @@ function BasicsFields({
           className='font-mono'
           disabled={isLocked}
           validators={{ onBlur: shape.totalSessions }}
+          // Sync sessions list (below) to this total on blur or Enter, mirroring
+          // the wizard. Preserves existing entries: slice tail when shrinking,
+          // append blanks when growing.
+          listeners={{
+            onBlur: ({ value }) => syncSessionsToTotal(form, Number(value) || 0)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              // Blur triggers the listener above and the onBlur validator.
+              (e.currentTarget as HTMLInputElement).blur();
+            }
+          }}
         />
         <FormTextField
           name='sessionDurationMinutes'

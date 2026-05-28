@@ -109,6 +109,47 @@ export function buildSchema(baseSchema: BaseSchema, tValidation: ValidationT) {
   });
 }
 
+// Local YYYY-MM-DD for today. Chronological comparison via string ordering
+// works on `YYYY-MM-DD`, which dodges every timezone surprise the Date API
+// invites (UTC midnight vs local midnight, etc.).
+function todayYmd(): string {
+  const t = new Date();
+  const y = t.getFullYear();
+  const m = String(t.getMonth() + 1).padStart(2, '0');
+  const d = String(t.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function isFutureYmd(value: string): boolean {
+  // Accept full ISO too in case an older stored value sneaks in — we only need
+  // the date part for ordering.
+  const ymd = value.length >= 10 ? value.slice(0, 10) : value;
+  return ymd > todayYmd();
+}
+
+/**
+ * Per-field validator for the CREATE form's startDate. Schema-level refines
+ * only fire on submit; this attaches an onBlur check so the user sees
+ * "must be after today" immediately when they pick a past date.
+ */
+export function buildStartDateCreateValidator(tValidation: ValidationT) {
+  return z
+    .string()
+    .min(1, tValidation('startDateRequired'))
+    .refine(isFutureYmd, { message: tValidation('startDateFuture') });
+}
+
+// CREATE-only: a brand-new class must start in the future. Edit doesn't enforce
+// this universally (e.g. admin can leave a DRAFT class with a past startDate
+// while still editing other fields). The BE re-checks via
+// validateStartDateChange when the class has enrolments.
+export function buildCreateSchema(baseSchema: BaseSchema, tValidation: ValidationT) {
+  return buildSchema(baseSchema, tValidation).refine((v) => isFutureYmd(v.startDate), {
+    path: ['startDate'],
+    message: tValidation('startDateFuture')
+  });
+}
+
 function toMinutes(time: string): number {
   const match = TIME_RE.exec(time);
   if (!match) return Number.NaN;

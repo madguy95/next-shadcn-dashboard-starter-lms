@@ -1,4 +1,4 @@
-export const COURSE_STATUSES = ['published', 'draft'] as const;
+export const COURSE_STATUSES = ['published', 'draft', 'unpublished'] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 
 export const COURSE_CATEGORIES = [
@@ -101,6 +101,7 @@ export type CourseCategoryTab = {
 
 export type CourseListParams = {
   category?: CourseCategory;
+  status?: CourseStatus;
   search?: string;
 };
 
@@ -108,6 +109,7 @@ export type CourseStats = {
   total: number;
   published: number;
   drafts: number;
+  unpublished: number;
 };
 
 export type CreateCourseInput = {
@@ -140,4 +142,34 @@ export type UpdateCourseInput = Partial<CreateCourseInput> & {
 export type DuplicateCourseInput = {
   title?: string;
   code?: string;
+};
+
+// Lean public payload returned by GET /api/public/courses for the marketing landing page.
+// Always represents a published course; no internal status / sessions / discounts.
+export type PublicCourse = {
+  id: number;
+  code: string;
+  title: string;
+  tagline?: string;
+  description?: string;
+  category: CourseCategory;
+  level: CourseLevel;
+  minAge: number;
+  maxAge: number;
+  totalSessions: number;
+  sessionDurationMinutes: number;
+  tuitionAmount: number;
+  originalTuitionAmount?: number;
+  coverUrl?: string;
+  // ISO timestamp — used FE-side to derive "isNew" badges.
+  createdAt?: string;
+};
+
+// Detailed public payload returned by GET /api/public/courses/{id}. Superset of PublicCourse
+// with the full session list + intro video + pricing notes so the detail sheet can render real content.
+export type PublicCourseDetail = PublicCourse & {
+  perClassCapacity: number;
+  introVideoUrl?: string;
+  pricingNotes?: string;
+  sessions: CourseSessionInput[];
 };

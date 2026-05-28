@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { useCreateTeacher, type Gender } from '@/api/teachers';
 import { locations, subjects } from '@/constants/teacher-options';
+import { formatApiError } from '@/lib/api-client';
 import { TeacherForm, type TeacherFormValues } from './teacher-form';
 
 const FORM_ID = 'add-teacher-form';
@@ -74,8 +75,9 @@ export function AddTeacherDialog() {
               });
               toast.success(t('addDialog.successToast', { name: teacher.name }));
               setOpen(false);
-            } catch {
-              toast.error(t('addDialog.errorToast'));
+            } catch (e) {
+              const { title, description } = formatApiError(e, t('addDialog.errorToast'));
+              toast.error(title, description ? { description } : undefined);
             }
           }}
           renderFooter={(submitButton) => (

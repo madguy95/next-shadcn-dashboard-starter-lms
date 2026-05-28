@@ -9,6 +9,28 @@ import { cn } from '@/lib/utils';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+// `YYYY-MM-DD` (local) — keeps the calendar's intent unambiguous across
+// timezones. The BE expects LocalDate so this is what the wire wants anyway.
+export function toYmd(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Parse a stored value into a Date in the user's local TZ.
+ * Accepts both bare `YYYY-MM-DD` (preferred, what `toYmd` emits) and full ISO
+ * strings (what older saved values may contain).
+ */
+export function parseYmdLocal(value: string): Date | null {
+  if (!value) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 interface DateFieldProps {
   form: any;
   name: 'startDate' | 'endDate';
@@ -16,6 +38,12 @@ interface DateFieldProps {
   placeholder: string;
   disabled?: boolean;
   description?: string;
+  /**
+   * Forwarded to the underlying AppField. Use this for per-field validators
+   * (e.g. "must be after today" on create) — schema-level refines only run
+   * on submit, so we attach an onBlur validator here for immediate feedback.
+   */
+  validators?: any;
 }
 
 /**
@@ -29,12 +57,13 @@ export function DateField({
   label,
   placeholder,
   disabled = false,
-  description
+  description,
+  validators
 }: DateFieldProps) {
   return (
-    <form.AppField name={name}>
+    <form.AppField name={name} validators={validators}>
       {(field: any) => {
-        const selected = field.state.value ? new Date(field.state.value) : undefined;
+        const selected = parseYmdLocal(field.state.value) ?? undefined;
         const trigger = (
           <Button
             variant='outline'
@@ -67,7 +96,7 @@ export function DateField({
                       selected={selected}
                       defaultMonth={selected ?? new Date()}
                       onSelect={(date) => {
-                        field.handleChange(date ? date.toISOString() : '');
+                        field.handleChange(date ? toYmd(date) : '');
                         field.handleBlur();
                       }}
                     />

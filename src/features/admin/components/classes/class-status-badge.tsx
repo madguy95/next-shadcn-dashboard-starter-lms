@@ -5,17 +5,8 @@ import type { ClassStatus } from '@/api/classes';
 import { classStatusClass } from '@/features/admin/data';
 import { cn } from '@/lib/utils';
 
-export function ClassStatusBadge({
-  status,
-  currentSessionIndex,
-  totalSessions
-}: {
-  status: ClassStatus;
-  currentSessionIndex?: number;
-  totalSessions?: number;
-}) {
+export function ClassStatusBadge({ status }: { status: ClassStatus }) {
   const t = useTranslations('classes');
-  const showProgress = status === 'running' && currentSessionIndex && totalSessions;
   return (
     <span
       className={cn(
@@ -24,11 +15,6 @@ export function ClassStatusBadge({
       )}
     >
       {t(`status.${status}`)}
-      {showProgress && (
-        <span className='ml-1 opacity-80'>
-          · {t('detail.sessionProgress', { current: currentSessionIndex, total: totalSessions })}
-        </span>
-      )}
     </span>
   );
 }

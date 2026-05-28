@@ -50,7 +50,15 @@
       "resetPassword": "Đặt lại mật khẩu",
       "changeStatus": "Đổi trạng thái",
       "remove": "Xóa",
-      "menuLabel": "Thao tác cho {name}"
+      "menuLabel": "Thao tác cho {name}",
+      "statusUpdated": "Đã cập nhật trạng thái của {name}.",
+      "statusError": "Không thể đổi trạng thái. Vui lòng thử lại.",
+      "removeTitle": "Xóa giáo viên?",
+      "removeDescription": "Bạn có chắc muốn xóa {name}? Hành động này không thể hoàn tác.",
+      "removeConfirm": "Xóa",
+      "removeCancel": "Hủy",
+      "removeSuccess": "Đã xóa {name}.",
+      "removeError": "Không thể xóa. Vui lòng thử lại."
     },
     "addDialog": {
       "title": "Thêm giáo viên",
@@ -133,7 +141,8 @@
     },
     "status": {
       "published": "đã xuất bản",
-      "draft": "bản nháp"
+      "draft": "bản nháp",
+      "unpublished": "đã gỡ"
     },
     "card": {
       "sessions": "buổi",
@@ -154,6 +163,19 @@
       "curriculumUnits": "Giáo trình · {count} buổi",
       "editOutline": "Sửa đề cương",
       "openCourse": "Mở khóa học",
+      "unpublish": "Đóng khóa học",
+      "openCourseSuccess": "Đã mở khóa học {title}.",
+      "openCourseError": "Không thể mở khóa học này.",
+      "unpublishSuccess": "Đã đóng khóa học {title}.",
+      "unpublishError": "Không thể đóng khóa học này.",
+      "delete": "Xóa khóa học",
+      "deleteTitle": "Xóa khóa học này?",
+      "deleteDescription": "{title} sẽ bị xóa. Hành động này không thể hoàn tác.",
+      "deleteCancel": "Hủy",
+      "deleteConfirm": "Xóa",
+      "deleteSuccess": "Đã xóa khóa học {title}.",
+      "deleteError": "Không thể xóa khóa học này.",
+      "more": "Thêm thao tác",
       "duplicate": "Nhân bản",
       "discountsHeading": "Ưu đãi & khuyến mãi",
       "discountConditions": {
@@ -311,6 +333,7 @@
         "sessionTitleRequired": "Buổi {n} cần có tiêu đề.",
         "tuitionMin": "Học phí phải >= 0.",
         "discountNameRequired": "Ưu đãi #{n} cần có tên.",
+        "discountValueRequired": "Ưu đãi #{n} cần có giá trị.",
         "discountPercentRange": "Ưu đãi #{n}: % phải từ 0 đến 100.",
         "discountAmountMin": "Ưu đãi #{n}: số tiền phải >= 0.",
         "discountSpecialValueRequired": "Ưu đãi #{n} cần có mô tả.",
@@ -334,7 +357,7 @@
   },
   "classes": {
     "title": "Lớp học",
-    "pageDescription": "{running} đang chạy · {upcoming} sắp khai giảng · chọn một lớp để xem học viên",
+    "pageDescription": "{ongoing} đang dạy · {open} đang mở đăng ký · chọn một lớp để xem học viên",
     "newClass": "Thêm lớp",
     "filters": "Bộ lọc",
     "loadingList": "Đang tải danh sách lớp…",
@@ -346,9 +369,31 @@
       "all": "Tất cả"
     },
     "status": {
-      "running": "Đang chạy",
-      "upcoming": "Sắp khai giảng",
-      "ended": "Đã kết thúc"
+      "draft": "Nháp",
+      "open": "Đang mở",
+      "full": "Đầy chỗ",
+      "ongoing": "Đang dạy",
+      "completed": "Đã kết thúc",
+      "unpublished": "Đã gỡ",
+      "cancelled": "Đã hủy"
+    },
+    "lifecycle": {
+      "publish": "Xuất bản",
+      "unpublish": "Gỡ xuất bản",
+      "cancel": "Hủy lớp",
+      "republish": "Xuất bản lại",
+      "cancelConfirmTitle": "Hủy lớp {name}?",
+      "cancelConfirmBody": "Học viên đã đăng ký sẽ nhận thông báo. Hành động này không thể hoàn tác.",
+      "cancelReasonLabel": "Lý do hủy",
+      "cancelReasonPlaceholder": "Vd. Không đủ học viên đăng ký, đổi lịch giảng viên…",
+      "cancelReasonRequired": "Vui lòng nhập lý do hủy lớp.",
+      "cancelDismiss": "Không hủy",
+      "cancelConfirm": "Xác nhận hủy",
+      "cancelInProgress": "Đang hủy…",
+      "publishSuccess": "Đã xuất bản lớp.",
+      "unpublishSuccess": "Đã gỡ xuất bản lớp.",
+      "cancelSuccess": "Đã hủy lớp.",
+      "actionError": "Không thể thực hiện thao tác. Vui lòng thử lại."
     },
     "studentStatus": {
       "on_track": "đúng tiến độ",
@@ -377,7 +422,74 @@
       "attendancePct": "Chuyên cần {value}%",
       "moreStudents": "Còn {count} học viên khác…",
       "noStudents": "Lớp chưa có học viên nào.",
-      "empty": "Chọn một lớp để xem danh sách học viên."
+      "empty": "Chọn một lớp để xem danh sách học viên.",
+      "cancellationReason": "Lý do hủy",
+      "edit": "Chỉnh sửa"
+    },
+    "lockReason": {
+      "completed": "Đã khóa — lớp đã kết thúc.",
+      "cancelled": "Đã khóa — lớp đã hủy.",
+      "ongoing": "Đã khóa — lớp đang dạy.",
+      "hasEnrollments": "Đã khóa — đã có học viên đăng ký."
+    },
+    "editDialog": {
+      "section": "Chỉnh sửa lớp học",
+      "title": "Chỉnh sửa {name}",
+      "description": "Một số trường sẽ bị khóa dựa trên trạng thái lớp và số học viên đã đăng ký.",
+      "loadError": "Không tải được dữ liệu. Vui lòng thử lại.",
+      "hint": "Đang chỉnh sửa {name}",
+      "noChanges": "Chưa có thay đổi để lưu.",
+      "submit": "Lưu thay đổi",
+      "successToast": "Đã cập nhật lớp {name}.",
+      "errorToast": "Không thể cập nhật lớp. Vui lòng thử lại.",
+      "fields": {
+        "course": "Khóa học",
+        "coursePlaceholder": "Chọn khóa học",
+        "courseSearchPlaceholder": "Tìm khóa học…",
+        "courseEmpty": "Không có khóa học phù hợp.",
+        "classLabel": "Mã lớp",
+        "teacher": "Giáo viên",
+        "teacherPlaceholder": "Chọn giáo viên",
+        "teacherSearchPlaceholder": "Tìm giáo viên…",
+        "teacherEmpty": "Không có giáo viên phù hợp.",
+        "location": "Địa điểm",
+        "locationPlaceholder": "Chọn địa điểm",
+        "schedule": "Lịch hằng tuần",
+        "scheduleSummary": "{count} buổi / tuần",
+        "scheduleEmpty": "Chọn ít nhất một ngày để đặt giờ.",
+        "startTime": "Bắt đầu",
+        "endTime": "Kết thúc",
+        "starts": "Bắt đầu",
+        "ends": "Kết thúc",
+        "datePlaceholder": "Chọn ngày",
+        "capacity": "Sĩ số",
+        "capacityUnit": "học viên",
+        "capacityEnrolledHint": "Đã có {enrolled} học viên đăng ký.",
+        "visibility": "Hiển thị"
+      },
+      "conflict": {
+        "title": "Trùng lịch",
+        "body": "Trùng lịch giáo viên."
+      },
+      "locations": {
+        "Room 204": "Phòng 204",
+        "Room 101": "Phòng 101",
+        "Online": "Trực tuyến"
+      },
+      "visibilities": {
+        "public_enrollable": "Công khai · cho đăng ký",
+        "public_view": "Công khai · chỉ xem",
+        "private": "Riêng tư"
+      },
+      "days": {
+        "Sun": "CN",
+        "Mon": "T2",
+        "Tue": "T3",
+        "Wed": "T4",
+        "Thu": "T5",
+        "Fri": "T6",
+        "Sat": "T7"
+      }
     },
     "addDialog": {
       "section": "Học kỳ Hè 2026",
@@ -441,6 +553,17 @@
       },
       "successToast": "Đã tạo lớp {name}.",
       "errorToast": "Không thể tạo lớp. Vui lòng thử lại.",
+      "loadError": "Không tải được danh sách khóa học/giáo viên. Vui lòng thử lại.",
+      "empty": {
+        "courses": {
+          "title": "Chưa có khóa học nào được xuất bản",
+          "body": "Bạn cần xuất bản ít nhất một khóa học trước khi tạo lớp."
+        },
+        "teachers": {
+          "title": "Chưa có giáo viên đang hoạt động",
+          "body": "Bạn cần có ít nhất một giáo viên ở trạng thái 'Đang hoạt động' để xếp lớp."
+        }
+      },
       "validation": {
         "courseRequired": "Vui lòng chọn khóa học.",
         "labelRequired": "Vui lòng nhập mã lớp.",
@@ -452,7 +575,9 @@
         "startDateRequired": "Vui lòng chọn ngày bắt đầu.",
         "endDateRequired": "Vui lòng chọn ngày kết thúc.",
         "dateOrder": "Ngày kết thúc phải sau ngày bắt đầu.",
+        "startDateFuture": "Ngày bắt đầu phải sau hôm nay.",
         "capacityMin": "Sĩ số tối thiểu là 1.",
+        "capacityBelowEnrolled": "Sĩ số mới không được nhỏ hơn số học viên đã đăng ký ({enrolled}).",
         "visibilityRequired": "Vui lòng chọn quyền hiển thị."
       }
     }

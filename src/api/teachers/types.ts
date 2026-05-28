@@ -10,14 +10,22 @@ export function isTeacherStatus(value: string | null | undefined): value is Teac
 export const GENDERS = ['male', 'female', 'other', 'prefer_not_to_say'] as const;
 export type Gender = (typeof GENDERS)[number];
 
+export type TeacherSubjectRef = {
+  id: number;
+  name: string;
+  primary: boolean;
+};
+
 export type Teacher = {
-  id: string;
+  id: number;
+  userId: number;
   name: string;
   email: string;
   phone: string;
   initials: string;
   tone: AvatarTone;
   subjects: string[];
+  subjectsRaw: TeacherSubjectRef[];
   classCount: number;
   studentCount: number;
   rating: number;
@@ -55,6 +63,8 @@ export type CreateTeacherInput = {
   sendOnboardingEmail: boolean;
   gender: Gender;
   dateOfBirth: string;
+  // Raw File chosen in the form. The service layer uploads it via /api/files/upload/teacher-avatar
+  // and forwards the resulting URL to the create endpoint — callers never need to pre-upload.
   avatar?: File;
 };
 

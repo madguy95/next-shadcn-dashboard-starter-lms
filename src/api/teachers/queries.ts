@@ -1,13 +1,20 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createTeacher,
+  deleteTeacher,
   getTeacherOptions,
   getTeacherStatusTabs,
   getTeachers,
   updateTeacher,
+  updateTeacherStatus,
   type TeacherOptionsParams
 } from './service';
-import type { CreateTeacherInput, TeacherListParams, UpdateTeacherInput } from './types';
+import type {
+  CreateTeacherInput,
+  TeacherListParams,
+  TeacherStatus,
+  UpdateTeacherInput
+} from './types';
 
 export const teacherKeys = {
   all: ['admin', 'teachers'] as const,
@@ -20,8 +27,6 @@ export function teacherListOptions(params: TeacherListParams) {
   return queryOptions({
     queryKey: teacherKeys.list(params),
     queryFn: () => getTeachers(params),
-    // Keep previous page's data visible while fetching the next — enables overlay UX
-    // instead of clearing the table on every page/filter change.
     placeholderData: keepPreviousData
   });
 }
@@ -54,8 +59,29 @@ export function useCreateTeacher() {
 export function useUpdateTeacher() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateTeacherInput }) =>
+    mutationFn: ({ id, input }: { id: number; input: UpdateTeacherInput }) =>
       updateTeacher(id, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: teacherKeys.all });
+    }
+  });
+}
+
+export function useUpdateTeacherStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: number; status: TeacherStatus }) =>
+      updateTeacherStatus(id, status),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: teacherKeys.all });
+    }
+  });
+}
+
+export function useDeleteTeacher() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteTeacher(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: teacherKeys.all });
     }

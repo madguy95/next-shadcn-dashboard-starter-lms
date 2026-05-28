@@ -1,3 +1,5 @@
+import type { CourseLevel as ApiCourseLevel, PublicCourse } from '@/api/courses/types';
+
 export type CourseLevel = 'Beginner' | 'Intermediate' | 'Advanced';
 export type CourseMode = 'Offline' | 'Online' | 'Online · Offline';
 
@@ -16,7 +18,56 @@ export type ParentCourse = {
   goals: string;
   rating: number;
   learners: number;
+  // Real cover image URL from Cloudinary (or empty if not uploaded yet). The card UI uses
+  // this when present and falls back to a stripe placeholder otherwise.
+  coverUrl?: string;
 };
+
+// "beginner" -> "Beginner". Backend uses lowercase to match its enum; the parent UI uses
+// title-case strings to match the older mock data.
+const LEVEL_LABEL: Record<ApiCourseLevel, CourseLevel> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced'
+};
+
+// 30-day window for the "Mới" badge.
+const NEW_BADGE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+function trimGoals(text: string, max = 140): string {
+  const t = text.trim();
+  return t.length > max ? `${t.slice(0, max - 1)}…` : t;
+}
+
+/**
+ * Bridge between the BE {@link PublicCourse} shape (lean, no rating/learners/mode/popular)
+ * and the {@link ParentCourse} shape that the parent enrollment UI was built against.
+ * Unknown fields get sensible defaults so the existing UI keeps working unchanged.
+ */
+export function publicCourseToParentCourse(c: PublicCourse): ParentCourse {
+  const goalsRaw = c.tagline?.trim() || c.description?.trim() || '';
+  const isNew = c.createdAt
+    ? Date.now() - new Date(c.createdAt).getTime() < NEW_BADGE_WINDOW_MS
+    : false;
+  return {
+    id: String(c.id),
+    code: c.code,
+    name: c.title,
+    ageRange: `${c.minAge}–${c.maxAge}`,
+    level: LEVEL_LABEL[c.level],
+    // BE doesn't carry delivery mode yet; assume hybrid until the field exists upstream.
+    mode: 'Online · Offline',
+    sessions: c.totalSessions,
+    duration: c.sessionDurationMinutes,
+    price: c.tuitionAmount,
+    popular: false,
+    isNew,
+    goals: trimGoals(goalsRaw),
+    rating: 0,
+    learners: 0,
+    coverUrl: c.coverUrl
+  };
+}
 
 export const parentCourses: ParentCourse[] = [
   {

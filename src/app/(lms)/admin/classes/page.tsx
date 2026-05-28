@@ -13,8 +13,8 @@ export default async function ClassesPage() {
     <PageContainer
       pageTitle={t('title')}
       pageDescription={t('pageDescription', {
-        running: stats.running,
-        upcoming: stats.upcoming
+        ongoing: stats.ongoing,
+        open: stats.open
       })}
       pageHeaderAction={<ClassesHeaderAction />}
       // ClassesView owns its scroll so the detail panel stays pinned on the

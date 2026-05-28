@@ -1,18 +1,42 @@
 import Link from 'next/link';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { formatVND, parentCourses, type ParentCourse } from '@/features/parent/data';
+import { getPublicCourses } from '@/api/courses/service';
+import type { CourseCategory, CourseLevel, PublicCourse } from '@/api/courses/types';
+import { formatVND } from '@/features/parent/data';
 
-const courseAccents: Record<string, { hue: number; chip: string }> = {
-  'sc-basic': { hue: 195, chip: 'text-cyan-300' },
-  'sc-game': { hue: 145, chip: 'text-emerald-300' },
-  'py-intro': { hue: 30, chip: 'text-orange-300' },
-  'web-junior': { hue: 270, chip: 'text-violet-300' }
+// Hue + chip color per course category. Used to give each card a distinct accent
+// without needing a per-course config.
+const categoryAccents: Record<CourseCategory, { hue: number; chip: string }> = {
+  coding: { hue: 195, chip: 'text-cyan-300' },
+  design: { hue: 320, chip: 'text-pink-300' },
+  robotics: { hue: 270, chip: 'text-violet-300' },
+  stem: { hue: 30, chip: 'text-orange-300' },
+  language: { hue: 145, chip: 'text-emerald-300' },
+  game: { hue: 350, chip: 'text-rose-300' }
 };
+
+const levelLabel: Record<CourseLevel, string> = {
+  beginner: 'Cơ bản',
+  intermediate: 'Trung cấp',
+  advanced: 'Nâng cao'
+};
+
+// 30-day window: anything published this month gets a "Mới" badge.
+const NEW_BADGE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+function isRecent(iso?: string): boolean {
+  if (!iso) return false;
+  return Date.now() - new Date(iso).getTime() < NEW_BADGE_WINDOW_MS;
+}
 
 export const metadata = {
   title: 'IQode Lab — Build thinking, not just coding.'
 };
+
+// Always render fresh on each request — the landing page should reflect newly published courses
+// without waiting for ISR. Switch to `revalidate` if traffic warrants caching.
+export const dynamic = 'force-dynamic';
 
 function BrandAsterisk({ className = '' }: { className?: string }) {
   return (
@@ -47,21 +71,36 @@ function BrandAsterisk({ className = '' }: { className?: string }) {
   );
 }
 
-function CourseCard({ course }: { course: ParentCourse }) {
-  const accent = courseAccents[course.id] ?? { hue: 200, chip: 'text-cyan-300' };
-  const ModeIcon = course.mode.includes('Online') ? Icons.video : Icons.workspace;
+function CourseCard({ course }: { course: PublicCourse }) {
+  const accent = categoryAccents[course.category] ?? { hue: 200, chip: 'text-cyan-300' };
+  const isNew = isRecent(course.createdAt);
+  const goalsText = course.tagline?.trim() || course.description?.trim() || '';
+
   return (
     <Link
-      href='/parent/enrollment'
-      aria-label={`Xem khóa ${course.name}`}
+      // Deep-link by course code so the enrollment view can auto-open the detail sheet.
+      href={`/parent/enrollment?course=${encodeURIComponent(course.code)}`}
+      aria-label={`Xem khóa ${course.title}`}
       className='group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all hover:border-white/30 hover:bg-white/[0.08]'
     >
-      <div
-        className='relative h-1.5 w-full'
-        style={{
-          background: `linear-gradient(90deg, hsl(${accent.hue} 70% 55%), hsl(${accent.hue} 80% 65%))`
-        }}
-      />
+      {course.coverUrl ? (
+        <div className='relative h-32 w-full overflow-hidden'>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={course.coverUrl}
+            alt={course.title}
+            className='absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105'
+          />
+          <div className='absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent' />
+        </div>
+      ) : (
+        <div
+          className='relative h-1.5 w-full'
+          style={{
+            background: `linear-gradient(90deg, hsl(${accent.hue} 70% 55%), hsl(${accent.hue} 80% 65%))`
+          }}
+        />
+      )}
       <div
         className='pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full opacity-30 transition-opacity group-hover:opacity-60'
         style={{
@@ -74,54 +113,49 @@ function CourseCard({ course }: { course: ParentCourse }) {
           <span className={`font-mono text-[11px] tracking-wider ${accent.chip}`}>
             {course.code}
           </span>
-          <div className='flex items-center gap-1.5'>
-            {course.popular && (
-              <span className='inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-200'>
-                ★ Phổ biến
-              </span>
-            )}
-            {course.isNew && (
-              <span className='inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
-                ✨ Mới
-              </span>
-            )}
-          </div>
+          {isNew && (
+            <span className='inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
+              ✨ Mới
+            </span>
+          )}
         </div>
 
         <div>
           <h3 className='text-lg leading-tight font-semibold tracking-tight text-white'>
-            {course.name}
+            {course.title}
           </h3>
           <div className='mt-1 text-xs text-white/50'>
-            Độ tuổi {course.ageRange} · {course.level}
+            Độ tuổi {course.minAge}–{course.maxAge} · {levelLabel[course.level]}
           </div>
         </div>
 
-        <p className='text-sm leading-relaxed text-white/70'>{course.goals}</p>
+        {goalsText && (
+          <p className='line-clamp-3 text-sm leading-relaxed text-white/70'>{goalsText}</p>
+        )}
 
         <div className='mt-auto flex flex-wrap items-center gap-3 pt-3 text-[11px] text-white/50'>
           <span className='inline-flex items-center gap-1'>
             <Icons.book className='size-3' />
-            {course.sessions} buổi
+            {course.totalSessions} buổi
           </span>
           <span className='inline-flex items-center gap-1'>
             <Icons.clock className='size-3' />
-            {course.duration}′
-          </span>
-          <span className='inline-flex items-center gap-1'>
-            <ModeIcon className='size-3' />
-            {course.mode}
-          </span>
-          <span className='inline-flex items-center gap-1'>
-            <Icons.star className='size-3 text-amber-300' />
-            {course.rating}
+            {course.sessionDurationMinutes}′
           </span>
         </div>
 
         <div className='flex items-baseline justify-between border-t border-white/10 pt-4'>
           <div>
-            <div className='text-sm font-semibold text-white'>{formatVND(course.price)}</div>
-            <div className='text-[10px] text-white/40'>/khóa · {course.learners} học viên</div>
+            <div className='text-sm font-semibold text-white'>
+              {formatVND(course.tuitionAmount)}
+            </div>
+            {course.originalTuitionAmount &&
+              course.originalTuitionAmount > course.tuitionAmount && (
+                <div className='text-[10px] text-white/40 line-through'>
+                  {formatVND(course.originalTuitionAmount)}
+                </div>
+              )}
+            <div className='text-[10px] text-white/40'>/khóa</div>
           </div>
           <span
             className={`inline-flex items-center gap-1 text-xs font-medium ${accent.chip} transition-transform group-hover:translate-x-0.5`}
@@ -135,7 +169,31 @@ function CourseCard({ course }: { course: ParentCourse }) {
   );
 }
 
-export default function LandingPage() {
+function EmptyCoursesState() {
+  return (
+    <div className='col-span-full rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center backdrop-blur'>
+      <Icons.info className='mx-auto size-6 text-white/40' />
+      <div className='mt-3 text-sm font-medium text-white/80'>Đang cập nhật danh sách khóa học</div>
+      <p className='mt-1 text-xs text-white/50'>
+        Trung tâm sẽ sớm công bố các khóa mới. Hãy quay lại sau hoặc liên hệ tư vấn.
+      </p>
+    </div>
+  );
+}
+
+// Fetch landing-page courses server-side. Swallow errors so a BE outage doesn't 500
+// the marketing site — we show the empty state instead.
+async function loadPublicCourses(): Promise<PublicCourse[]> {
+  try {
+    return await getPublicCourses(4);
+  } catch {
+    return [];
+  }
+}
+
+export default async function LandingPage() {
+  const courses = await loadPublicCourses();
+
   return (
     <div className='relative min-h-screen overflow-hidden bg-black text-white'>
       <div
@@ -242,9 +300,11 @@ export default function LandingPage() {
           </div>
 
           <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-            {parentCourses.map((c) => (
-              <CourseCard key={c.id} course={c} />
-            ))}
+            {courses.length === 0 ? (
+              <EmptyCoursesState />
+            ) : (
+              courses.map((c) => <CourseCard key={c.id} course={c} />)
+            )}
           </div>
 
           <div className='mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur md:p-8'>

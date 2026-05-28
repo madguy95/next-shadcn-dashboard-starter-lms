@@ -15,6 +15,13 @@ export function StatusBadge({ status }: { status: Course['status'] }) {
       </span>
     );
   }
+  if (status === 'unpublished') {
+    return (
+      <span className='border-border bg-muted text-muted-foreground inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[10px]'>
+        {t('unpublished')}
+      </span>
+    );
+  }
   return (
     <span className='inline-flex items-center rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] text-amber-800'>
       {t('draft')}
@@ -41,8 +48,20 @@ export function CourseCard({
         selected ? 'border-foreground border-2' : 'hover:border-foreground/40'
       )}
     >
-      <div className='relative grid h-24 place-items-center border-b' style={thumbStripeStyle}>
-        <div className='text-muted-foreground font-mono text-[10px]'>{course.cover}</div>
+      <div
+        className={cn('relative h-24 border-b', !course.coverUrl && 'grid place-items-center')}
+        style={course.coverUrl ? undefined : thumbStripeStyle}
+      >
+        {course.coverUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={course.coverUrl}
+            alt={course.title}
+            className='absolute inset-0 h-full w-full object-cover'
+          />
+        ) : (
+          <div className='text-muted-foreground font-mono text-[10px]'>{course.cover}</div>
+        )}
         {selected && (
           <span className='bg-foreground text-background absolute top-2 left-2 inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px]'>
             {t('selectedBadge')}

@@ -1,7 +1,9 @@
 'use client';
 
+import { useSuspenseQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/auth-provider';
 import { Icons } from '@/components/icons';
@@ -19,11 +21,12 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { publicCoursesOptions } from '@/api/courses/queries';
 import { cn } from '@/lib/utils';
 import {
   formatVND,
   parentChildren,
-  parentCourses,
+  publicCourseToParentCourse,
   type ClassOption,
   type ParentChild,
   type ParentCourse
@@ -70,14 +73,35 @@ function CourseCard({
         selected && 'ring-ring border-foreground ring-2 ring-offset-2'
       )}
     >
-      <div className='bg-muted/40 relative flex h-24 items-end gap-2 border-b p-3 [background-image:repeating-linear-gradient(45deg,color-mix(in_srgb,currentColor_4%,transparent)_0_8px,transparent_8px_16px)]'>
+      <div
+        className={cn(
+          'relative flex h-24 items-end gap-2 border-b p-3',
+          !course.coverUrl &&
+            'bg-muted/40 [background-image:repeating-linear-gradient(45deg,color-mix(in_srgb,currentColor_4%,transparent)_0_8px,transparent_8px_16px)]'
+        )}
+      >
+        {course.coverUrl && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={course.coverUrl}
+              alt={course.name}
+              className='absolute inset-0 h-full w-full object-cover'
+            />
+            <div className='absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent' />
+          </>
+        )}
         {course.popular && (
-          <Badge className='border-amber-300/50 bg-amber-100/80 text-amber-900'>★ Phổ biến</Badge>
+          <Badge className='relative border-amber-300/50 bg-amber-100/80 text-amber-900'>
+            ★ Phổ biến
+          </Badge>
         )}
         {course.isNew && (
-          <Badge className='border-emerald-300/50 bg-emerald-100/80 text-emerald-900'>✨ Mới</Badge>
+          <Badge className='relative border-emerald-300/50 bg-emerald-100/80 text-emerald-900'>
+            ✨ Mới
+          </Badge>
         )}
-        <span className='bg-background/80 text-muted-foreground ml-auto rounded-md border px-2 py-0.5 font-mono text-[10.5px] backdrop-blur'>
+        <span className='bg-background/80 text-muted-foreground relative ml-auto rounded-md border px-2 py-0.5 font-mono text-[10.5px] backdrop-blur'>
           {course.code}
         </span>
       </div>
@@ -485,16 +509,51 @@ export function EnrollmentView() {
   const [childIdx, setChildIdx] = useState(0);
   const child = parentChildren[childIdx];
 
-  const [courseId, setCourseId] = useState<string>('sc-basic');
-  const course = parentCourses.find((c) => c.id === courseId) ?? null;
+  // Public course list is server-prefetched in app/(lms)/parent/enrollment/page.tsx and hydrated
+  // via <HydrationBoundary>. useSuspenseQuery picks that up — no skeleton on first paint.
+  // Subsequent navigations (no hydration) suspend until cache populates.
+  const { data: publicCourses } = useSuspenseQuery(publicCoursesOptions(24));
+  const courses = useMemo<ParentCourse[]>(
+    () => publicCourses.map(publicCourseToParentCourse),
+    [publicCourses]
+  );
+
+  // Deep-link: /parent/enrollment?course=SC-101 opens that course's detail sheet on mount.
+  // Match by `code` (stable, user-friendly) rather than DB id.
+  const searchParams = useSearchParams();
+  const initialCourseCode = searchParams.get('course');
+
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const course = courses.find((c) => c.id === courseId) ?? null;
 
   const [klass, setKlass] = useState<ClassOption | null>(null);
   const [showClassDialog, setShowClassDialog] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [detailCourseId, setDetailCourseId] = useState<string | null>(null);
   const detailCourse = detailCourseId
-    ? (parentCourses.find((c) => c.id === detailCourseId) ?? null)
+    ? (courses.find((c) => c.id === detailCourseId) ?? null)
     : null;
+
+  // Once the course list lands, sync selection to either the deep-linked course (via ?course=code)
+  // or fall back to the first item. Re-run when the list changes (e.g. refetch).
+  const didApplyDeepLink = useState({ done: false })[0];
+  useEffect(() => {
+    if (courses.length === 0) return;
+    if (!didApplyDeepLink.done && initialCourseCode) {
+      const match = courses.find((c) => c.code === initialCourseCode);
+      if (match) {
+        setCourseId(match.id);
+        setDetailCourseId(match.id);
+      } else if (!courseId) {
+        setCourseId(courses[0].id);
+      }
+      didApplyDeepLink.done = true;
+      return;
+    }
+    if (!courseId) {
+      setCourseId(courses[0].id);
+    }
+  }, [courses, initialCourseCode, courseId, didApplyDeepLink]);
 
   const [trial, setTrial] = useState(false);
   const [waitlist, setWaitlist] = useState(false);
@@ -510,7 +569,9 @@ export function EnrollmentView() {
   });
   const [sort, setSort] = useState('popular');
 
-  const hasConflict = courseId === 'sc-basic' && child.id === 'c1';
+  // The original "conflict" warning was hard-coded against a mock id; without real enrollment
+  // data we can't reliably detect overlapping courses, so leave the banner off for now.
+  const hasConflict = false;
 
   const handleContinue = () => {
     if (!klass) setShowClassDialog(true);
@@ -533,7 +594,7 @@ export function EnrollmentView() {
               <div className='flex min-w-0 items-baseline gap-2'>
                 <h3 className='text-base font-semibold tracking-tight'>Khóa học phù hợp</h3>
                 <Badge variant='secondary' className='font-mono text-[11px] font-normal'>
-                  {parentCourses.length} kết quả
+                  {`${courses.length} kết quả`}
                 </Badge>
               </div>
               <div className='flex items-center gap-1'>
@@ -587,19 +648,27 @@ export function EnrollmentView() {
 
             <FilterBar filters={filters} setFilters={setFilters} sort={sort} setSort={setSort} />
 
+            {/* No loading / error branches here — useSuspenseQuery guarantees data is present
+                (Suspense fallback handles loading, ErrorBoundary handles failures). */}
             <div className='grid grid-cols-1 gap-4 p-4 xl:grid-cols-2'>
-              {parentCourses.map((c) => (
-                <CourseCard
-                  key={c.id}
-                  course={c}
-                  selected={courseId === c.id}
-                  onSelect={() => {
-                    setCourseId(c.id);
-                    setKlass(null);
-                  }}
-                  onOpenDetail={() => setDetailCourseId(c.id)}
-                />
-              ))}
+              {courses.length === 0 ? (
+                <div className='bg-muted/30 text-muted-foreground col-span-full rounded-md border border-dashed p-10 text-center text-sm'>
+                  Trung tâm đang cập nhật danh sách khóa học. Vui lòng quay lại sau.
+                </div>
+              ) : (
+                courses.map((c) => (
+                  <CourseCard
+                    key={c.id}
+                    course={c}
+                    selected={courseId === c.id}
+                    onSelect={() => {
+                      setCourseId(c.id);
+                      setKlass(null);
+                    }}
+                    onOpenDetail={() => setDetailCourseId(c.id)}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

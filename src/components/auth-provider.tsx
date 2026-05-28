@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import type { AuthUser } from '@/lib/auth';
+import type { AuthUser } from '@/lib/auth-shared';
 
 type AuthContextValue = { user: AuthUser | null };
 

@@ -17,6 +17,7 @@ import {
 import { useUpdateTeacher, type Gender, type Teacher } from '@/api/teachers';
 import { locations, subjects as subjectsConst } from '@/constants/teacher-options';
 import { avatarToneClass, teacherStatusClass } from '@/features/admin/data';
+import { formatApiError } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { TeacherForm, type TeacherFormValues } from './teacher-form';
 
@@ -159,8 +160,9 @@ export function TeacherProfileSheet({ teacher, open, onOpenChange }: Props) {
                   });
                   toast.success(tProfile('saveSuccess', { name: updated.name }));
                   setIsEditing(false);
-                } catch {
-                  toast.error(tProfile('saveError'));
+                } catch (e) {
+                  const { title, description } = formatApiError(e, tProfile('saveError'));
+                  toast.error(title, description ? { description } : undefined);
                 }
               }}
               renderFooter={(submitButton) => (

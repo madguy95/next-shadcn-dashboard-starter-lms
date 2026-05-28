@@ -34,11 +34,33 @@ export function AddClassDialog({ trigger }: { trigger?: React.ReactNode } = {}) 
   const [open, setOpen] = React.useState(false);
   const [pending, setPending] = React.useState(false);
 
-  const { data: coursesResult } = useQuery(courseListOptions({}));
-  const { data: teachersData } = useQuery(teacherOptionsQuery({}));
-  const initialCourses = coursesResult?.data;
-  const initialTeachers = teachersData;
-  const ready = Boolean(initialCourses?.length && initialTeachers?.length);
+  const {
+    data: coursesResult,
+    isPending: coursesPending,
+    isError: coursesError
+  } = useQuery(courseListOptions({ status: 'published' }));
+  const {
+    data: teachersData,
+    isPending: teachersPending,
+    isError: teachersError
+  } = useQuery(teacherOptionsQuery({ status: 'active' }));
+
+  const isLoading = coursesPending || teachersPending;
+  const hasError = coursesError || teachersError;
+  const initialCourses = coursesResult?.data ?? [];
+  const initialTeachers = teachersData ?? [];
+  // Gate dialog on queries having resolved — not on length — so the empty
+  // state below can warn the admin instead of spinning forever when there
+  // are 0 published courses or 0 active teachers.
+  const ready = !isLoading && !hasError && initialCourses.length > 0 && initialTeachers.length > 0;
+  const emptyReason: 'courses' | 'teachers' | null =
+    !isLoading && !hasError
+      ? initialCourses.length === 0
+        ? 'courses'
+        : initialTeachers.length === 0
+          ? 'teachers'
+          : null
+      : null;
 
   const handleOpenChange = (next: boolean) => {
     // Block close while the create mutation is in-flight so the user can't
@@ -65,16 +87,25 @@ export function AddClassDialog({ trigger }: { trigger?: React.ReactNode } = {}) 
           <DialogTitle className='text-base tracking-tight'>{tDialog('title')}</DialogTitle>
           <DialogDescription className='text-[12px]'>{tDialog('description')}</DialogDescription>
         </DialogHeader>
-        {ready && initialCourses && initialTeachers ? (
+        {isLoading ? (
+          <LoadingState minHeight='280px' message={tDialog('description')} />
+        ) : hasError ? (
+          <div className='text-muted-foreground grid min-h-[280px] place-items-center px-6 text-center text-sm'>
+            {tDialog('loadError')}
+          </div>
+        ) : emptyReason ? (
+          <div className='text-muted-foreground grid min-h-[280px] place-items-center gap-1 px-6 text-center text-sm'>
+            <p className='text-foreground font-medium'>{tDialog(`empty.${emptyReason}.title`)}</p>
+            <p className='text-[13px]'>{tDialog(`empty.${emptyReason}.body`)}</p>
+          </div>
+        ) : ready ? (
           <AddClassForm
             initialCourses={initialCourses}
             initialTeachers={initialTeachers}
             onClose={() => setOpen(false)}
             onPendingChange={setPending}
           />
-        ) : (
-          <LoadingState minHeight='280px' message={tDialog('description')} />
-        )}
+        ) : null}
       </DialogContent>
     </Dialog>
   );

@@ -50,7 +50,15 @@
       "resetPassword": "Reset password",
       "changeStatus": "Change status",
       "remove": "Remove",
-      "menuLabel": "Actions for {name}"
+      "menuLabel": "Actions for {name}",
+      "statusUpdated": "Updated status for {name}.",
+      "statusError": "Could not change status. Please try again.",
+      "removeTitle": "Remove teacher?",
+      "removeDescription": "Are you sure you want to remove {name}? This action cannot be undone.",
+      "removeConfirm": "Remove",
+      "removeCancel": "Cancel",
+      "removeSuccess": "Removed {name}.",
+      "removeError": "Could not remove teacher. Please try again."
     },
     "addDialog": {
       "title": "Add teacher",
@@ -133,7 +141,8 @@
     },
     "status": {
       "published": "published",
-      "draft": "draft"
+      "draft": "draft",
+      "unpublished": "unpublished"
     },
     "card": {
       "sessions": "sessions",
@@ -154,6 +163,19 @@
       "curriculumUnits": "Curriculum · {count} sessions",
       "editOutline": "Edit outline",
       "openCourse": "Open course",
+      "unpublish": "Unpublish",
+      "openCourseSuccess": "{title} is now published.",
+      "openCourseError": "Could not publish this course.",
+      "unpublishSuccess": "{title} is now a draft.",
+      "unpublishError": "Could not unpublish this course.",
+      "delete": "Delete course",
+      "deleteTitle": "Delete this course?",
+      "deleteDescription": "{title} will be removed. This cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteConfirm": "Delete",
+      "deleteSuccess": "{title} has been deleted.",
+      "deleteError": "Could not delete this course.",
+      "more": "More actions",
       "duplicate": "Duplicate",
       "discountsHeading": "Discounts & offers",
       "discountConditions": {
@@ -311,6 +333,7 @@
         "sessionTitleRequired": "Session {n} needs a title.",
         "tuitionMin": "Tuition must be at least 0.",
         "discountNameRequired": "Discount #{n} needs a name.",
+        "discountValueRequired": "Discount #{n} needs a value.",
         "discountPercentRange": "Discount #{n} percentage must be between 0 and 100.",
         "discountAmountMin": "Discount #{n} amount must be at least 0.",
         "discountSpecialValueRequired": "Discount #{n} description is required.",
@@ -334,7 +357,7 @@
   },
   "classes": {
     "title": "Classes",
-    "pageDescription": "{running} running · {upcoming} upcoming · select a class to see students",
+    "pageDescription": "{ongoing} ongoing · {open} open for enrollment · select a class to see students",
     "newClass": "New class",
     "filters": "Filters",
     "loadingList": "Loading classes…",
@@ -346,9 +369,31 @@
       "all": "All"
     },
     "status": {
-      "running": "Running",
-      "upcoming": "Upcoming",
-      "ended": "Ended"
+      "draft": "Draft",
+      "open": "Open",
+      "full": "Full",
+      "ongoing": "Ongoing",
+      "completed": "Completed",
+      "unpublished": "Unpublished",
+      "cancelled": "Cancelled"
+    },
+    "lifecycle": {
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "cancel": "Cancel class",
+      "republish": "Republish",
+      "cancelConfirmTitle": "Cancel class {name}?",
+      "cancelConfirmBody": "Enrolled students will be notified. This cannot be undone.",
+      "cancelReasonLabel": "Cancellation reason",
+      "cancelReasonPlaceholder": "e.g. Not enough enrolment, teacher reschedule…",
+      "cancelReasonRequired": "Please provide a reason.",
+      "cancelDismiss": "Keep class",
+      "cancelConfirm": "Cancel class",
+      "cancelInProgress": "Cancelling…",
+      "publishSuccess": "Class published.",
+      "unpublishSuccess": "Class unpublished.",
+      "cancelSuccess": "Class cancelled.",
+      "actionError": "Couldn't apply the action. Please try again."
     },
     "studentStatus": {
       "on_track": "on track",
@@ -377,7 +422,74 @@
       "attendancePct": "{value}% attendance",
       "moreStudents": "{count, plural, one {# more student…} other {# more students…}}",
       "noStudents": "No students enrolled yet.",
-      "empty": "Select a class to see its roster."
+      "empty": "Select a class to see its roster.",
+      "cancellationReason": "Cancellation reason",
+      "edit": "Edit"
+    },
+    "lockReason": {
+      "completed": "Locked — class is completed.",
+      "cancelled": "Locked — class is cancelled.",
+      "ongoing": "Locked — class is in session.",
+      "hasEnrollments": "Locked — students already enrolled."
+    },
+    "editDialog": {
+      "section": "Edit class",
+      "title": "Edit {name}",
+      "description": "Some fields are locked based on the class lifecycle and current enrolment.",
+      "loadError": "Couldn't load data. Please try again.",
+      "hint": "Editing {name}",
+      "noChanges": "No changes to save.",
+      "submit": "Save changes",
+      "successToast": "Class {name} updated.",
+      "errorToast": "Could not update class. Please try again.",
+      "fields": {
+        "course": "Course",
+        "coursePlaceholder": "Pick a course",
+        "courseSearchPlaceholder": "Search courses…",
+        "courseEmpty": "No matching course.",
+        "classLabel": "Class label",
+        "teacher": "Teacher",
+        "teacherPlaceholder": "Pick a teacher",
+        "teacherSearchPlaceholder": "Search teachers…",
+        "teacherEmpty": "No matching teacher.",
+        "location": "Location",
+        "locationPlaceholder": "Pick a location",
+        "schedule": "Weekly schedule",
+        "scheduleSummary": "{count} sessions / week",
+        "scheduleEmpty": "Pick at least one day to set times.",
+        "startTime": "Start",
+        "endTime": "End",
+        "starts": "Starts",
+        "ends": "Ends",
+        "datePlaceholder": "Pick a date",
+        "capacity": "Capacity",
+        "capacityUnit": "students",
+        "capacityEnrolledHint": "{enrolled} students already enrolled.",
+        "visibility": "Visibility"
+      },
+      "conflict": {
+        "title": "Schedule conflict",
+        "body": "Teacher schedule conflict."
+      },
+      "locations": {
+        "Room 204": "Room 204",
+        "Room 101": "Room 101",
+        "Online": "Online"
+      },
+      "visibilities": {
+        "public_enrollable": "Public · enrollable",
+        "public_view": "Public · view-only",
+        "private": "Private"
+      },
+      "days": {
+        "Sun": "Sun",
+        "Mon": "Mon",
+        "Tue": "Tue",
+        "Wed": "Wed",
+        "Thu": "Thu",
+        "Fri": "Fri",
+        "Sat": "Sat"
+      }
     },
     "addDialog": {
       "section": "Summer Term 2026",
@@ -441,6 +553,17 @@
       },
       "successToast": "Class {name} created.",
       "errorToast": "Could not create class. Please try again.",
+      "loadError": "Couldn't load courses or teachers. Please try again.",
+      "empty": {
+        "courses": {
+          "title": "No published courses yet",
+          "body": "Publish at least one course before scheduling a class."
+        },
+        "teachers": {
+          "title": "No active teachers",
+          "body": "You need at least one teacher with status 'Active' to schedule a class."
+        }
+      },
       "validation": {
         "courseRequired": "Please select a course.",
         "labelRequired": "Class label is required.",
@@ -452,7 +575,9 @@
         "startDateRequired": "Please pick a start date.",
         "endDateRequired": "Please pick an end date.",
         "dateOrder": "End date must be after start date.",
+        "startDateFuture": "Start date must be after today.",
         "capacityMin": "Capacity must be at least 1.",
+        "capacityBelowEnrolled": "New capacity can't be below current enrolment ({enrolled}).",
         "visibilityRequired": "Please pick a visibility."
       }
     }

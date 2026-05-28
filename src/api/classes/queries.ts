@@ -1,12 +1,19 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  applyClassLifecycleAction,
   createClass,
   getClassById,
   getClassStatusTabs,
   getClassStudents,
-  getClasses
+  getClasses,
+  updateClass
 } from './service';
-import type { ClassListParams, CreateClassInput } from './types';
+import type {
+  ClassListParams,
+  CreateClassInput,
+  LifecycleActionInput,
+  UpdateClassInput
+} from './types';
 
 export const classKeys = {
   all: ['admin', 'classes'] as const,
@@ -52,6 +59,29 @@ export function useCreateClass() {
   return useMutation({
     mutationFn: (input: CreateClassInput) => createClass(input),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: classKeys.all });
+    }
+  });
+}
+
+export function useUpdateClass() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateClassInput }) => updateClass(id, input),
+    onSuccess: (cls) => {
+      queryClient.setQueryData(classKeys.detail(cls.id), cls);
+      void queryClient.invalidateQueries({ queryKey: classKeys.all });
+    }
+  });
+}
+
+export function useClassLifecycleAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: LifecycleActionInput }) =>
+      applyClassLifecycleAction(id, input),
+    onSuccess: (cls) => {
+      queryClient.setQueryData(classKeys.detail(cls.id), cls);
       void queryClient.invalidateQueries({ queryKey: classKeys.all });
     }
   });

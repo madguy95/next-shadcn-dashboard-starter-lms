@@ -1,87 +1,88 @@
-import { courses } from '../courses/mock';
-import { MOCK_LATENCY_MS, sleep } from '../shared/mock-utils';
+import type { AvatarTone } from '@/constants/avatar';
+import { apiClient, apiClientPaged } from '@/lib/api-client';
 import type { Paginated } from '../shared/types';
-import { teachers } from '../teachers/mock';
-import { classRows, classStatusTabConfig, classStudents } from './mock';
+import { classStudents } from './mock';
 import type {
+  ClassLifecycleStatus,
   ClassListParams,
   ClassRow,
   ClassStats,
+  ClassStatus,
+  ClassStatusFilter,
   ClassStatusTab,
   ClassStudent,
-  CreateClassInput
+  CreateClassInput,
+  LifecycleActionInput,
+  UpdateClassInput
 } from './types';
 
-export async function getClasses(params: ClassListParams): Promise<Paginated<ClassRow>> {
-  await sleep(MOCK_LATENCY_MS);
+const AVATAR_TONES: AvatarTone[] = ['rose', 'sky', 'violet', 'amber', 'emerald', 'foreground'];
 
-  let filtered = classRows;
-  if (params.status) {
-    filtered = filtered.filter((c) => c.status === params.status);
-  }
-  if (params.search) {
-    const q = params.search.toLowerCase();
-    filtered = filtered.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.courseTitle.toLowerCase().includes(q) ||
-        c.courseCode.toLowerCase().includes(q) ||
-        c.teacherShort.toLowerCase().includes(q)
-    );
-  }
+type ClassCourseDto = {
+  id: number;
+  code: string;
+  title: string;
+  totalSessions?: number;
+};
 
-  return { data: filtered, total: filtered.length, pageCount: 1 };
+type ClassTeacherDto = {
+  id: number;
+  fullName: string;
+  initials?: string;
+};
+
+type ClassDaySchedule = {
+  day: string;
+  startTime: string;
+  endTime: string;
+};
+
+type ClassDto = {
+  id: number;
+  name: string;
+  label?: string;
+  location: string;
+  schedule: string;
+  enrolled: number;
+  capacity: number;
+  lifecycleStatus: ClassLifecycleStatus;
+  status: ClassStatus;
+  visibility?: string;
+  cancellationReason?: string;
+  totalSessions?: number;
+  startDate?: string;
+  endDate?: string;
+  course?: ClassCourseDto;
+  teacher?: ClassTeacherDto;
+  daySchedules?: ClassDaySchedule[];
+};
+
+// BE returns long counters keyed by display status / lifecycle. Keep the shape
+// loose here because we project only the fields the UI consumes.
+type ClassStatusTabsDto = {
+  all: number;
+  draft: number;
+  open: number;
+  full: number;
+  ongoing: number;
+  completed: number;
+  unpublished: number;
+  cancelled: number;
+};
+
+function pickTone(id: number | undefined): AvatarTone {
+  if (id == null) return 'foreground';
+  const idx = ((id % AVATAR_TONES.length) + AVATAR_TONES.length) % AVATAR_TONES.length;
+  return AVATAR_TONES[idx];
 }
 
-export async function getClassStatusTabs(): Promise<ClassStatusTab[]> {
-  await sleep(MOCK_LATENCY_MS);
-  return classStatusTabConfig.map((tab) => ({
-    ...tab,
-    count:
-      tab.value === 'all'
-        ? classRows.length
-        : classRows.filter((c) => c.status === tab.value).length
-  }));
+function deriveInitials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-// Header stats — kept fast so the server-rendered page description doesn't block on mock latency.
-export async function getClassStats(): Promise<ClassStats> {
-  return {
-    total: classRows.length,
-    running: classRows.filter((c) => c.status === 'running').length,
-    upcoming: classRows.filter((c) => c.status === 'upcoming').length,
-    ended: classRows.filter((c) => c.status === 'ended').length
-  };
-}
-
-export async function getClassById(id: string): Promise<ClassRow> {
-  await sleep(MOCK_LATENCY_MS);
-  const cls = classRows.find((c) => c.id === id);
-  if (!cls) throw new Error(`Class ${id} not found`);
-  return cls;
-}
-
-export async function getClassStudents(classId: string): Promise<ClassStudent[]> {
-  await sleep(MOCK_LATENCY_MS);
-  // Mock data only has a roster attached to cl-1; fall back to it for other classes
-  // so the panel always renders something during development.
-  const roster = classStudents.filter((s) => s.classId === classId);
-  return roster.length ? roster : classStudents;
-}
-
-// Build a schedule label like "Mon · Wed · 09:00" when every day shares the same
-// start time, or "Mon 09:00 · Wed 14:00" when they differ. Mirrors the format
-// shown in the existing mock rows so the new entry blends with the table.
-function composeSchedule(daySchedules: { day: string; startTime: string }[]): string {
-  if (daySchedules.length === 0) return '—';
-  const allSameTime = daySchedules.every((s) => s.startTime === daySchedules[0].startTime);
-  if (allSameTime) {
-    return `${daySchedules.map((s) => s.day).join(' · ')} · ${daySchedules[0].startTime}`;
-  }
-  return daySchedules.map((s) => `${s.day} ${s.startTime}`).join(' · ');
-}
-
-// "Linh Nguyễn" → "Linh N." (first name + last initial). Falls back to raw name.
 function teacherShortFrom(name?: string): string {
   if (!name) return '—';
   const parts = name.trim().split(/\s+/);
@@ -89,38 +90,134 @@ function teacherShortFrom(name?: string): string {
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
 }
 
-function nextClassId(): string {
-  const taken = new Set(classRows.map((c) => c.id));
-  let n = classRows.length + 1;
-  while (taken.has(`cl-${n}`)) n += 1;
-  return `cl-${n}`;
+function mapClass(dto: ClassDto): ClassRow {
+  const teacherName = dto.teacher?.fullName;
+  return {
+    id: String(dto.id),
+    name: dto.name,
+    label: dto.label,
+    courseId: dto.course?.id != null ? String(dto.course.id) : undefined,
+    courseCode: dto.course?.code ?? '—',
+    courseTitle: dto.course?.title ?? '—',
+    location: dto.location,
+    teacherId: dto.teacher?.id != null ? String(dto.teacher.id) : undefined,
+    teacherInitials: dto.teacher?.initials || (teacherName ? deriveInitials(teacherName) : '··'),
+    teacherShort: teacherShortFrom(teacherName),
+    teacherTone: pickTone(dto.teacher?.id),
+    schedule: dto.schedule,
+    daySchedules: dto.daySchedules,
+    enrolled: dto.enrolled ?? 0,
+    capacity: dto.capacity ?? 0,
+    visibility: dto.visibility,
+    lifecycleStatus: dto.lifecycleStatus,
+    status: dto.status,
+    cancellationReason: dto.cancellationReason,
+    totalSessions: dto.totalSessions ?? dto.course?.totalSessions,
+    startDate: dto.startDate,
+    endDate: dto.endDate
+  };
+}
+
+function buildListQuery(params: ClassListParams): string {
+  const search = new URLSearchParams();
+  search.set('page', '1');
+  search.set('size', '100');
+  if (params.status) search.set('status', params.status);
+  if (params.search) search.set('search', params.search);
+  return search.toString();
+}
+
+function toCreatePayload(input: CreateClassInput) {
+  return {
+    courseId: Number(input.courseId),
+    teacherId: Number(input.teacherId),
+    label: input.label,
+    location: input.location,
+    daySchedules: input.daySchedules,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    capacity: input.capacity,
+    visibility: input.visibility
+  };
+}
+
+function toUpdatePayload(input: UpdateClassInput) {
+  const body: Record<string, unknown> = {};
+  if (input.courseId !== undefined) body.courseId = Number(input.courseId);
+  if (input.teacherId !== undefined) body.teacherId = Number(input.teacherId);
+  if (input.label !== undefined) body.label = input.label;
+  if (input.location !== undefined) body.location = input.location;
+  if (input.daySchedules !== undefined) body.daySchedules = input.daySchedules;
+  if (input.startDate !== undefined) body.startDate = input.startDate;
+  if (input.endDate !== undefined) body.endDate = input.endDate;
+  if (input.capacity !== undefined) body.capacity = input.capacity;
+  if (input.visibility !== undefined) body.visibility = input.visibility;
+  return body;
+}
+
+export async function getClasses(params: ClassListParams): Promise<Paginated<ClassRow>> {
+  const paged = await apiClientPaged<ClassDto>(`/api/classes?${buildListQuery(params)}`);
+  return {
+    data: paged.data.map(mapClass),
+    total: paged.totalElements,
+    pageCount: Math.max(1, paged.totalPages)
+  };
+}
+
+export async function getClassStatusTabs(): Promise<ClassStatusTab[]> {
+  const dto = await apiClient<ClassStatusTabsDto>('/api/classes/status-tabs');
+  const tabs: { value: ClassStatusFilter; count: number }[] = [
+    { value: 'all', count: dto.all },
+    { value: 'draft', count: dto.draft },
+    { value: 'open', count: dto.open },
+    { value: 'full', count: dto.full },
+    { value: 'ongoing', count: dto.ongoing },
+    { value: 'completed', count: dto.completed },
+    { value: 'unpublished', count: dto.unpublished },
+    { value: 'cancelled', count: dto.cancelled }
+  ];
+  return tabs;
+}
+
+export async function getClassStats(): Promise<ClassStats> {
+  return apiClient<ClassStats>('/api/classes/stats');
+}
+
+export async function getClassById(id: string): Promise<ClassRow> {
+  const dto = await apiClient<ClassDto>(`/api/classes/${id}`);
+  return mapClass(dto);
+}
+
+export async function getClassStudents(classId: string): Promise<ClassStudent[]> {
+  // Roster endpoint is out of scope for the class CRUD wiring — keep the mock
+  // fallback so the detail panel still renders while the backend lands.
+  const roster = classStudents.filter((s) => s.classId === classId);
+  return roster.length ? roster : classStudents;
 }
 
 export async function createClass(input: CreateClassInput): Promise<ClassRow> {
-  await sleep(MOCK_LATENCY_MS);
-  const course = courses.find((c) => c.id === input.courseId);
-  const teacher = teachers.find((t) => t.id === input.teacherId);
-  // Compose a short label like "Scratch · A4" by combining the course's tagline-friendly
-  // first word with the user-typed label, falling back to the raw label if a course
-  // wasn't found (shouldn't happen — schema requires it).
-  const coursePrefix = course?.title.split(' ')[0] ?? 'Class';
-  const row: ClassRow = {
-    id: nextClassId(),
-    name: input.label.trim() ? `${coursePrefix} · ${input.label.trim()}` : coursePrefix,
-    courseId: input.courseId,
-    courseCode: course?.code ?? '—',
-    courseTitle: course?.title ?? '—',
-    location: input.location,
-    teacherId: input.teacherId,
-    teacherInitials: teacher?.initials ?? '··',
-    teacherShort: teacherShortFrom(teacher?.name),
-    teacherTone: teacher?.tone ?? 'foreground',
-    schedule: composeSchedule(input.daySchedules),
-    enrolled: 0,
-    capacity: input.capacity,
-    status: 'upcoming',
-    totalSessions: course?.totalSessions
-  };
-  classRows.unshift(row);
-  return row;
+  const dto = await apiClient<ClassDto>('/api/classes', {
+    method: 'POST',
+    body: JSON.stringify(toCreatePayload(input))
+  });
+  return mapClass(dto);
+}
+
+export async function updateClass(id: string, input: UpdateClassInput): Promise<ClassRow> {
+  const dto = await apiClient<ClassDto>(`/api/classes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(toUpdatePayload(input))
+  });
+  return mapClass(dto);
+}
+
+export async function applyClassLifecycleAction(
+  id: string,
+  input: LifecycleActionInput
+): Promise<ClassRow> {
+  const dto = await apiClient<ClassDto>(`/api/classes/${id}/lifecycle`, {
+    method: 'PATCH',
+    body: JSON.stringify(input)
+  });
+  return mapClass(dto);
 }

@@ -182,11 +182,13 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
     // from errorMap, so writing to `errors` directly has no visible effect).
     targetPaths.forEach((name) => {
       const errors = grouped.get(name);
+      // `prev` is undefined for fields that haven't mounted yet (e.g. newly
+      // grown session entries before their inputs render).
       form.setFieldMeta(name as never, (prev) => ({
-        ...prev,
+        ...(prev ?? {}),
         isTouched: true,
         errorMap: {
-          ...prev.errorMap,
+          ...(prev?.errorMap ?? {}),
           onSubmit: errors && errors.length ? errors : undefined
         }
       }));
@@ -199,6 +201,25 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
     return false;
   };
 
+  // Keep outline length in sync with totalSessions: preserve what the user
+  // already typed (slice tail when shrinking, append blanks when growing).
+  const syncSessionsToTotal = () => {
+    const current = form.getFieldValue('sessions') as SessionValue[];
+    const total = Number(form.getFieldValue('totalSessions')) || 0;
+    if (current.length === total) return;
+    const next =
+      total > current.length
+        ? [
+            ...current,
+            ...Array.from({ length: total - current.length }, () => ({
+              title: '',
+              description: ''
+            }))
+          ]
+        : current.slice(0, total);
+    form.setFieldValue('sessions', next);
+  };
+
   const goToStep = (direction: 'next' | 'prev') => {
     const idx = stepKeys.indexOf(step);
     const nextIdx = direction === 'next' ? idx + 1 : idx - 1;
@@ -206,16 +227,7 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
     const nextStep = stepKeys[nextIdx];
     if (direction === 'next') {
       if (!validateStep(step)) return;
-      if (nextStep === 'outline') {
-        const current = form.getFieldValue('sessions') as SessionValue[];
-        const total = Number(form.getFieldValue('totalSessions')) || 0;
-        if (current.length === 0 && total > 0) {
-          form.setFieldValue(
-            'sessions',
-            Array.from({ length: total }, () => ({ title: '', description: '' }))
-          );
-        }
-      }
+      if (nextStep === 'outline') syncSessionsToTotal();
     }
     setStep(nextStep);
   };
@@ -223,12 +235,14 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
   const jumpToStep = (target: StepKey, targetIndex: number, currentIndex: number) => {
     // Going back is always allowed; jumping forward must pass intermediate validation.
     if (targetIndex <= currentIndex) {
+      if (target === 'outline') syncSessionsToTotal();
       setStep(target);
       return;
     }
     for (let k = currentIndex; k < targetIndex; k += 1) {
       if (!validateStep(stepKeys[k])) return;
     }
+    if (target === 'outline') syncSessionsToTotal();
     setStep(target);
   };
 

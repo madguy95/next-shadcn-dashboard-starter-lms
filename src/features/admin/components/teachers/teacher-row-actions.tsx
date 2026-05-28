@@ -2,7 +2,18 @@
 
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
+import { toast } from 'sonner';
 import { Icons } from '@/components/icons';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,12 +25,48 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { TEACHER_STATUSES, type Teacher } from '@/api/teachers';
+import {
+  TEACHER_STATUSES,
+  useDeleteTeacher,
+  useUpdateTeacherStatus,
+  type Teacher,
+  type TeacherStatus
+} from '@/api/teachers';
+import { formatApiError } from '@/lib/api-client';
 import { TeacherProfileSheet } from './teacher-profile-sheet';
 
 export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
   const t = useTranslations('teachers');
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const updateStatus = useUpdateTeacherStatus();
+  const deleteTeacher = useDeleteTeacher();
+
+  const handleStatusChange = (next: TeacherStatus) => {
+    updateStatus.mutate(
+      { id: teacher.id, status: next },
+      {
+        onSuccess: () => toast.success(t('actions.statusUpdated', { name: teacher.name })),
+        onError: (e) => {
+          const { title, description } = formatApiError(e, t('actions.statusError'));
+          toast.error(title, description ? { description } : undefined);
+        }
+      }
+    );
+  };
+
+  const handleDelete = () => {
+    deleteTeacher.mutate(teacher.id, {
+      onSuccess: () => {
+        toast.success(t('actions.removeSuccess', { name: teacher.name }));
+        setConfirmOpen(false);
+      },
+      onError: (e) => {
+        const { title, description } = formatApiError(e, t('actions.removeError'));
+        toast.error(title, description ? { description } : undefined);
+      }
+    });
+  };
 
   return (
     <div className='inline-flex justify-end gap-1'>
@@ -53,7 +100,11 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               {TEACHER_STATUSES.map((s) => (
-                <DropdownMenuItem key={s} disabled={s === teacher.status}>
+                <DropdownMenuItem
+                  key={s}
+                  disabled={s === teacher.status || updateStatus.isPending}
+                  onSelect={() => handleStatusChange(s)}
+                >
                   {t(`status.${s}`)}
                   {s === teacher.status ? <Icons.check className='ml-auto size-3.5' /> : null}
                 </DropdownMenuItem>
@@ -61,7 +112,7 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant='destructive'>
+          <DropdownMenuItem variant='destructive' onSelect={() => setConfirmOpen(true)}>
             <Icons.trash className='size-3.5' />
             {t('actions.remove')}
           </DropdownMenuItem>
@@ -69,6 +120,32 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
       </DropdownMenu>
 
       <TeacherProfileSheet teacher={teacher} open={profileOpen} onOpenChange={setProfileOpen} />
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('actions.removeTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('actions.removeDescription', { name: teacher.name })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteTeacher.isPending}>
+              {t('actions.removeCancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteTeacher.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              className='bg-destructive text-white hover:bg-destructive/90'
+            >
+              {t('actions.removeConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

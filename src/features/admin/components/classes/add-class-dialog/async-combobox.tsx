@@ -23,6 +23,7 @@ interface AsyncComboboxProps<T> {
   loading: boolean;
   selected: T | undefined;
   invalid: boolean;
+  disabled?: boolean;
   getKey: (item: T) => string;
   placeholder: string;
   searchPlaceholder: string;
@@ -45,6 +46,7 @@ export function AsyncCombobox<T>({
   loading,
   selected,
   invalid,
+  disabled = false,
   getKey,
   placeholder,
   searchPlaceholder,
@@ -54,25 +56,33 @@ export function AsyncCombobox<T>({
 }: AsyncComboboxProps<T>) {
   const [open, setOpen] = React.useState(false);
   const listboxId = React.useId();
+  const trigger = (
+    <Button
+      variant='outline'
+      role='combobox'
+      aria-expanded={open}
+      aria-controls={listboxId}
+      aria-invalid={invalid}
+      disabled={disabled}
+      className={cn(
+        'h-10 w-full justify-between font-normal',
+        disabled && 'cursor-not-allowed opacity-70'
+      )}
+    >
+      {selected ? (
+        renderSelected(selected)
+      ) : (
+        <span className='text-muted-foreground'>{placeholder}</span>
+      )}
+      <Icons.chevronsUpDown className='ml-2 size-4 shrink-0 opacity-50' />
+    </Button>
+  );
+  // When disabled we skip wrapping in Popover so the panel can't open — the
+  // trigger still renders to show the current selection.
+  if (disabled) return trigger;
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant='outline'
-          role='combobox'
-          aria-expanded={open}
-          aria-controls={listboxId}
-          aria-invalid={invalid}
-          className='h-10 w-full justify-between font-normal'
-        >
-          {selected ? (
-            renderSelected(selected)
-          ) : (
-            <span className='text-muted-foreground'>{placeholder}</span>
-          )}
-          <Icons.chevronsUpDown className='ml-2 size-4 shrink-0 opacity-50' />
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
         <Command shouldFilter={false}>
           <CommandInput

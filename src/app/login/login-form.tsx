@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { APP_ROLES, type AppRole, roleMeta } from '@/config/nav-config';
-import { loginAs } from '@/lib/auth-actions';
+import { roleMeta } from '@/config/nav-config';
+// Client-side login (browser → BE directly). Server Action version stayed for logout where
+// server-side cookie deletion is convenient; see lib/auth-actions.ts.
+import { login } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
 type Mode = 'login' | 'register';
@@ -17,7 +19,6 @@ type Mode = 'login' | 'register';
 export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>(initialMode);
-  const [loginRole, setLoginRole] = useState<AppRole>('parent');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -41,32 +42,35 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
   const canSubmit = isRegister
     ? name.trim().length >= 2 &&
       phone.length > 0 &&
-      password.length >= 6 &&
+      password.length >= 4 &&
       confirmPassword === password &&
       agree &&
       !phoneError
-    : phone.length > 0 && password.length >= 6 && !phoneError;
+    : phone.length > 0 && password.length >= 4 && !phoneError;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!canSubmit) return;
     setSubmitting(true);
 
-    // Register flow is parent-only (real flow: admin/teacher are provisioned, not self-registered).
-    const role: AppRole = isRegister ? 'parent' : loginRole;
-    await loginAs(role, { name: isRegister ? name : undefined, phone });
-
     if (isRegister) {
-      toast.success('Tạo tài khoản thành công', {
-        description: `Chào mừng ${name}! Đang chuyển sang trang đăng ký khóa cho con…`
-      });
-    } else {
-      toast.success('Đăng nhập thành công', {
-        description: `Đang vào workspace ${roleMeta[role].label}…`
-      });
+      // Self-registration not wired to backend yet.
+      toast.info('Đăng ký phụ huynh chưa khả dụng. Vui lòng liên hệ trung tâm.');
+      setSubmitting(false);
+      return;
     }
 
-    router.push(roleMeta[role].basePath);
+    const result = await login(phone, password);
+    if (!result.ok) {
+      toast.error('Đăng nhập thất bại', { description: result.message });
+      setSubmitting(false);
+      return;
+    }
+
+    toast.success('Đăng nhập thành công', {
+      description: `Đang vào workspace ${roleMeta[result.user.role].label}…`
+    });
+    router.push(roleMeta[result.user.role].basePath);
     router.refresh();
   };
 
@@ -113,39 +117,6 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
       </div>
 
       <form onSubmit={handleSubmit} className='space-y-4'>
-        {!isRegister && (
-          <div className='space-y-1.5'>
-            <div className='flex items-center justify-between'>
-              <Label className='text-xs font-medium text-zinc-700'>Đăng nhập với vai trò</Label>
-              <span className='rounded bg-amber-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-amber-800'>
-                DEMO
-              </span>
-            </div>
-            <div className='grid grid-cols-3 gap-1.5'>
-              {APP_ROLES.map((r) => {
-                const RoleIcon = Icons[roleMeta[r].icon];
-                const active = loginRole === r;
-                return (
-                  <button
-                    key={r}
-                    type='button'
-                    onClick={() => setLoginRole(r)}
-                    className={cn(
-                      'inline-flex h-11 items-center justify-center gap-1.5 rounded-md border text-sm font-medium transition-all',
-                      active
-                        ? 'border-cyan-500 bg-cyan-50 text-cyan-700'
-                        : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
-                    )}
-                  >
-                    <RoleIcon className='size-4' />
-                    {roleMeta[r].label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {isRegister && (
           <div className='space-y-1.5'>
             <Label htmlFor='name' className='text-xs font-medium text-zinc-700'>

@@ -22,14 +22,26 @@ export function OutlineStep({ tDialog, form, totalSessionsValue }: OutlineStepPr
   const sessions = useStore(form.store, (s: any) => s.values.sessions as SessionValue[]);
   const expected = Math.max(0, Number(totalSessionsValue) || 0);
 
+  // Wipe existing titles/descriptions and rebuild a blank outline of the right
+  // length. Lengths are already kept in sync on basics → outline transition, so
+  // a preserve-data variant here would be a no-op. Also clear any error state
+  // left over from a previous failed submit so the freshly blank fields don't
+  // surface stale "required" errors.
   const regenerate = () => {
     form.setFieldValue(
       'sessions',
-      Array.from({ length: expected }, (_, i) => ({
-        title: sessions[i]?.title ?? '',
-        description: sessions[i]?.description ?? ''
-      }))
+      Array.from({ length: expected }, () => ({ title: '', description: '' }))
     );
+    for (let i = 0; i < expected; i++) {
+      for (const sub of ['title', 'description'] as const) {
+        form.setFieldMeta(`sessions[${i}].${sub}`, (prev: any) => ({
+          ...(prev ?? {}),
+          isTouched: false,
+          errors: [],
+          errorMap: {}
+        }));
+      }
+    }
   };
 
   return (
@@ -76,34 +88,11 @@ export function OutlineStep({ tDialog, form, totalSessionsValue }: OutlineStepPr
                   initiallyExpanded={!value.title && !value.description}
                   form={form}
                   tDialog={tDialog}
-                  onRemove={() => field.removeValue(i)}
                 />
               ))}
             </ul>
           );
         }}
-      </form.AppField>
-
-      <form.AppField name='sessions'>
-        {(field: any) => (
-          <div className='flex justify-center'>
-            <Button
-              type='button'
-              variant='outline'
-              size='sm'
-              className='h-8'
-              onClick={() =>
-                field.handleChange([
-                  ...((field.state.value as SessionValue[]) ?? []),
-                  { title: '', description: '' }
-                ])
-              }
-            >
-              <Icons.add className='size-3.5' />
-              {tDialog('outline.addSession')}
-            </Button>
-          </div>
-        )}
       </form.AppField>
     </div>
   );
@@ -113,14 +102,12 @@ function SessionCard({
   index,
   initiallyExpanded,
   form,
-  tDialog,
-  onRemove
+  tDialog
 }: {
   index: number;
   initiallyExpanded: boolean;
   form: any;
   tDialog: ReturnType<typeof useTranslations>;
-  onRemove: () => void;
 }) {
   const [expanded, setExpanded] = React.useState(initiallyExpanded);
   const titlePath = `sessions[${index}].title`;
@@ -183,19 +170,6 @@ function SessionCard({
             {description.length}c
           </span>
         )}
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon'
-          className='size-7 shrink-0'
-          aria-label={tDialog('outline.removeSession', { n: index + 1 })}
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-        >
-          <Icons.close className='size-3.5' />
-        </Button>
       </div>
       {expanded && (
         <div className='space-y-2 border-t p-3'>

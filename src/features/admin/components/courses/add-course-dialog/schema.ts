@@ -55,10 +55,10 @@ export const defaultValues: CourseFormValues = {
   description: '',
   category: 'stem',
   level: 'intermediate',
-  minAge: 12,
-  maxAge: 15,
-  totalSessions: 20,
-  sessionDurationMinutes: 75,
+  minAge: 8,
+  maxAge: 12,
+  totalSessions: 10,
+  sessionDurationMinutes: 60,
   perClassCapacity: 12,
   tags: [],
   cover: [],
@@ -188,28 +188,39 @@ export function buildBaseSchema(tValidation: ValidationT) {
               });
             }
           } else {
-            const n = Number(d.value);
-            if (Number.isNaN(n)) {
+            // Empty string coerces to 0 via Number(''), so reject it explicitly
+            // before doing the numeric range check.
+            const trimmed = d.value.trim();
+            if (!trimmed) {
               ctx.addIssue({
                 code: 'custom',
                 path: [i, 'value'],
-                message: tValidation(
-                  d.type === 'percentage' ? 'discountPercentRange' : 'discountAmountMin',
-                  { n: i + 1 }
-                )
+                message: tValidation('discountValueRequired', { n: i + 1 })
               });
-            } else if (d.type === 'percentage' && (n < 0 || n > 100)) {
-              ctx.addIssue({
-                code: 'custom',
-                path: [i, 'value'],
-                message: tValidation('discountPercentRange', { n: i + 1 })
-              });
-            } else if (d.type === 'fixed' && n < 0) {
-              ctx.addIssue({
-                code: 'custom',
-                path: [i, 'value'],
-                message: tValidation('discountAmountMin', { n: i + 1 })
-              });
+            } else {
+              const n = Number(trimmed);
+              if (Number.isNaN(n)) {
+                ctx.addIssue({
+                  code: 'custom',
+                  path: [i, 'value'],
+                  message: tValidation(
+                    d.type === 'percentage' ? 'discountPercentRange' : 'discountAmountMin',
+                    { n: i + 1 }
+                  )
+                });
+              } else if (d.type === 'percentage' && (n < 0 || n > 100)) {
+                ctx.addIssue({
+                  code: 'custom',
+                  path: [i, 'value'],
+                  message: tValidation('discountPercentRange', { n: i + 1 })
+                });
+              } else if (d.type === 'fixed' && n < 0) {
+                ctx.addIssue({
+                  code: 'custom',
+                  path: [i, 'value'],
+                  message: tValidation('discountAmountMin', { n: i + 1 })
+                });
+              }
             }
           }
           if (d.condition === 'before_date') {

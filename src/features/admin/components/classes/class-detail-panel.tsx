@@ -2,12 +2,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { classStudentsOptions, type ClassRow } from '@/api/classes';
 import { avatarToneClass, studentStatusClass } from '@/features/admin/data';
 import { cn } from '@/lib/utils';
+import { ClassLifecycleActions } from './class-lifecycle-actions';
 import { ClassStatusBadge } from './class-status-badge';
+import { EditClassDialog } from './edit-class-dialog';
 
 const STUDENTS_PREVIEW_LIMIT = 7;
 
@@ -29,11 +32,27 @@ export function ClassDetailPanel({ cls }: { cls: ClassRow }) {
         </div>
         <div className='mt-1 flex flex-wrap items-end justify-between gap-2'>
           <h2 className='text-[18px] font-semibold tracking-tight sm:text-[20px]'>{cls.name}</h2>
-          <ClassStatusBadge
-            status={cls.status}
-            currentSessionIndex={cls.currentSessionIndex}
-            totalSessions={cls.totalSessions}
-          />
+          <ClassStatusBadge status={cls.status} />
+        </div>
+        {cls.lifecycleStatus === 'cancelled' && cls.cancellationReason && (
+          <div className='bg-destructive/5 text-destructive mt-3 rounded-md border border-rose-200 px-2.5 py-1.5 text-[12px]'>
+            <span className='font-medium'>{t('cancellationReason')}: </span>
+            {cls.cancellationReason}
+          </div>
+        )}
+        <div className='mt-3 flex flex-wrap items-center gap-1.5'>
+          {cls.lifecycleStatus !== 'cancelled' && (
+            <EditClassDialog
+              cls={cls}
+              trigger={
+                <Button variant='outline' size='sm' className='h-7 px-2 text-[12px]'>
+                  <Icons.edit className='size-3.5' />
+                  {t('edit')}
+                </Button>
+              }
+            />
+          )}
+          <ClassLifecycleActions cls={cls} />
         </div>
         <div className='mt-3 grid grid-cols-2 gap-2 text-[12px] sm:grid-cols-3'>
           <div className='rounded-md border p-2.5'>

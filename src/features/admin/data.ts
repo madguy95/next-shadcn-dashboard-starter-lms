@@ -194,14 +194,15 @@ export type { Course, CourseCategory, CourseStatus } from '@/api/courses';
 
 export const courseStatusClass: Record<CourseStatus, string> = {
   published: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  draft: 'bg-amber-50 text-amber-800 border-amber-200'
+  draft: 'bg-amber-50 text-amber-800 border-amber-200',
+  unpublished: 'bg-muted text-muted-foreground border-border'
 };
 
 // Class domain types + data moved to @/api/classes/.
 // UI metadata for class & student status stays here (presentation concern, not server data).
 import type { ClassStatus, StudentStatus } from '@/api/classes';
 // Re-exported for legacy importers (e.g. add-class-dialog, enrollments-view).
-export { classRows, classStudents, classAssignOptions } from '@/api/classes';
+export { classStudents, classAssignOptions } from '@/api/classes';
 export type {
   ClassRow,
   ClassStatus,
@@ -211,9 +212,13 @@ export type {
 } from '@/api/classes';
 
 export const classStatusClass: Record<ClassStatus, string> = {
-  running: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-  upcoming: 'bg-sky-50 text-sky-800 border-sky-200',
-  ended: 'bg-slate-50 text-slate-700 border-slate-200'
+  draft: 'bg-muted text-muted-foreground border-border',
+  open: 'bg-sky-50 text-sky-800 border-sky-200',
+  full: 'bg-amber-50 text-amber-800 border-amber-200',
+  ongoing: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  completed: 'bg-slate-50 text-slate-700 border-slate-200',
+  unpublished: 'bg-zinc-50 text-zinc-700 border-zinc-200',
+  cancelled: 'bg-rose-50 text-rose-800 border-rose-200'
 };
 
 export const studentStatusClass: Record<StudentStatus, string> = {

@@ -6,6 +6,8 @@ import {
   getCourseById,
   getCourseCategoryTabs,
   getCourses,
+  getPublicCourseById,
+  getPublicCourses,
   setCourseStatus,
   updateCourse
 } from './service';
@@ -21,7 +23,12 @@ export const courseKeys = {
   all: ['admin', 'courses'] as const,
   list: (params: CourseListParams) => [...courseKeys.all, 'list', params] as const,
   detail: (id: string) => [...courseKeys.all, 'detail', id] as const,
-  categoryTabs: () => [...courseKeys.all, 'categoryTabs'] as const
+  categoryTabs: () => [...courseKeys.all, 'categoryTabs'] as const,
+  // Separate key space — public list lives outside the 'admin' subtree so admin
+  // mutations don't accidentally invalidate the unauthenticated landing/enrollment query
+  // (different endpoint, different shape, different cache lifetime).
+  publicList: (limit: number) => ['public', 'courses', { limit }] as const,
+  publicDetail: (id: string) => ['public', 'courses', 'detail', id] as const
 };
 
 export function courseListOptions(params: CourseListParams) {
@@ -44,6 +51,27 @@ export function courseCategoryTabsOptions() {
   return queryOptions({
     queryKey: courseKeys.categoryTabs(),
     queryFn: getCourseCategoryTabs
+  });
+}
+
+export function publicCoursesOptions(limit = 24) {
+  return queryOptions({
+    queryKey: courseKeys.publicList(limit),
+    queryFn: () => getPublicCourses(limit),
+    // Marketing/enrollment data doesn't change minute-to-minute; cache for 5 min so navigating
+    // home → enrollment → back doesn't refetch.
+    staleTime: 5 * 60 * 1000
+  });
+}
+
+export function publicCourseDetailOptions(id: string | number | null | undefined) {
+  // Stable string key + guard against opening the detail sheet before an id is known.
+  const key = id == null ? '' : String(id);
+  return queryOptions({
+    queryKey: courseKeys.publicDetail(key),
+    queryFn: () => getPublicCourseById(key),
+    enabled: !!key,
+    staleTime: 5 * 60 * 1000
   });
 }
 

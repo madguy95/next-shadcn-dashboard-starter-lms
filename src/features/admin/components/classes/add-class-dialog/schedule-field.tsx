@@ -1,6 +1,7 @@
 'use client';
 
 import type { useTranslations } from 'next-intl';
+import type * as React from 'react';
 import { Icons } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import type { Teacher } from '@/api/teachers';
@@ -15,6 +16,7 @@ interface ScheduleFieldProps {
   sortedSchedules: DaySchedule[];
   conflict: boolean;
   conflictTeacher: Teacher | undefined;
+  disabled?: boolean;
 }
 
 /**
@@ -28,11 +30,22 @@ export function ScheduleField({
   tDialog,
   sortedSchedules,
   conflict,
-  conflictTeacher
+  conflictTeacher,
+  disabled = false
 }: ScheduleFieldProps) {
   return (
     <form.AppField name='daySchedules'>
       {(field: any) => {
+        // Disabled wrap — keeps the entire field non-interactive (day chips,
+        // time inputs, remove buttons) when the policy locks daySchedules.
+        const wrap = (node: React.ReactNode) =>
+          disabled ? (
+            <fieldset disabled className='contents disabled:opacity-60'>
+              {node}
+            </fieldset>
+          ) : (
+            node
+          );
         const current: DaySchedule[] = field.state.value ?? [];
         const toggleDay = (day: DayOfWeek) => {
           if (current.some((s) => s.day === day)) {
@@ -63,43 +76,50 @@ export function ScheduleField({
                 </div>
               </div>
 
-              <div className='mb-3 flex flex-wrap items-center gap-1'>
-                {DAYS_OF_WEEK.map((d) => {
-                  const active = current.some((s) => s.day === d);
-                  return (
-                    <button
-                      key={d}
-                      type='button'
-                      onClick={() => toggleDay(d)}
-                      className={cn(
-                        'h-9 rounded-md border px-3 text-[12.5px] transition',
-                        active
-                          ? 'bg-foreground text-background border-foreground'
-                          : 'hover:bg-accent'
-                      )}
-                    >
-                      {tDialog(`days.${d}`)}
-                    </button>
-                  );
-                })}
-              </div>
+              {wrap(
+                <div className='mb-3 flex flex-wrap items-center gap-1'>
+                  {DAYS_OF_WEEK.map((d) => {
+                    const active = current.some((s) => s.day === d);
+                    return (
+                      <button
+                        key={d}
+                        type='button'
+                        onClick={() => toggleDay(d)}
+                        disabled={disabled}
+                        className={cn(
+                          'h-9 rounded-md border px-3 text-[12.5px] transition',
+                          active
+                            ? 'bg-foreground text-background border-foreground'
+                            : 'hover:bg-accent',
+                          disabled && 'cursor-not-allowed opacity-70'
+                        )}
+                      >
+                        {tDialog(`days.${d}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {sortedSchedules.length === 0 ? (
                 <div className='text-muted-foreground rounded-md border border-dashed py-4 text-center text-[12px]'>
                   {tDialog('fields.scheduleEmpty')}
                 </div>
               ) : (
-                <ul className='divide-y rounded-md border'>
-                  {sortedSchedules.map((s) => (
-                    <ScheduleRow
-                      key={s.day}
-                      schedule={s}
-                      tDialog={tDialog}
-                      onTimeChange={setTime}
-                      onRemove={() => toggleDay(s.day)}
-                    />
-                  ))}
-                </ul>
+                wrap(
+                  <ul className='divide-y rounded-md border'>
+                    {sortedSchedules.map((s) => (
+                      <ScheduleRow
+                        key={s.day}
+                        schedule={s}
+                        tDialog={tDialog}
+                        onTimeChange={setTime}
+                        onRemove={() => toggleDay(s.day)}
+                        disabled={disabled}
+                      />
+                    ))}
+                  </ul>
+                )
               )}
 
               {conflict && conflictTeacher && (
@@ -129,12 +149,14 @@ function ScheduleRow({
   schedule,
   tDialog,
   onTimeChange,
-  onRemove
+  onRemove,
+  disabled = false
 }: {
   schedule: DaySchedule;
   tDialog: ReturnType<typeof useTranslations>;
   onTimeChange: (day: DayOfWeek, key: 'startTime' | 'endTime', value: string) => void;
   onRemove: () => void;
+  disabled?: boolean;
 }) {
   return (
     <li className='flex flex-wrap items-center gap-3 px-3 py-2'>
@@ -145,6 +167,7 @@ function ScheduleRow({
       <Input
         value={schedule.startTime}
         onChange={(e) => onTimeChange(schedule.day, 'startTime', e.target.value)}
+        disabled={disabled}
         aria-label={`${tDialog('fields.startTime')} · ${schedule.day}`}
         className='h-8 w-20 px-2 text-center font-mono text-sm'
       />
@@ -153,13 +176,15 @@ function ScheduleRow({
       <Input
         value={schedule.endTime}
         onChange={(e) => onTimeChange(schedule.day, 'endTime', e.target.value)}
+        disabled={disabled}
         aria-label={`${tDialog('fields.endTime')} · ${schedule.day}`}
         className='h-8 w-20 px-2 text-center font-mono text-sm'
       />
       <button
         type='button'
         onClick={onRemove}
-        className='text-muted-foreground hover:text-destructive ml-auto'
+        disabled={disabled}
+        className='text-muted-foreground hover:text-destructive ml-auto disabled:cursor-not-allowed disabled:opacity-60'
         aria-label={`${tDialog('fields.schedule')} · ${schedule.day}`}
       >
         <Icons.trash className='size-3.5' />

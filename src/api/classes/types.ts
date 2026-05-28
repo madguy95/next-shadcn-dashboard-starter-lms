@@ -1,6 +1,22 @@
 import type { AvatarTone } from '@/constants/avatar';
 
-export const CLASS_STATUSES = ['running', 'upcoming', 'ended'] as const;
+// Stored, admin-controlled lifecycle. Only this value is mutable through the
+// lifecycle endpoint — derived display status (open/full/ongoing/completed)
+// is computed by the BE from lifecycle + dates + capacity.
+export const CLASS_LIFECYCLE_STATUSES = ['draft', 'published', 'unpublished', 'cancelled'] as const;
+export type ClassLifecycleStatus = (typeof CLASS_LIFECYCLE_STATUSES)[number];
+
+// Display status the UI renders and filters on. Returned by BE in `status`.
+// `open`/`full`/`ongoing`/`completed` collapse from `lifecycle = published`.
+export const CLASS_STATUSES = [
+  'draft',
+  'open',
+  'full',
+  'ongoing',
+  'completed',
+  'unpublished',
+  'cancelled'
+] as const;
 export type ClassStatus = (typeof CLASS_STATUSES)[number];
 
 export type ClassStatusFilter = ClassStatus | 'all';
@@ -15,6 +31,7 @@ export type StudentStatus = (typeof STUDENT_STATUSES)[number];
 export type ClassRow = {
   id: string;
   name: string;
+  label?: string;
   courseId?: string;
   courseCode: string;
   courseTitle: string;
@@ -24,11 +41,20 @@ export type ClassRow = {
   teacherShort: string;
   teacherTone: AvatarTone;
   schedule: string;
+  // Structured day schedules so the edit form can rehydrate inputs (the `schedule`
+  // string is the composed label and isn't reversible).
+  daySchedules?: DayScheduleInput[];
   enrolled: number;
   capacity: number;
+  visibility?: string;
+  // Stored — drives action buttons (publish/unpublish/cancel).
+  lifecycleStatus: ClassLifecycleStatus;
+  // Derived — drives badge / tab filters.
   status: ClassStatus;
-  currentSessionIndex?: number;
+  cancellationReason?: string;
   totalSessions?: number;
+  startDate?: string;
+  endDate?: string;
 };
 
 export type ClassStudent = {
@@ -65,9 +91,13 @@ export type ClassListParams = {
 
 export type ClassStats = {
   total: number;
-  running: number;
-  upcoming: number;
-  ended: number;
+  draft: number;
+  open: number;
+  full: number;
+  ongoing: number;
+  completed: number;
+  unpublished: number;
+  cancelled: number;
 };
 
 export type DayScheduleInput = {
@@ -86,4 +116,16 @@ export type CreateClassInput = {
   endDate: string;
   capacity: number;
   visibility: string;
+};
+
+// Status / lifecycle aren't editable via this DTO — they go through a
+// dedicated lifecycle endpoint so transitions and edits don't get tangled.
+export type UpdateClassInput = Partial<CreateClassInput>;
+
+export const CLASS_LIFECYCLE_ACTIONS = ['publish', 'unpublish', 'cancel'] as const;
+export type ClassLifecycleAction = (typeof CLASS_LIFECYCLE_ACTIONS)[number];
+
+export type LifecycleActionInput = {
+  action: ClassLifecycleAction;
+  reason?: string;
 };

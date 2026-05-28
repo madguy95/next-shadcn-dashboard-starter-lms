@@ -1,10 +1,36 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import * as React from 'react';
+import { toast } from 'sonner';
 import { Icons } from '@/components/icons';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Course, DiscountRule } from '@/api/courses';
+import {
+  useDeleteCourse,
+  useSetCourseStatus,
+  type Course,
+  type CourseStatus,
+  type DiscountRule
+} from '@/api/courses';
+import { formatApiError } from '@/lib/api-client';
 import { formatTuition } from '@/lib/format-vnd';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from './course-card';
@@ -20,6 +46,45 @@ function formatDiscountValue(rule: DiscountRule): string {
 export function CourseDetailPanel({ course }: { course: Course }) {
   const t = useTranslations('courses.detail');
   const tLevel = useTranslations('courses.addDialog.level');
+  const setStatus = useSetCourseStatus();
+  const deleteCourse = useDeleteCourse();
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+
+  // State machine: draft → published, published → unpublished, unpublished → published (re-launch).
+  const togglePending = setStatus.isPending;
+  const nextStatus: CourseStatus = course.status === 'published' ? 'unpublished' : 'published';
+  // 'unpublish' label only appears on currently-published courses; both draft
+  // and unpublished show "Open course" since the action is the same (publish).
+  const toggleLabelKey = course.status === 'published' ? 'unpublish' : 'openCourse';
+  const toggleSuccessKey = course.status === 'published' ? 'unpublishSuccess' : 'openCourseSuccess';
+  const toggleErrorKey = course.status === 'published' ? 'unpublishError' : 'openCourseError';
+
+  const handleToggleStatus = () => {
+    setStatus.mutate(
+      { id: course.id, status: nextStatus },
+      {
+        onSuccess: () => toast.success(t(toggleSuccessKey, { title: course.title })),
+        onError: (e) => {
+          const { title, description } = formatApiError(e, t(toggleErrorKey));
+          toast.error(title, description ? { description } : undefined);
+        }
+      }
+    );
+  };
+
+  const handleDelete = () => {
+    deleteCourse.mutate(course.id, {
+      onSuccess: () => {
+        toast.success(t('deleteSuccess', { title: course.title }));
+        setConfirmOpen(false);
+      },
+      onError: (e) => {
+        const { title, description } = formatApiError(e, t('deleteError'));
+        toast.error(title, description ? { description } : undefined);
+      }
+    });
+  };
+
   return (
     <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
       <div
@@ -136,7 +201,7 @@ export function CourseDetailPanel({ course }: { course: Course }) {
               const isLast = i === course.curriculum.length - 1;
               return (
                 <li
-                  key={unit}
+                  key={i}
                   className={cn(
                     'flex items-center gap-2 px-3 py-2',
                     isLast && 'text-muted-foreground'
@@ -193,15 +258,67 @@ export function CourseDetailPanel({ course }: { course: Course }) {
         )}
 
         <div className='mt-5 flex gap-2'>
-          <Button className='h-9 flex-1'>{t('openCourse')}</Button>
+          <Button
+            className='h-9 flex-1'
+            disabled={togglePending}
+            variant={course.status === 'published' ? 'outline' : 'default'}
+            onClick={handleToggleStatus}
+          >
+            {t(toggleLabelKey)}
+          </Button>
           <Button variant='outline' className='h-9'>
             {t('duplicate')}
           </Button>
-          <Button variant='outline' size='icon' className='h-9 w-9'>
-            <Icons.ellipsis className='size-3.5' />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='outline' size='icon' className='h-9 w-9' aria-label={t('more')}>
+                <Icons.ellipsis className='size-3.5' />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-44'>
+              <DropdownMenuSeparator />
+              {/* Only drafts can be removed — published/unpublished are kept
+                  for history and enrolment integrity. */}
+              <DropdownMenuItem
+                variant='destructive'
+                disabled={course.status !== 'draft'}
+                onSelect={() => {
+                  if (course.status === 'draft') setConfirmOpen(true);
+                }}
+              >
+                <Icons.trash className='size-3.5' />
+                {t('delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('deleteDescription', { title: course.title })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteCourse.isPending}>
+              {t('deleteCancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteCourse.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              className='bg-destructive text-white hover:bg-destructive/90'
+            >
+              {t('deleteConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

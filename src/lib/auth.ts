@@ -1,13 +1,9 @@
+import 'server-only';
 import { cookies } from 'next/headers';
-import type { AppRole } from '@/config/nav-config';
+import { AUTH_COOKIE_NAME, type AuthUser } from './auth-shared';
 
-export const AUTH_COOKIE_NAME = 'iqode_auth';
-
-export type AuthUser = {
-  name: string;
-  phone: string;
-  role: AppRole;
-};
+export { AUTH_COOKIE_NAME, pickAppRole } from './auth-shared';
+export type { AuthUser } from './auth-shared';
 
 export async function getAuthUser(): Promise<AuthUser | null> {
   const c = await cookies();
@@ -18,10 +14,19 @@ export async function getAuthUser(): Promise<AuthUser | null> {
     if (
       parsed &&
       typeof parsed.phone === 'string' &&
-      typeof parsed.name === 'string' &&
+      typeof parsed.accessToken === 'string' &&
       (parsed.role === 'admin' || parsed.role === 'teacher' || parsed.role === 'parent')
     ) {
-      return parsed as AuthUser;
+      return {
+        username: parsed.username ?? '',
+        name: parsed.name ?? parsed.username ?? '',
+        phone: parsed.phone,
+        email: parsed.email ?? '',
+        role: parsed.role,
+        roles: parsed.roles ?? [],
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken ?? ''
+      };
     }
     return null;
   } catch {
