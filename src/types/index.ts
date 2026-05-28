@@ -10,6 +10,9 @@ export interface PermissionCheck {
 
 export interface NavItem {
   title: string;
+  // Optional i18n key (looked up in `nav` namespace). When present, sidebar renders t(titleKey)
+  // instead of `title`. Keep `title` populated as a developer-readable fallback.
+  titleKey?: string;
   url: string;
   disabled?: boolean;
   external?: boolean;
@@ -24,6 +27,8 @@ export interface NavItem {
 
 export interface NavGroup {
   label: string;
+  // Optional i18n key for the group header (same convention as NavItem.titleKey).
+  labelKey?: string;
   items: NavItem[];
 }
 

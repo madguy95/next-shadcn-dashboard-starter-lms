@@ -1,6 +1,7 @@
 'use client';
 
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -31,6 +32,7 @@ import {
   type ParentChild,
   type ParentCourse
 } from '@/features/parent/data';
+import { teacherClasses, classStatusLabel } from '@/features/teacher/data';
 import { ClassPickerDialog } from './class-picker-dialog';
 import { ConfirmEnrollmentDialog } from './confirm-enrollment-dialog';
 import { CourseDetailSheet } from './course-detail-sheet';
@@ -503,13 +505,132 @@ function AuthGate({ course }: { course: ParentCourse | null }) {
   );
 }
 
+function AdminCoursePanel({ course }: { course: ParentCourse | null }) {
+  return (
+    <aside className='space-y-4 lg:sticky lg:top-[72px]'>
+      <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
+        <div className='flex items-center gap-3 border-b p-4'>
+          <span className='grid h-9 w-9 place-items-center rounded-lg bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/20'>
+            <Icons.settings className='size-4' />
+          </span>
+          <div>
+            <div className='text-sm font-semibold tracking-tight'>Quản trị khóa học</div>
+            <div className='text-muted-foreground text-[11px]'>Chế độ admin</div>
+          </div>
+        </div>
+
+        <div className='space-y-4 p-4 text-sm'>
+          {course ? (
+            <div className='bg-muted/40 rounded-md border p-3'>
+              <div className='text-muted-foreground text-[11px] tracking-wider uppercase'>
+                Khóa đã chọn
+              </div>
+              <div className='mt-1 font-medium'>{course.name}</div>
+              <div className='text-muted-foreground font-mono text-[11px]'>
+                {course.code} · {course.sessions} buổi · {formatVND(course.price)}
+              </div>
+            </div>
+          ) : (
+            <p className='text-muted-foreground text-xs italic'>
+              Chọn một khóa để mở trang quản lý chi tiết.
+            </p>
+          )}
+
+          <Button asChild className='w-full' disabled={!course}>
+            <Link
+              href={
+                course
+                  ? `/admin/courses?course=${encodeURIComponent(course.code)}`
+                  : '/admin/courses'
+              }
+            >
+              <Icons.settings className='size-3.5' />
+              Quản lý khóa học
+              <Icons.arrowRight className='size-3.5' />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function TeacherCoursePanel({ course }: { course: ParentCourse | null }) {
+  // Mock teacher data: filter classes the current teacher owns by courseCode match.
+  // When wiring to BE, replace with /api/teacher/classes?courseCode={code}.
+  const myClasses = useMemo(
+    () => (course ? teacherClasses.filter((c) => c.courseCode === course.code) : []),
+    [course]
+  );
+
+  return (
+    <aside className='space-y-4 lg:sticky lg:top-[72px]'>
+      <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
+        <div className='flex items-center gap-3 border-b p-4'>
+          <span className='grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20'>
+            <Icons.teams className='size-4' />
+          </span>
+          <div>
+            <div className='text-sm font-semibold tracking-tight'>Lớp của bạn</div>
+            <div className='text-muted-foreground text-[11px]'>Chế độ giáo viên</div>
+          </div>
+        </div>
+
+        <div className='space-y-3 p-4 text-sm'>
+          {!course ? (
+            <p className='text-muted-foreground text-xs italic'>
+              Chọn một khóa để xem các lớp bạn đang phụ trách.
+            </p>
+          ) : myClasses.length === 0 ? (
+            <div className='bg-muted/40 rounded-md border border-dashed p-3 text-center'>
+              <div className='text-muted-foreground text-xs'>
+                Bạn chưa có lớp nào thuộc khóa <span className='font-mono'>{course.code}</span>.
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className='text-muted-foreground text-[11px] tracking-wider uppercase'>
+                {myClasses.length} lớp thuộc {course.code}
+              </div>
+              <ul className='space-y-2'>
+                {myClasses.map((cl) => (
+                  <li key={cl.id}>
+                    <Link
+                      href={`/teacher/classes/${cl.id}`}
+                      className='hover:border-foreground/30 hover:bg-accent/50 flex items-center justify-between gap-3 rounded-md border p-3 transition-colors'
+                    >
+                      <div className='min-w-0'>
+                        <div className='flex items-center gap-2'>
+                          <span className='font-medium'>{cl.classLabel}</span>
+                          <Badge variant='secondary' className='text-[10px] font-normal'>
+                            {classStatusLabel[cl.status]}
+                          </Badge>
+                        </div>
+                        <div className='text-muted-foreground mt-0.5 font-mono text-[11px]'>
+                          {cl.schedule} · {cl.location}
+                        </div>
+                      </div>
+                      <Icons.arrowRight className='text-muted-foreground size-3.5 shrink-0' />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export function EnrollmentView() {
   const { user } = useAuth();
-  const isAuthed = !!user;
+  const role = user?.role ?? null;
+  const isParent = role === 'parent';
   const [childIdx, setChildIdx] = useState(0);
   const child = parentChildren[childIdx];
 
-  // Public course list is server-prefetched in app/(lms)/parent/enrollment/page.tsx and hydrated
+  // Public course list is server-prefetched in app/(lms)/courses/page.tsx and hydrated
   // via <HydrationBoundary>. useSuspenseQuery picks that up — no skeleton on first paint.
   // Subsequent navigations (no hydration) suspend until cache populates.
   const { data: publicCourses } = useSuspenseQuery(publicCoursesOptions(24));
@@ -518,7 +639,7 @@ export function EnrollmentView() {
     [publicCourses]
   );
 
-  // Deep-link: /parent/enrollment?course=SC-101 opens that course's detail sheet on mount.
+  // Deep-link: /courses?course=SC-101 opens that course's detail sheet on mount.
   // Match by `code` (stable, user-friendly) rather than DB id.
   const searchParams = useSearchParams();
   const initialCourseCode = searchParams.get('course');
@@ -612,7 +733,7 @@ export function EnrollmentView() {
               </div>
             </div>
 
-            {isAuthed ? (
+            {isParent ? (
               <div className='text-muted-foreground bg-muted/40 mx-5 mb-3 flex items-center gap-2.5 rounded-md border border-dashed px-3 py-2 text-xs'>
                 <Icons.sparkles className='text-foreground/60 size-3 shrink-0' />
                 <span className='truncate'>
@@ -629,12 +750,25 @@ export function EnrollmentView() {
                   Đổi học sinh
                 </button>
               </div>
+            ) : role === 'admin' ? (
+              <div className='mx-5 mb-3 flex items-center gap-2.5 rounded-md border border-dashed border-violet-500/30 bg-violet-500/5 px-3 py-2 text-xs text-violet-700 dark:text-violet-300'>
+                <Icons.settings className='size-3 shrink-0' />
+                <span className='truncate'>
+                  Chế độ quản trị · click chọn khóa để mở trang quản lý chi tiết.
+                </span>
+              </div>
+            ) : role === 'teacher' ? (
+              <div className='mx-5 mb-3 flex items-center gap-2.5 rounded-md border border-dashed border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300'>
+                <Icons.teams className='size-3 shrink-0' />
+                <span className='truncate'>
+                  Chế độ giáo viên · click chọn khóa để xem các lớp bạn đang phụ trách.
+                </span>
+              </div>
             ) : (
               <div className='mx-5 mb-3 flex items-center gap-2.5 rounded-md border border-dashed border-cyan-500/30 bg-cyan-500/5 px-3 py-2 text-xs text-cyan-700 dark:text-cyan-300'>
                 <Icons.info className='size-3 shrink-0' />
                 <span className='truncate'>
-                  Bạn đang xem ở chế độ khách. Đăng nhập để được đề xuất khóa phù hợp với độ tuổi
-                  của con.
+                  Bạn đang xem ở chế độ khách. Đăng nhập để đăng ký cho con hoặc vào workspace.
                 </span>
                 <Link
                   href='/login?mode=register'
@@ -673,7 +807,7 @@ export function EnrollmentView() {
           </div>
         </div>
 
-        {isAuthed ? (
+        {role === 'parent' ? (
           <SummaryPanel
             child={child}
             course={course}
@@ -689,6 +823,10 @@ export function EnrollmentView() {
             onContinue={handleContinue}
             onSwitchChild={() => setChildIdx((childIdx + 1) % parentChildren.length)}
           />
+        ) : role === 'admin' ? (
+          <AdminCoursePanel course={course} />
+        ) : role === 'teacher' ? (
+          <TeacherCoursePanel course={course} />
         ) : (
           <AuthGate course={course} />
         )}
@@ -707,49 +845,84 @@ export function EnrollmentView() {
         }}
       />
 
-      <ClassPickerDialog
-        course={course}
-        selectedId={klass?.id}
-        open={showClassDialog}
-        onOpenChange={setShowClassDialog}
-        onPick={(cl) => {
-          setKlass(cl);
-          setShowClassDialog(false);
-          setShowConfirm(true);
-        }}
-      />
+      {isParent && (
+        <>
+          <ClassPickerDialog
+            course={course}
+            selectedId={klass?.id}
+            open={showClassDialog}
+            onOpenChange={setShowClassDialog}
+            onPick={(cl) => {
+              setKlass(cl);
+              setShowClassDialog(false);
+              setShowConfirm(true);
+            }}
+          />
 
-      {course && klass && (
-        <ConfirmEnrollmentDialog
-          open={showConfirm}
-          onOpenChange={setShowConfirm}
-          child={child}
-          course={course}
-          klass={klass}
-          note={note}
-          trial={trial}
-          onBack={() => {
-            setShowConfirm(false);
-            setShowClassDialog(true);
-          }}
-          onSubmit={handleSubmit}
-        />
+          {course && klass && (
+            <ConfirmEnrollmentDialog
+              open={showConfirm}
+              onOpenChange={setShowConfirm}
+              child={child}
+              course={course}
+              klass={klass}
+              note={note}
+              trial={trial}
+              onBack={() => {
+                setShowConfirm(false);
+                setShowClassDialog(true);
+              }}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </>
       )}
     </>
   );
 }
 
-export function EnrollmentHeaderAction() {
+export function EnrollmentHeaderAction({ role }: { role: 'admin' | 'teacher' | 'parent' | null }) {
+  const t = useTranslations('coursesCatalog.header');
+  if (role === 'admin') {
+    return (
+      <Button asChild variant='outline' size='sm' className='h-9'>
+        <Link href='/admin/courses'>
+          <Icons.settings className='size-3.5' />
+          {t('adminManage')}
+        </Link>
+      </Button>
+    );
+  }
+  if (role === 'teacher') {
+    return (
+      <Button asChild variant='outline' size='sm' className='h-9'>
+        <Link href='/teacher/classes'>
+          <Icons.teams className='size-3.5' />
+          {t('teacherMyClasses')}
+        </Link>
+      </Button>
+    );
+  }
+  if (role === 'parent') {
+    return (
+      <div className='flex gap-2'>
+        <Button variant='outline' size='sm' className='h-9'>
+          <Icons.clock className='size-3.5' />
+          {t('parentRecent')}
+        </Button>
+        <Button variant='outline' size='sm' className='h-9'>
+          <Icons.sparkles className='size-3.5' />
+          {t('parentAdvise')}
+        </Button>
+      </div>
+    );
+  }
   return (
-    <div className='flex gap-2'>
-      <Button variant='outline' size='sm' className='h-9'>
-        <Icons.clock className='size-3.5' />
-        Đăng ký gần đây
-      </Button>
-      <Button variant='outline' size='sm' className='h-9'>
-        <Icons.sparkles className='size-3.5' />
-        Tư vấn lộ trình
-      </Button>
-    </div>
+    <Button asChild size='sm' className='h-9'>
+      <Link href='/login?mode=register'>
+        <Icons.add className='size-3.5' />
+        {t('guestRegister')}
+      </Link>
+    </Button>
   );
 }

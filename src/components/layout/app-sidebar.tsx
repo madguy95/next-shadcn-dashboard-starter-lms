@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -59,11 +60,15 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+  const tNav = useTranslations('nav');
   // Logged-in users are locked to their account's role.
   // Guests follow the URL so they can preview each role's UI.
   const currentRole = user ? user.role : getRoleFromPathname(pathname);
   const groups = navByRole[currentRole];
   const filteredGroups = useFilteredNavGroups(groups);
+  // Translate a nav title/group label by its i18n key; fall back to the literal string
+  // so untranslated items (most of the existing nav) still render correctly.
+  const tr = (literal: string, key?: string) => (key ? tNav(key) : literal);
   const userInitials = user
     ? user.name
         .trim()
@@ -89,7 +94,9 @@ export default function AppSidebar() {
               <div className='grid flex-1 text-left text-sm leading-tight'>
                 <span className='truncate font-semibold'>IQode Lab</span>
                 <span className='text-muted-foreground truncate text-xs'>
-                  {user ? `${roleMeta[user.role].label} workspace` : 'Khám phá'}
+                  {user
+                    ? `${roleMeta[user.role].label} ${tNav('workspaceSuffix')}`
+                    : tNav('guestSubtitle')}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -105,10 +112,10 @@ export default function AppSidebar() {
                 <span className='bg-primary/10 text-primary grid h-7 w-7 place-items-center rounded-md'>
                   <Icons.lock className='size-3.5' />
                 </span>
-                <div className='text-sm font-semibold tracking-tight'>Chào bạn!</div>
+                <div className='text-sm font-semibold tracking-tight'>{tNav('guest.greeting')}</div>
               </div>
               <p className='text-muted-foreground mt-2 text-xs leading-relaxed'>
-                Đăng nhập để xem khóa học của con, lịch học và quản lý hồ sơ gia đình.
+                {tNav('guest.description')}
               </p>
               <div className='mt-3 flex flex-col gap-1.5'>
                 <Link
@@ -116,28 +123,28 @@ export default function AppSidebar() {
                   className='bg-primary text-primary-foreground inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium hover:opacity-90'
                 >
                   <Icons.add className='size-3' />
-                  Tạo tài khoản
+                  {tNav('guest.register')}
                 </Link>
                 <Link
                   href='/login'
                   className='hover:bg-accent inline-flex h-8 items-center justify-center gap-1.5 rounded-md border px-3 text-xs font-medium'
                 >
                   <Icons.login className='size-3' />
-                  Đăng nhập
+                  {tNav('guest.login')}
                 </Link>
               </div>
             </div>
-            <SidebarGroupLabel className='mt-4'>Xem demo</SidebarGroupLabel>
+            <SidebarGroupLabel className='mt-4'>{tNav('groups.demo')}</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  tooltip='Khóa học'
-                  isActive={pathname === '/parent/enrollment'}
+                  tooltip={tNav('items.courses')}
+                  isActive={pathname === '/courses'}
                 >
-                  <Link href='/parent/enrollment'>
+                  <Link href='/courses'>
                     <Icons.book />
-                    <span>Khóa học</span>
+                    <span>{tNav('items.courses')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -145,60 +152,70 @@ export default function AppSidebar() {
           </SidebarGroup>
         )}
         {user &&
-          filteredGroups.map((group) => (
-            <SidebarGroup key={group.label || 'ungrouped'} className='py-0'>
-              {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-                  return item?.items && item?.items?.length > 0 ? (
-                    <Collapsible
-                      key={item.title}
-                      asChild
-                      defaultOpen={item.isActive}
-                      className='group/collapsible'
-                    >
-                      <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton tooltip={item.title} isActive={pathname === item.url}>
-                            {item.icon && <Icon />}
-                            <span>{item.title}</span>
-                            <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <SidebarMenuSub>
-                            {item.items?.map((subItem) => (
-                              <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                                  <Link href={subItem.url}>
-                                    <span>{subItem.title}</span>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            ))}
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </SidebarMenuItem>
-                    </Collapsible>
-                  ) : (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
+          filteredGroups.map((group) => {
+            const groupLabel = tr(group.label, group.labelKey);
+            return (
+              <SidebarGroup key={group.label || 'ungrouped'} className='py-0'>
+                {groupLabel && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+                    const itemTitle = tr(item.title, item.titleKey);
+                    return item?.items && item?.items?.length > 0 ? (
+                      <Collapsible
+                        key={item.title}
                         asChild
-                        tooltip={item.title}
-                        isActive={pathname === item.url}
+                        defaultOpen={item.isActive}
+                        className='group/collapsible'
                       >
-                        <Link href={item.url}>
-                          <Icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroup>
-          ))}
+                        <SidebarMenuItem>
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuButton tooltip={itemTitle} isActive={pathname === item.url}>
+                              {item.icon && <Icon />}
+                              <span>{itemTitle}</span>
+                              <Icons.chevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <SidebarMenuSub>
+                              {item.items?.map((subItem) => {
+                                const subTitle = tr(subItem.title, subItem.titleKey);
+                                return (
+                                  <SidebarMenuSubItem key={subItem.title}>
+                                    <SidebarMenuSubButton
+                                      asChild
+                                      isActive={pathname === subItem.url}
+                                    >
+                                      <Link href={subItem.url}>
+                                        <span>{subTitle}</span>
+                                      </Link>
+                                    </SidebarMenuSubButton>
+                                  </SidebarMenuSubItem>
+                                );
+                              })}
+                            </SidebarMenuSub>
+                          </CollapsibleContent>
+                        </SidebarMenuItem>
+                      </Collapsible>
+                    ) : (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={itemTitle}
+                          isActive={pathname === item.url}
+                        >
+                          <Link href={item.url}>
+                            <Icon />
+                            <span>{itemTitle}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+            );
+          })}
       </SidebarContent>
 
       <SidebarFooter>
@@ -247,7 +264,7 @@ export default function AppSidebar() {
                     <Icons.user className='mr-2 h-4 w-4' />
                     Hồ sơ con
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => router.push('/parent/enrollment')}>
+                  <DropdownMenuItem onSelect={() => router.push('/courses')}>
                     <Icons.book className='mr-2 h-4 w-4' />
                     Đăng ký khóa
                   </DropdownMenuItem>

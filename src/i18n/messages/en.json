@@ -8,6 +8,53 @@
     "remove": "Remove",
     "actions": "Actions"
   },
+  "nav": {
+    "groups": {
+      "lms": "LMS",
+      "teacher": "Teacher",
+      "parent": "Parent",
+      "discover": "Discover",
+      "demo": "Demo"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "teachers": "Teachers",
+      "coursesManage": "Courses",
+      "classes": "Classes",
+      "enrollments": "Enrollments",
+      "schedule": "Schedule",
+      "myClass": "My class",
+      "mySchedule": "My schedule",
+      "myChildren": "My children",
+      "catalog": "Course catalog",
+      "courses": "Courses"
+    },
+    "guest": {
+      "greeting": "Hello!",
+      "description": "Sign in to view your child's courses, schedule and manage family profiles.",
+      "register": "Create account",
+      "login": "Sign in"
+    },
+    "workspaceSuffix": "workspace",
+    "guestSubtitle": "Discover"
+  },
+  "coursesCatalog": {
+    "guestTitle": "Courses",
+    "guestDescription": "Explore IQode Lab courses. Sign in to enroll your child or jump back into your workspace.",
+    "adminTitle": "Courses (Admin)",
+    "adminDescription": "All published courses. Open one to manage its content and classes.",
+    "teacherTitle": "Courses",
+    "teacherDescription": "Course catalog. Open a course you teach to jump into your class.",
+    "parentTitle": "Enroll your child",
+    "parentDescription": "Find and enroll a course that fits your child. We confirm class placement within 24 hours.",
+    "header": {
+      "adminManage": "Course management",
+      "teacherMyClasses": "My classes",
+      "parentRecent": "Recent enrollments",
+      "parentAdvise": "Get advice",
+      "guestRegister": "Create account"
+    }
+  },
   "table": {
     "noResults": "No results.",
     "selectAll": "Select all",

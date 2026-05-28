@@ -33,9 +33,11 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
   admin: [
     {
       label: 'LMS',
+      labelKey: 'groups.lms',
       items: [
         {
           title: 'Dashboard',
+          titleKey: 'items.dashboard',
           url: '/admin',
           icon: 'dashboard',
           shortcut: ['a', 'd'],
@@ -44,6 +46,7 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
         },
         {
           title: 'Teachers',
+          titleKey: 'items.teachers',
           url: '/admin/teachers',
           icon: 'teams',
           shortcut: ['a', 't'],
@@ -52,6 +55,7 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
         },
         {
           title: 'Courses',
+          titleKey: 'items.coursesManage',
           url: '/admin/courses',
           icon: 'book',
           shortcut: ['a', 'c'],
@@ -60,6 +64,7 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
         },
         {
           title: 'Classes',
+          titleKey: 'items.classes',
           url: '/admin/classes',
           icon: 'layoutGrid',
           shortcut: ['a', 's'],
@@ -68,6 +73,7 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
         },
         {
           title: 'Enrollments',
+          titleKey: 'items.enrollments',
           url: '/admin/enrollments',
           icon: 'checks',
           shortcut: ['a', 'e'],
@@ -76,9 +82,25 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
         },
         {
           title: 'Schedule',
+          titleKey: 'items.schedule',
           url: '/admin/schedule',
           icon: 'calendar',
           shortcut: ['a', 'h'],
+          isActive: false,
+          items: []
+        }
+      ]
+    },
+    {
+      label: 'Khám phá',
+      labelKey: 'groups.discover',
+      items: [
+        {
+          title: 'Khóa học (chung)',
+          titleKey: 'items.catalog',
+          url: '/courses',
+          icon: 'book',
+          shortcut: ['a', 'k'],
           isActive: false,
           items: []
         }
@@ -88,9 +110,11 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
   teacher: [
     {
       label: 'Teacher',
+      labelKey: 'groups.teacher',
       items: [
         {
           title: 'My Class',
+          titleKey: 'items.myClass',
           url: '/teacher/classes',
           icon: 'teams',
           shortcut: ['t', 'c'],
@@ -99,9 +123,25 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
         },
         {
           title: 'My Schedule',
+          titleKey: 'items.mySchedule',
           url: '/teacher/schedule',
           icon: 'calendar',
           shortcut: ['t', 's'],
+          isActive: false,
+          items: []
+        }
+      ]
+    },
+    {
+      label: 'Khám phá',
+      labelKey: 'groups.discover',
+      items: [
+        {
+          title: 'Khóa học (chung)',
+          titleKey: 'items.catalog',
+          url: '/courses',
+          icon: 'book',
+          shortcut: ['t', 'k'],
           isActive: false,
           items: []
         }
@@ -111,9 +151,11 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
   parent: [
     {
       label: 'Parent',
+      labelKey: 'groups.parent',
       items: [
         {
           title: 'My Children',
+          titleKey: 'items.myChildren',
           url: '/parent/children',
           icon: 'teams',
           shortcut: ['p', 'c'],
@@ -121,18 +163,26 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
           items: []
         },
         {
-          title: 'Enrollment',
-          url: '/parent/enrollment',
-          icon: 'book',
-          shortcut: ['p', 'e'],
-          isActive: false,
-          items: []
-        },
-        {
           title: 'Schedule',
+          titleKey: 'items.schedule',
           url: '/parent/schedule',
           icon: 'calendar',
           shortcut: ['p', 's'],
+          isActive: false,
+          items: []
+        }
+      ]
+    },
+    {
+      label: 'Khám phá',
+      labelKey: 'groups.discover',
+      items: [
+        {
+          title: 'Khóa học (chung)',
+          titleKey: 'items.catalog',
+          url: '/courses',
+          icon: 'book',
+          shortcut: ['p', 'k'],
           isActive: false,
           items: []
         }

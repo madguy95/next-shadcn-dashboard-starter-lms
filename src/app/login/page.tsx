@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Icons } from '@/components/icons';
+import { roleMeta } from '@/config/nav-config';
+import { getAuthUser } from '@/lib/auth';
 import { LoginForm } from './login-form';
 
 export const metadata = {
@@ -9,7 +12,9 @@ export const metadata = {
 type SearchParams = { mode?: string };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const { mode } = await searchParams;
+  const [{ mode }, user] = await Promise.all([searchParams, getAuthUser()]);
+  // Already logged in → no reason to see the login form. Send them to their workspace.
+  if (user) redirect(roleMeta[user.role].basePath);
   const initialMode: 'login' | 'register' = mode === 'register' ? 'register' : 'login';
   return (
     <div className='relative grid min-h-screen overflow-hidden bg-black text-white lg:grid-cols-[1.1fr_1fr]'>

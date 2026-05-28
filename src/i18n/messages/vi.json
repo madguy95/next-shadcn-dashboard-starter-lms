@@ -8,6 +8,53 @@
     "remove": "Xóa",
     "actions": "Thao tác"
   },
+  "nav": {
+    "groups": {
+      "lms": "LMS",
+      "teacher": "Giáo viên",
+      "parent": "Phụ huynh",
+      "discover": "Khám phá",
+      "demo": "Xem demo"
+    },
+    "items": {
+      "dashboard": "Tổng quan",
+      "teachers": "Giáo viên",
+      "coursesManage": "Khóa học",
+      "classes": "Lớp học",
+      "enrollments": "Đăng ký",
+      "schedule": "Lịch",
+      "myClass": "Lớp của tôi",
+      "mySchedule": "Lịch dạy",
+      "myChildren": "Hồ sơ con",
+      "catalog": "Khóa học (chung)",
+      "courses": "Khóa học"
+    },
+    "guest": {
+      "greeting": "Chào bạn!",
+      "description": "Đăng nhập để xem khóa học của con, lịch học và quản lý hồ sơ gia đình.",
+      "register": "Tạo tài khoản",
+      "login": "Đăng nhập"
+    },
+    "workspaceSuffix": "workspace",
+    "guestSubtitle": "Khám phá"
+  },
+  "coursesCatalog": {
+    "guestTitle": "Khóa học",
+    "guestDescription": "Khám phá các khóa học của IQode Lab. Đăng nhập để đăng ký cho con hoặc vào workspace.",
+    "adminTitle": "Khóa học (Quản trị)",
+    "adminDescription": "Toàn bộ khóa học đang publish. Mở chi tiết để quản lý nội dung và lớp.",
+    "teacherTitle": "Khóa học",
+    "teacherDescription": "Danh sách khóa học. Mở khóa bạn đang dạy để vào lớp của bạn.",
+    "parentTitle": "Đăng ký khóa học cho con",
+    "parentDescription": "Tìm và đăng ký khóa phù hợp với con. Trung tâm xác nhận lớp trong vòng 24 giờ.",
+    "header": {
+      "adminManage": "Trang quản lý khóa",
+      "teacherMyClasses": "Lớp của tôi",
+      "parentRecent": "Đăng ký gần đây",
+      "parentAdvise": "Tư vấn lộ trình",
+      "guestRegister": "Tạo tài khoản"
+    }
+  },
   "table": {
     "noResults": "Không có kết quả.",
     "selectAll": "Chọn tất cả",
