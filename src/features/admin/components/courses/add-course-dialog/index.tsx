@@ -1,6 +1,7 @@
 'use client';
 
 import { useStore } from '@tanstack/react-form';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -18,7 +19,8 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { scrollToFirstError, useAppForm } from '@/components/ui/tanstack-form';
-import { COURSE_CATEGORIES, COURSE_LEVELS, useCreateCourse } from '@/api/courses';
+import { useCreateCourse } from '@/api/courses';
+import { masterDataOptions } from '@/api/master-data';
 import { cn } from '@/lib/utils';
 import { BasicsStep } from './basics-step';
 import { OutlineStep } from './outline-step';
@@ -51,13 +53,10 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
   const [tagInput, setTagInput] = React.useState('');
   const createCourse = useCreateCourse();
 
-  const categoryOptions = React.useMemo(
-    () => COURSE_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) })),
-    [t]
-  );
-  const levelOptions = React.useMemo(
-    () => COURSE_LEVELS.map((value) => ({ value, label: tDialog(`level.${value}`) })),
-    [tDialog]
+  const toolsQuery = useQuery(masterDataOptions('tool'));
+  const toolOptions = React.useMemo(
+    () => (toolsQuery.data ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [toolsQuery.data]
   );
 
   const baseSchema = React.useMemo(() => buildBaseSchema(tValidation), [tValidation]);
@@ -75,8 +74,7 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
           title: value.title.trim(),
           code: value.code.trim(),
           description: value.description.trim(),
-          category: value.category,
-          level: value.level,
+          tool: value.tool,
           minAge: Number(value.minAge),
           maxAge: Number(value.maxAge),
           totalSessions: Number(value.totalSessions),
@@ -107,8 +105,7 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
   const titleValue = useStore(form.store, (s) => s.values.title);
   const codeValue = useStore(form.store, (s) => s.values.code);
   const descriptionValue = useStore(form.store, (s) => s.values.description);
-  const categoryValue = useStore(form.store, (s) => s.values.category);
-  const levelValue = useStore(form.store, (s) => s.values.level);
+  const toolValue = useStore(form.store, (s) => s.values.tool);
   const minAgeValue = useStore(form.store, (s) => s.values.minAge);
   const maxAgeValue = useStore(form.store, (s) => s.values.maxAge);
   const totalSessionsValue = useStore(form.store, (s) => s.values.totalSessions);
@@ -290,14 +287,12 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
                 tDialog={tDialog}
                 tagInput={tagInput}
                 setTagInput={setTagInput}
-                categoryOptions={categoryOptions}
-                levelOptions={levelOptions}
+                toolOptions={toolOptions}
                 preview={{
                   title: titleValue,
                   code: codeValue,
                   description: descriptionValue,
-                  category: categoryValue,
-                  level: levelValue,
+                  tool: toolValue,
                   minAge: minAgeValue,
                   maxAge: maxAgeValue,
                   totalSessions: totalSessionsValue,

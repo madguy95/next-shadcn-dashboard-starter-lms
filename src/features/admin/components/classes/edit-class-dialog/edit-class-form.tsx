@@ -25,6 +25,7 @@ import {
   type UpdateClassInput
 } from '@/api/classes';
 import { courseListOptions, type Course } from '@/api/courses';
+import { masterDataOptions } from '@/api/master-data';
 import { teacherOptionsQuery, type Teacher } from '@/api/teachers';
 import { formatApiError } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -33,12 +34,9 @@ import { DateField } from '../add-class-dialog/date-field';
 import {
   buildBaseSchema,
   buildSchema,
-  defaultValues,
-  LOCATIONS,
   sortDaySchedules,
   VISIBILITIES,
   type ClassFormValues,
-  type ClassLocation,
   type ClassVisibility,
   type DaySchedule
 } from '../add-class-dialog/schema';
@@ -63,16 +61,15 @@ function hydrate(cls: ClassRow): ClassFormValues {
     courseId: cls.courseId ?? '',
     label: cls.label ?? '',
     teacherId: cls.teacherId ?? '',
-    location: ((LOCATIONS as readonly string[]).includes(cls.location)
-      ? cls.location
-      : defaultValues.location) as ClassLocation,
-    daySchedules: (cls.daySchedules ?? defaultValues.daySchedules) as DaySchedule[],
+    location: cls.location ?? '',
+    room: cls.room ?? '',
+    daySchedules: (cls.daySchedules ?? []) as DaySchedule[],
     startDate: cls.startDate ?? '',
     endDate: cls.endDate ?? '',
     capacity: cls.capacity ?? 0,
-    visibility: ((VISIBILITIES as readonly string[]).includes(cls.visibility ?? '')
-      ? cls.visibility
-      : defaultValues.visibility) as ClassVisibility
+    visibility: (VISIBILITIES as readonly string[]).includes(cls.visibility ?? '')
+      ? (cls.visibility as ClassVisibility)
+      : 'public_enrollable'
   };
 }
 
@@ -85,6 +82,7 @@ function diffPayload(initial: ClassFormValues, current: ClassFormValues): Update
   if (current.label !== initial.label) out.label = current.label;
   if (current.teacherId !== initial.teacherId) out.teacherId = current.teacherId;
   if (current.location !== initial.location) out.location = current.location;
+  if (current.room !== initial.room) out.room = current.room;
   if (current.startDate !== initial.startDate) out.startDate = current.startDate;
   if (current.endDate !== initial.endDate) out.endDate = current.endDate;
   if (current.visibility !== initial.visibility) out.visibility = current.visibility;
@@ -118,6 +116,16 @@ export function EditClassForm({
   );
   const { data: teachersData, isFetching: teachersFetching } = useQuery(
     teacherOptionsQuery({ status: 'active', search: teacherSearch || undefined })
+  );
+  const { data: locationsData } = useQuery(masterDataOptions('location'));
+  const locationOptions = React.useMemo(
+    () => (locationsData ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [locationsData]
+  );
+  const { data: roomsData } = useQuery(masterDataOptions('room'));
+  const roomOptions = React.useMemo(
+    () => (roomsData ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [roomsData]
   );
 
   const baseSchema = React.useMemo(() => buildBaseSchema(tValidation), [tValidation]);
@@ -296,7 +304,7 @@ export function EditClassForm({
               )}
             </form.AppField>
 
-            <form.AppField name='location'>
+            <form.AppField name='location' validators={{ onBlur: baseSchema.shape.location }}>
               {(field: any) => (
                 <field.FieldSet>
                   <field.Field>
@@ -305,21 +313,56 @@ export function EditClassForm({
                     </field.FieldLabel>
                     <Select
                       value={field.state.value}
-                      onValueChange={(v) => field.handleChange(v as ClassLocation)}
+                      onValueChange={(v) => {
+                        field.handleChange(v);
+                        field.handleBlur();
+                      }}
                       disabled={!isEditable('location')}
                     >
                       <SelectTrigger className='h-10 w-full'>
                         <SelectValue placeholder={tDialog('fields.locationPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {LOCATIONS.map((loc) => (
-                          <SelectItem key={loc} value={loc}>
-                            {tDialog(`locations.${loc}`)}
+                        {locationOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     <LockNote reason={lockedReason('location')} tLock={tLock} />
+                  </field.Field>
+                  <field.FieldError />
+                </field.FieldSet>
+              )}
+            </form.AppField>
+          </div>
+
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            <form.AppField name='room'>
+              {(field: any) => (
+                <field.FieldSet>
+                  <field.Field>
+                    <field.FieldLabel className='text-muted-foreground text-[12px]'>
+                      {tDialog('fields.room')}
+                    </field.FieldLabel>
+                    <Select
+                      value={field.state.value || undefined}
+                      onValueChange={(v) => field.handleChange(v)}
+                      disabled={!isEditable('room')}
+                    >
+                      <SelectTrigger className='h-10 w-full'>
+                        <SelectValue placeholder={tDialog('fields.roomPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roomOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <LockNote reason={lockedReason('room')} tLock={tLock} />
                   </field.Field>
                   <field.FieldError />
                 </field.FieldSet>

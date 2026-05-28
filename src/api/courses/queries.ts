@@ -4,7 +4,7 @@ import {
   deleteCourse,
   duplicateCourse,
   getCourseById,
-  getCourseCategoryTabs,
+  getCourseToolTabs,
   getCourses,
   getPublicCourseById,
   getPublicCourses,
@@ -23,7 +23,7 @@ export const courseKeys = {
   all: ['admin', 'courses'] as const,
   list: (params: CourseListParams) => [...courseKeys.all, 'list', params] as const,
   detail: (id: string) => [...courseKeys.all, 'detail', id] as const,
-  categoryTabs: () => [...courseKeys.all, 'categoryTabs'] as const,
+  toolTabs: () => [...courseKeys.all, 'toolTabs'] as const,
   // Separate key space — public list lives outside the 'admin' subtree so admin
   // mutations don't accidentally invalidate the unauthenticated landing/enrollment query
   // (different endpoint, different shape, different cache lifetime).
@@ -47,10 +47,10 @@ export function courseDetailOptions(id: string) {
   });
 }
 
-export function courseCategoryTabsOptions() {
+export function courseToolTabsOptions() {
   return queryOptions({
-    queryKey: courseKeys.categoryTabs(),
-    queryFn: getCourseCategoryTabs
+    queryKey: courseKeys.toolTabs(),
+    queryFn: getCourseToolTabs
   });
 }
 

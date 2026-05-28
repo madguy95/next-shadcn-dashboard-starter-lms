@@ -16,12 +16,7 @@ import {
   SheetTitle
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  courseCategoryTabsOptions,
-  courseListOptions,
-  isCourseCategory,
-  type CourseCategoryFilter
-} from '@/api/courses';
+import { courseListOptions, courseToolTabsOptions, type CourseToolFilter } from '@/api/courses';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { AddCourseDialog } from './add-course-dialog';
@@ -30,7 +25,7 @@ import { CourseDetailPanel, CourseDetailPanelSkeleton } from './course-detail-pa
 
 export function CoursesView() {
   const t = useTranslations('courses');
-  const [categoryParam, setCategoryParam] = useQueryState('category', parseAsString);
+  const [toolParam, setToolParam] = useQueryState('tool', parseAsString);
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [selectedId, setSelectedId] = useQueryState('selected', parseAsString);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
@@ -39,7 +34,7 @@ export function CoursesView() {
   // that opens on card tap. JS + CSS breakpoints must stay in sync.
   const isBelowLg = useMediaQuery('(max-width: 1023px)');
 
-  const category: CourseCategoryFilter = isCourseCategory(categoryParam) ? categoryParam : 'all';
+  const tool: CourseToolFilter = toolParam && toolParam !== 'all' ? toolParam : 'all';
 
   const {
     data: result,
@@ -47,11 +42,11 @@ export function CoursesView() {
     isLoading
   } = useQuery(
     courseListOptions({
-      category: isCourseCategory(categoryParam) ? categoryParam : undefined,
+      tool: tool === 'all' ? undefined : tool,
       search: search || undefined
     })
   );
-  const { data: categoryTabs } = useQuery(courseCategoryTabsOptions());
+  const { data: toolTabs } = useQuery(courseToolTabsOptions());
 
   const visible = result?.data ?? [];
   const selected = visible.find((c) => c.id === selectedId) ?? visible[0];
@@ -76,22 +71,22 @@ export function CoursesView() {
       {/* Left: filter chips + search pinned at top, cards scroll below. */}
       <div className='flex min-h-0 flex-1 flex-col gap-4 lg:flex-[8]'>
         <div className='flex shrink-0 flex-wrap items-center gap-2'>
-          {categoryTabs
-            ? categoryTabs.map((tab) => {
-                const active = category === tab.value;
+          {toolTabs
+            ? toolTabs.map((tab) => {
+                const active = tool === tab.value;
                 return (
                   <button
                     key={tab.value}
                     type='button'
                     onClick={() => {
-                      void setCategoryParam(tab.value === 'all' ? null : tab.value);
+                      void setToolParam(tab.value === 'all' ? null : tab.value);
                     }}
                     className={cn(
                       'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px]',
                       active ? 'bg-foreground text-background border-foreground' : 'hover:bg-accent'
                     )}
                   >
-                    {t(`categories.${tab.value}`)}
+                    {t(`tools.${tab.value}`)}
                     <span className='font-mono opacity-60'>{tab.count}</span>
                   </button>
                 );

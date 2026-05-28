@@ -190,7 +190,7 @@ export const teacherStatusClass: Record<TeacherStatus, string> = {
 import type { CourseStatus } from '@/api/courses';
 // Re-exported for legacy imports (e.g. add-class-dialog) that still pull `courses` from this module.
 export { courses } from '@/api/courses';
-export type { Course, CourseCategory, CourseStatus } from '@/api/courses';
+export type { Course, CourseStatus, CourseTool } from '@/api/courses';
 
 export const courseStatusClass: Record<CourseStatus, string> = {
   published: 'bg-emerald-50 text-emerald-700 border-emerald-100',

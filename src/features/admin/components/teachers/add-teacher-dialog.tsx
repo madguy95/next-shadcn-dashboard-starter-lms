@@ -16,12 +16,14 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useCreateTeacher, type Gender } from '@/api/teachers';
-import { locations, subjects } from '@/constants/teacher-options';
 import { formatApiError } from '@/lib/api-client';
 import { TeacherForm, type TeacherFormValues } from './teacher-form';
 
 const FORM_ID = 'add-teacher-form';
 
+// Subject + location defaults are intentionally blank — the form lazy-loads
+// options from /api/master-data and the user picks one. The schema marks both
+// as required so submit blocks until a choice is made.
 const defaultValues: TeacherFormValues = {
   firstName: '',
   lastName: '',
@@ -30,8 +32,8 @@ const defaultValues: TeacherFormValues = {
   dateOfBirth: '',
   gender: '',
   avatar: [],
-  primarySubject: subjects[0],
-  location: locations[0],
+  primarySubject: '',
+  location: '',
   tags: [],
   sendOnboardingEmail: true
 };

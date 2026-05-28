@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
@@ -10,8 +11,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAppForm, useFormFields } from '@/components/ui/tanstack-form';
+import { masterDataOptions } from '@/api/master-data';
 import { GENDERS, type Gender } from '@/api/teachers';
-import { locationOptions, subjectOptions } from '@/constants/teacher-options';
 import { cn } from '@/lib/utils';
 
 export type TeacherFormValues = {
@@ -86,6 +87,18 @@ export function TeacherForm({
   const genderOptions = React.useMemo(
     () => GENDERS.map((value) => ({ value, label: tGender(value) })),
     [tGender]
+  );
+
+  const subjectsQuery = useQuery(masterDataOptions('subject'));
+  const subjectOptions = React.useMemo(
+    () => (subjectsQuery.data ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [subjectsQuery.data]
+  );
+
+  const locationsQuery = useQuery(masterDataOptions('location'));
+  const locationOptions = React.useMemo(
+    () => (locationsQuery.data ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [locationsQuery.data]
   );
 
   const form = useAppForm({

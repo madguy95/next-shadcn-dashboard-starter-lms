@@ -1,24 +1,12 @@
 export const COURSE_STATUSES = ['published', 'draft', 'unpublished'] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 
-export const COURSE_CATEGORIES = [
-  'coding',
-  'design',
-  'robotics',
-  'stem',
-  'language',
-  'game'
-] as const;
-export type CourseCategory = (typeof COURSE_CATEGORIES)[number];
+// Tool codes are the source of truth in the backend master_data table (type='tool').
+// The FE treats CourseTool as an open-ended string so the dropdown stays driven by
+// the API rather than a hardcoded enum.
+export type CourseTool = string;
 
-export type CourseCategoryFilter = CourseCategory | 'all';
-
-export function isCourseCategory(value: string | null | undefined): value is CourseCategory {
-  return !!value && (COURSE_CATEGORIES as readonly string[]).includes(value);
-}
-
-export const COURSE_LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
-export type CourseLevel = (typeof COURSE_LEVELS)[number];
+export type CourseToolFilter = CourseTool | 'all';
 
 export type CourseSessionInput = {
   title: string;
@@ -70,8 +58,7 @@ export type Course = {
   enrolled: number;
   capacity: number;
   status: CourseStatus;
-  category: CourseCategory;
-  level: CourseLevel;
+  tool: CourseTool;
   cover: string;
   // Real image / video URLs once the user uploads media. The string `cover`
   // field above is a stable text placeholder used when no image exists.
@@ -94,13 +81,13 @@ export type Course = {
   pricingNotes?: string;
 };
 
-export type CourseCategoryTab = {
-  value: CourseCategoryFilter;
+export type CourseToolTab = {
+  value: CourseToolFilter;
   count: number;
 };
 
 export type CourseListParams = {
-  category?: CourseCategory;
+  tool?: CourseTool;
   status?: CourseStatus;
   search?: string;
 };
@@ -116,8 +103,7 @@ export type CreateCourseInput = {
   title: string;
   code: string;
   description: string;
-  category: CourseCategory;
-  level: CourseLevel;
+  tool: CourseTool;
   minAge: number;
   maxAge: number;
   totalSessions: number;
@@ -152,8 +138,7 @@ export type PublicCourse = {
   title: string;
   tagline?: string;
   description?: string;
-  category: CourseCategory;
-  level: CourseLevel;
+  tool: CourseTool;
   minAge: number;
   maxAge: number;
   totalSessions: number;

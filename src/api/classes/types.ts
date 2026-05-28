@@ -36,6 +36,7 @@ export type ClassRow = {
   courseCode: string;
   courseTitle: string;
   location: string;
+  room?: string;
   teacherId?: string;
   teacherInitials: string;
   teacherShort: string;
@@ -111,6 +112,8 @@ export type CreateClassInput = {
   label: string;
   teacherId: string;
   location: string;
+  // Optional physical room — omit / empty string for online-only classes.
+  room?: string;
   daySchedules: DayScheduleInput[];
   startDate: string;
   endDate: string;

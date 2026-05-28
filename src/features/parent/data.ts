@@ -1,4 +1,4 @@
-import type { CourseLevel as ApiCourseLevel, PublicCourse } from '@/api/courses/types';
+import type { PublicCourse } from '@/api/courses/types';
 
 export type CourseLevel = 'Beginner' | 'Intermediate' | 'Advanced';
 export type CourseMode = 'Offline' | 'Online' | 'Online · Offline';
@@ -21,14 +21,6 @@ export type ParentCourse = {
   // Real cover image URL from Cloudinary (or empty if not uploaded yet). The card UI uses
   // this when present and falls back to a stripe placeholder otherwise.
   coverUrl?: string;
-};
-
-// "beginner" -> "Beginner". Backend uses lowercase to match its enum; the parent UI uses
-// title-case strings to match the older mock data.
-const LEVEL_LABEL: Record<ApiCourseLevel, CourseLevel> = {
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced'
 };
 
 // 30-day window for the "Mới" badge.
@@ -54,7 +46,9 @@ export function publicCourseToParentCourse(c: PublicCourse): ParentCourse {
     code: c.code,
     name: c.title,
     ageRange: `${c.minAge}–${c.maxAge}`,
-    level: LEVEL_LABEL[c.level],
+    // BE no longer carries a level field — default to Beginner for the parent badge UI
+    // until a richer signal lands upstream.
+    level: 'Beginner',
     // BE doesn't carry delivery mode yet; assume hybrid until the field exists upstream.
     mode: 'Online · Offline',
     sessions: c.totalSessions,

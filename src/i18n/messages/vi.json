@@ -177,14 +177,13 @@
     "searchPlaceholder": "Tìm khóa học…",
     "noResults": "Không có khóa học phù hợp.",
     "selectedBadge": "ĐANG CHỌN",
-    "categories": {
+    "tools": {
       "all": "Tất cả",
-      "coding": "Lập trình",
-      "design": "Thiết kế",
-      "robotics": "Robotics",
-      "stem": "STEM",
-      "language": "Ngôn ngữ",
-      "game": "Game"
+      "mtiny": "mTiny",
+      "scratch": "Scratch",
+      "mbot2": "mBot2",
+      "techai": "TechAI",
+      "violin": "Violin"
     },
     "status": {
       "published": "đã xuất bản",
@@ -245,8 +244,7 @@
         "title": "Tên khóa học",
         "code": "Mã",
         "description": "Mô tả ngắn",
-        "category": "Danh mục",
-        "level": "Trình độ",
+        "tool": "Công cụ",
         "minAge": "Tuổi tối thiểu",
         "maxAge": "Tuổi tối đa",
         "totalSessions": "Tổng số buổi",
@@ -274,19 +272,15 @@
         "minutes": "phút / buổi",
         "students": "học viên"
       },
-      "level": {
-        "beginner": "Cơ bản",
-        "intermediate": "Trung cấp",
-        "advanced": "Nâng cao"
-      },
       "preview": {
         "label": "Xem trước",
         "untitledCourse": "Khóa học chưa đặt tên",
-        "ages": "Độ tuổi {min}–{max} · {level}",
+        "ages": "Độ tuổi {min}–{max}",
         "totalSessions": "buổi",
         "sessionDuration": "phút / buổi",
         "capacity": "sĩ số",
-        "coverPlaceholder": "{category} · COVER"
+        "coverPlaceholder": "{tool} · COVER",
+        "toolPlaceholder": "CÔNG CỤ"
       },
       "next": {
         "label": "Bước tiếp theo",
@@ -368,8 +362,7 @@
         "codeFormat": "Mã gồm 3–10 ký tự chữ in hoa, số hoặc dấu gạch.",
         "descriptionRequired": "Vui lòng nhập mô tả.",
         "descriptionMax": "Mô tả tối đa {max} ký tự.",
-        "categoryRequired": "Vui lòng chọn danh mục.",
-        "levelRequired": "Vui lòng chọn trình độ.",
+        "toolRequired": "Vui lòng chọn công cụ.",
         "minAgeRange": "Tuổi tối thiểu phải từ 3 đến 99.",
         "maxAgeRange": "Tuổi tối đa phải từ 3 đến 99.",
         "ageOrder": "Tuổi tối đa phải lớn hơn hoặc bằng tuổi tối thiểu.",
@@ -501,6 +494,8 @@
         "teacherEmpty": "Không có giáo viên phù hợp.",
         "location": "Địa điểm",
         "locationPlaceholder": "Chọn địa điểm",
+        "room": "Phòng",
+        "roomPlaceholder": "Chọn phòng (không bắt buộc)",
         "schedule": "Lịch hằng tuần",
         "scheduleSummary": "{count} buổi / tuần",
         "scheduleEmpty": "Chọn ít nhất một ngày để đặt giờ.",
@@ -555,6 +550,8 @@
         "teacherActiveClasses": "{count} lớp đang dạy",
         "location": "Địa điểm",
         "locationPlaceholder": "Chọn địa điểm",
+        "room": "Phòng",
+        "roomPlaceholder": "Chọn phòng (không bắt buộc)",
         "schedule": "Lịch hằng tuần",
         "scheduleHint": "Chọn ngày học, rồi đặt giờ cho từng ngày.",
         "scheduleEmpty": "Chọn ít nhất một ngày để đặt giờ.",

@@ -42,6 +42,7 @@ type ClassDto = {
   name: string;
   label?: string;
   location: string;
+  room?: string;
   schedule: string;
   enrolled: number;
   capacity: number;
@@ -100,6 +101,7 @@ function mapClass(dto: ClassDto): ClassRow {
     courseCode: dto.course?.code ?? '—',
     courseTitle: dto.course?.title ?? '—',
     location: dto.location,
+    room: dto.room,
     teacherId: dto.teacher?.id != null ? String(dto.teacher.id) : undefined,
     teacherInitials: dto.teacher?.initials || (teacherName ? deriveInitials(teacherName) : '··'),
     teacherShort: teacherShortFrom(teacherName),
@@ -133,6 +135,7 @@ function toCreatePayload(input: CreateClassInput) {
     teacherId: Number(input.teacherId),
     label: input.label,
     location: input.location,
+    room: input.room || undefined,
     daySchedules: input.daySchedules,
     startDate: input.startDate,
     endDate: input.endDate,
@@ -147,6 +150,9 @@ function toUpdatePayload(input: UpdateClassInput) {
   if (input.teacherId !== undefined) body.teacherId = Number(input.teacherId);
   if (input.label !== undefined) body.label = input.label;
   if (input.location !== undefined) body.location = input.location;
+  // Empty string is an explicit "clear room" signal — forward as empty so the
+  // BE's normalize() turns it into NULL; null/undefined means "don't touch".
+  if (input.room !== undefined) body.room = input.room;
   if (input.daySchedules !== undefined) body.daySchedules = input.daySchedules;
   if (input.startDate !== undefined) body.startDate = input.startDate;
   if (input.endDate !== undefined) body.endDate = input.endDate;

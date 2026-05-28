@@ -4,9 +4,6 @@ import * as z from 'zod';
 export const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 export type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
 
-export const LOCATIONS = ['Room 204', 'Room 101', 'Online'] as const;
-export type ClassLocation = (typeof LOCATIONS)[number];
-
 export const VISIBILITIES = ['public_enrollable', 'public_view', 'private'] as const;
 export type ClassVisibility = (typeof VISIBILITIES)[number];
 
@@ -20,7 +17,11 @@ export type ClassFormValues = {
   courseId: string;
   label: string;
   teacherId: string;
-  location: ClassLocation;
+  // Campus / branch — sourced from master_data(type='location').
+  location: string;
+  // Physical room within the campus — sourced from master_data(type='room').
+  // Optional: leave empty for online-only classes.
+  room: string;
   daySchedules: DaySchedule[];
   startDate: string;
   endDate: string;
@@ -32,7 +33,8 @@ export const defaultValues: ClassFormValues = {
   courseId: '',
   label: 'A4',
   teacherId: '',
-  location: 'Room 204',
+  location: '',
+  room: '',
   daySchedules: [
     { day: 'Mon', startTime: '09:00', endTime: '10:00' },
     { day: 'Wed', startTime: '09:00', endTime: '10:00' }
@@ -53,7 +55,9 @@ export function buildBaseSchema(tValidation: ValidationT) {
     courseId: z.string().min(1, tValidation('courseRequired')),
     label: z.string().trim().min(1, tValidation('labelRequired')),
     teacherId: z.string().min(1, tValidation('teacherRequired')),
-    location: z.enum(LOCATIONS, { error: tValidation('locationRequired') }),
+    location: z.string().trim().min(1, tValidation('locationRequired')),
+    // Room is optional — empty string means "online / no physical room".
+    room: z.string(),
     daySchedules: z
       .array(
         z.object({

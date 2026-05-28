@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useStore } from '@tanstack/react-form';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -19,15 +20,8 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { scrollToFirstError, useAppForm, useFormFields } from '@/components/ui/tanstack-form';
-import {
-  COURSE_CATEGORIES,
-  COURSE_LEVELS,
-  useUpdateCourse,
-  type Course,
-  type CourseCategory,
-  type CourseLevel,
-  type DiscountRule
-} from '@/api/courses';
+import { useUpdateCourse, type Course, type CourseTool, type DiscountRule } from '@/api/courses';
+import { masterDataOptions } from '@/api/master-data';
 import { CompactDropzone } from './add-course-dialog/compact-dropzone';
 import { OutlineStep } from './add-course-dialog/outline-step';
 import { PricingStep } from './add-course-dialog/pricing-step';
@@ -48,8 +42,7 @@ type EditCourseFormValues = {
   title: string;
   code: string;
   description: string;
-  category: CourseCategory;
-  level: CourseLevel;
+  tool: CourseTool;
   minAge: number | '';
   maxAge: number | '';
   totalSessions: number | '';
@@ -107,8 +100,7 @@ function buildDefaults(course: Course): EditCourseFormValues {
     title: course.title,
     code: course.code,
     description: course.description,
-    category: course.category,
-    level: course.level,
+    tool: course.tool,
     minAge: course.minAge,
     maxAge: course.maxAge,
     totalSessions: course.totalSessions,
@@ -149,13 +141,10 @@ export function EditCourseDialog({
   // Editing those after publish would silently break running operations.
   const isLocked = course.status === 'published';
 
-  const categoryOptions = React.useMemo(
-    () => COURSE_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) })),
-    [t]
-  );
-  const levelOptions = React.useMemo(
-    () => COURSE_LEVELS.map((value) => ({ value, label: tAddDialog(`level.${value}`) })),
-    [tAddDialog]
+  const toolsQuery = useQuery(masterDataOptions('tool'));
+  const toolOptions = React.useMemo(
+    () => (toolsQuery.data ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [toolsQuery.data]
   );
 
   // Reuse the full base schema (shared validation rules), then pick the subset
@@ -168,8 +157,7 @@ export function EditCourseDialog({
           title: true,
           code: true,
           description: true,
-          category: true,
-          level: true,
+          tool: true,
           minAge: true,
           maxAge: true,
           totalSessions: true,
@@ -204,8 +192,7 @@ export function EditCourseDialog({
             // them as no-ops since they equal the stored value.
             code: value.code.trim(),
             description: value.description.trim(),
-            category: value.category,
-            level: value.level,
+            tool: value.tool,
             minAge: Number(value.minAge),
             maxAge: Number(value.maxAge),
             totalSessions: Number(value.totalSessions),
@@ -253,8 +240,7 @@ export function EditCourseDialog({
         'title',
         'code',
         'description',
-        'category',
-        'level',
+        'tool',
         'minAge',
         'maxAge',
         'totalSessions',
@@ -349,8 +335,7 @@ export function EditCourseDialog({
                 baseSchema={baseSchema}
                 tAddDialog={tAddDialog}
                 tDialog={tDialog}
-                categoryOptions={categoryOptions}
-                levelOptions={levelOptions}
+                toolOptions={toolOptions}
                 isLocked={isLocked}
               />
 
@@ -399,16 +384,14 @@ function BasicsFields({
   baseSchema,
   tAddDialog,
   tDialog,
-  categoryOptions,
-  levelOptions,
+  toolOptions,
   isLocked
 }: {
   form: any;
   baseSchema: BaseSchema;
   tAddDialog: ReturnType<typeof useTranslations>;
   tDialog: ReturnType<typeof useTranslations>;
-  categoryOptions: { value: string; label: string }[];
-  levelOptions: { value: string; label: string }[];
+  toolOptions: { value: string; label: string }[];
   isLocked: boolean;
 }) {
   const { FormTextField, FormTextareaField, FormSelectField } =
@@ -452,19 +435,12 @@ function BasicsFields({
         validators={{ onBlur: shape.description }}
       />
 
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
         <FormSelectField
-          name='category'
-          label={tAddDialog('fields.category')}
+          name='tool'
+          label={tAddDialog('fields.tool')}
           required
-          options={categoryOptions}
-          disabled={isLocked}
-        />
-        <FormSelectField
-          name='level'
-          label={tAddDialog('fields.level')}
-          required
-          options={levelOptions}
+          options={toolOptions}
           disabled={isLocked}
         />
         <FormTextField

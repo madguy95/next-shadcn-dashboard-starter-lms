@@ -19,6 +19,7 @@ import {
 import { useAppForm } from '@/components/ui/tanstack-form';
 import { useCreateClass } from '@/api/classes';
 import { courseListOptions, type Course } from '@/api/courses';
+import { masterDataOptions } from '@/api/master-data';
 import { teacherOptionsQuery, type Teacher } from '@/api/teachers';
 import { thumbStripeStyle } from '@/features/admin/components/courses/shared';
 import { avatarToneClass } from '@/features/admin/data';
@@ -30,11 +31,9 @@ import {
   buildCreateSchema,
   buildStartDateCreateValidator,
   defaultValues,
-  LOCATIONS,
   sortDaySchedules,
   VISIBILITIES,
   type ClassFormValues,
-  type ClassLocation,
   type ClassVisibility
 } from './schema';
 import { ScheduleField } from './schedule-field';
@@ -77,6 +76,19 @@ export function AddClassForm({
     teacherOptionsQuery({ status: 'active', search: teacherSearch || undefined })
   );
 
+  // Lazy-load location + room options from master_data so the admin can extend
+  // the lookup table without an FE deploy.
+  const { data: locationsData } = useQuery(masterDataOptions('location'));
+  const locationOptions = React.useMemo(
+    () => (locationsData ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [locationsData]
+  );
+  const { data: roomsData } = useQuery(masterDataOptions('room'));
+  const roomOptions = React.useMemo(
+    () => (roomsData ?? []).map((item) => ({ value: item.code, label: item.name })),
+    [roomsData]
+  );
+
   const baseSchema = React.useMemo(() => buildBaseSchema(tValidation), [tValidation]);
   const schema = React.useMemo(
     () => buildCreateSchema(baseSchema, tValidation),
@@ -110,6 +122,7 @@ export function AddClassForm({
           label: value.label,
           teacherId: value.teacherId,
           location: value.location,
+          room: value.room,
           daySchedules: sortDaySchedules(value.daySchedules),
           startDate: value.startDate,
           endDate: value.endDate,
@@ -319,24 +332,60 @@ export function AddClassForm({
               )}
             </form.AppField>
 
-            <form.AppField name='location'>
+            <form.AppField name='location' validators={{ onBlur: baseSchema.shape.location }}>
               {(field: any) => (
                 <field.FieldSet>
                   <field.Field>
                     <field.FieldLabel className='text-muted-foreground text-[12px]'>
-                      {tDialog('fields.location')}
+                      {tDialog('fields.location')} *
                     </field.FieldLabel>
                     <Select
                       value={field.state.value}
-                      onValueChange={(v) => field.handleChange(v as ClassLocation)}
+                      onValueChange={(v) => {
+                        field.handleChange(v);
+                        field.handleBlur();
+                      }}
                     >
-                      <SelectTrigger className='h-10 w-full'>
+                      <SelectTrigger
+                        className='h-10 w-full'
+                        aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
+                      >
                         <SelectValue placeholder={tDialog('fields.locationPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {LOCATIONS.map((loc) => (
-                          <SelectItem key={loc} value={loc}>
-                            {tDialog(`locations.${loc}`)}
+                        {locationOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </field.Field>
+                  <field.FieldError />
+                </field.FieldSet>
+              )}
+            </form.AppField>
+          </div>
+
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            <form.AppField name='room'>
+              {(field: any) => (
+                <field.FieldSet>
+                  <field.Field>
+                    <field.FieldLabel className='text-muted-foreground text-[12px]'>
+                      {tDialog('fields.room')}
+                    </field.FieldLabel>
+                    <Select
+                      value={field.state.value || undefined}
+                      onValueChange={(v) => field.handleChange(v)}
+                    >
+                      <SelectTrigger className='h-10 w-full'>
+                        <SelectValue placeholder={tDialog('fields.roomPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roomOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
                           </SelectItem>
                         ))}
                       </SelectContent>

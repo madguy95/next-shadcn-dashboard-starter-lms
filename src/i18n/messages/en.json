@@ -177,14 +177,13 @@
     "searchPlaceholder": "Search courses…",
     "noResults": "No courses match your filters.",
     "selectedBadge": "SELECTED",
-    "categories": {
+    "tools": {
       "all": "All",
-      "coding": "Coding",
-      "design": "Design",
-      "robotics": "Robotics",
-      "stem": "STEM",
-      "language": "Language",
-      "game": "Game"
+      "mtiny": "mTiny",
+      "scratch": "Scratch",
+      "mbot2": "mBot2",
+      "techai": "TechAI",
+      "violin": "Violin"
     },
     "status": {
       "published": "published",
@@ -245,8 +244,7 @@
         "title": "Course title",
         "code": "Code",
         "description": "Short description",
-        "category": "Category",
-        "level": "Level",
+        "tool": "Tool",
         "minAge": "Min age",
         "maxAge": "Max age",
         "totalSessions": "Total sessions",
@@ -274,19 +272,15 @@
         "minutes": "min / session",
         "students": "students"
       },
-      "level": {
-        "beginner": "Beginner",
-        "intermediate": "Intermediate",
-        "advanced": "Advanced"
-      },
       "preview": {
         "label": "Preview",
         "untitledCourse": "Untitled course",
-        "ages": "Ages {min}–{max} · {level}",
+        "ages": "Ages {min}–{max}",
         "totalSessions": "sessions",
         "sessionDuration": "min / session",
         "capacity": "capacity",
-        "coverPlaceholder": "{category} · COVER"
+        "coverPlaceholder": "{tool} · COVER",
+        "toolPlaceholder": "TOOL"
       },
       "next": {
         "label": "What happens next",
@@ -368,8 +362,7 @@
         "codeFormat": "Use 3–10 uppercase letters, digits or dash.",
         "descriptionRequired": "Description is required.",
         "descriptionMax": "Description must be at most {max} characters.",
-        "categoryRequired": "Please select a category.",
-        "levelRequired": "Please select a level.",
+        "toolRequired": "Please select a tool.",
         "minAgeRange": "Min age must be between 3 and 99.",
         "maxAgeRange": "Max age must be between 3 and 99.",
         "ageOrder": "Max age must be greater than or equal to min age.",
@@ -501,6 +494,8 @@
         "teacherEmpty": "No matching teacher.",
         "location": "Location",
         "locationPlaceholder": "Pick a location",
+        "room": "Room",
+        "roomPlaceholder": "Pick a room (optional)",
         "schedule": "Weekly schedule",
         "scheduleSummary": "{count} sessions / week",
         "scheduleEmpty": "Pick at least one day to set times.",
@@ -555,6 +550,8 @@
         "teacherActiveClasses": "{count, plural, one {# active class} other {# active classes}}",
         "location": "Location",
         "locationPlaceholder": "Select a location",
+        "room": "Room",
+        "roomPlaceholder": "Select a room (optional)",
         "schedule": "Weekly schedule",
         "scheduleHint": "Pick days, then set each day's time.",
         "scheduleEmpty": "Pick at least one day to set a time.",

@@ -15,7 +15,6 @@ import {
   SheetTitle
 } from '@/components/ui/sheet';
 import { useUpdateTeacher, type Gender, type Teacher } from '@/api/teachers';
-import { locations, subjects as subjectsConst } from '@/constants/teacher-options';
 import { avatarToneClass, teacherStatusClass } from '@/features/admin/data';
 import { formatApiError } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -48,8 +47,8 @@ function teacherToFormValues(teacher: Teacher): TeacherFormValues {
     dateOfBirth: teacher.dateOfBirth ?? '',
     gender: teacher.gender ?? '',
     avatar: [],
-    primarySubject: teacher.subjects[0] ?? subjectsConst[0],
-    location: teacher.location ?? locations[0],
+    primarySubject: teacher.subjects[0] ?? '',
+    location: teacher.location ?? '',
     tags: teacher.subjects.slice(1),
     sendOnboardingEmail: false
   };

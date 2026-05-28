@@ -2,28 +2,22 @@ import Link from 'next/link';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { getPublicCourses } from '@/api/courses/service';
-import type { CourseCategory, CourseLevel, PublicCourse } from '@/api/courses/types';
+import type { PublicCourse } from '@/api/courses/types';
 import { roleMeta } from '@/config/nav-config';
 import { formatVND } from '@/features/parent/data';
 import { getAuthUser } from '@/lib/auth';
 import { logout } from '@/lib/auth-actions';
 
-// Hue + chip color per course category. Used to give each card a distinct accent
-// without needing a per-course config.
-const categoryAccents: Record<CourseCategory, { hue: number; chip: string }> = {
-  coding: { hue: 195, chip: 'text-cyan-300' },
-  design: { hue: 320, chip: 'text-pink-300' },
-  robotics: { hue: 270, chip: 'text-violet-300' },
-  stem: { hue: 30, chip: 'text-orange-300' },
-  language: { hue: 145, chip: 'text-emerald-300' },
-  game: { hue: 350, chip: 'text-rose-300' }
+// Hue + chip color per tool. Used to give each card a distinct accent without
+// needing a per-course config.
+const toolAccents: Record<string, { hue: number; chip: string; label: string }> = {
+  mtiny: { hue: 30, chip: 'text-orange-300', label: 'mTiny' },
+  scratch: { hue: 195, chip: 'text-cyan-300', label: 'Scratch' },
+  mbot2: { hue: 270, chip: 'text-violet-300', label: 'mBot2' },
+  techai: { hue: 145, chip: 'text-emerald-300', label: 'TechAI' },
+  violin: { hue: 320, chip: 'text-pink-300', label: 'Violin' }
 };
-
-const levelLabel: Record<CourseLevel, string> = {
-  beginner: 'Cơ bản',
-  intermediate: 'Trung cấp',
-  advanced: 'Nâng cao'
-};
+const DEFAULT_ACCENT = { hue: 200, chip: 'text-cyan-300', label: '' };
 
 // 30-day window: anything published this month gets a "Mới" badge.
 const NEW_BADGE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
@@ -75,7 +69,7 @@ function BrandAsterisk({ className = '' }: { className?: string }) {
 }
 
 function CourseCard({ course }: { course: PublicCourse }) {
-  const accent = categoryAccents[course.category] ?? { hue: 200, chip: 'text-cyan-300' };
+  const accent = toolAccents[course.tool] ?? { ...DEFAULT_ACCENT, label: course.tool };
   const isNew = isRecent(course.createdAt);
   const goalsText = course.tagline?.trim() || course.description?.trim() || '';
 
@@ -128,7 +122,8 @@ function CourseCard({ course }: { course: PublicCourse }) {
             {course.title}
           </h3>
           <div className='mt-1 text-xs text-white/50'>
-            Độ tuổi {course.minAge}–{course.maxAge} · {levelLabel[course.level]}
+            Độ tuổi {course.minAge}–{course.maxAge}
+            {accent.label ? ` · ${accent.label}` : ''}
           </div>
         </div>
 

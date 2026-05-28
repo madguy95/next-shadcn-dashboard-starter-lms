@@ -1,12 +1,9 @@
 import type { useTranslations } from 'next-intl';
 import * as z from 'zod';
 import {
-  COURSE_CATEGORIES,
-  COURSE_LEVELS,
   DISCOUNT_CONDITIONS,
   DISCOUNT_TYPES,
-  type CourseCategory,
-  type CourseLevel,
+  type CourseTool,
   type DiscountCondition,
   type DiscountRuleInput,
   type DiscountType
@@ -33,8 +30,7 @@ export type CourseFormValues = {
   title: string;
   code: string;
   description: string;
-  category: CourseCategory;
-  level: CourseLevel;
+  tool: CourseTool;
   minAge: number | '';
   maxAge: number | '';
   totalSessions: number | '';
@@ -53,8 +49,7 @@ export const defaultValues: CourseFormValues = {
   title: '',
   code: '',
   description: '',
-  category: 'stem',
-  level: 'intermediate',
+  tool: '',
   minAge: 8,
   maxAge: 12,
   totalSessions: 10,
@@ -82,8 +77,7 @@ export const stepFieldNames: Record<StepKey, (keyof CourseFormValues)[]> = {
     'title',
     'code',
     'description',
-    'category',
-    'level',
+    'tool',
     'minAge',
     'maxAge',
     'totalSessions',
@@ -112,8 +106,7 @@ export function buildBaseSchema(tValidation: ValidationT) {
       .trim()
       .min(1, tValidation('descriptionRequired'))
       .max(MAX_DESC, tValidation('descriptionMax', { max: MAX_DESC })),
-    category: z.enum(COURSE_CATEGORIES, { error: tValidation('categoryRequired') }),
-    level: z.enum(COURSE_LEVELS, { error: tValidation('levelRequired') }),
+    tool: z.string().trim().min(1, tValidation('toolRequired')),
     minAge: z
       .number({ error: tValidation('minAgeRange') })
       .int()

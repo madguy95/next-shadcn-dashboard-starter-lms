@@ -3,14 +3,13 @@ import { uploadIfPresent } from '../files/service';
 import type { Paginated } from '../shared/types';
 import type {
   Course,
-  CourseCategory,
-  CourseCategoryFilter,
-  CourseCategoryTab,
-  CourseLevel,
   CourseListParams,
   CourseSessionInput,
   CourseStats,
   CourseStatus,
+  CourseTool,
+  CourseToolFilter,
+  CourseToolTab,
   CreateCourseInput,
   DiscountRule,
   DiscountRuleInput,
@@ -44,8 +43,7 @@ type CourseDto = {
   title: string;
   tagline?: string;
   description?: string;
-  category: CourseCategory;
-  level: CourseLevel;
+  tool: CourseTool;
   status: CourseStatus;
   minAge: number;
   maxAge: number;
@@ -68,17 +66,8 @@ type CourseDto = {
   updatedAt?: string;
 };
 
-const COURSE_COVER_BY_CATEGORY: Record<CourseCategory, string> = {
-  coding: 'CODE',
-  design: 'DSGN',
-  robotics: 'ROBO',
-  stem: 'STEM',
-  language: 'LANG',
-  game: 'GAME'
-};
-
-function deriveCover(category: CourseCategory): string {
-  return `${COURSE_COVER_BY_CATEGORY[category] ?? 'COURSE'} · COVER`;
+function deriveCover(tool: CourseTool): string {
+  return `${tool.toUpperCase()} · COVER`;
 }
 
 function mapDiscount(d: CourseDiscountDto): DiscountRule {
@@ -113,16 +102,15 @@ function mapCourse(dto: CourseDto): Course {
     title: dto.title,
     minAge: dto.minAge,
     maxAge: dto.maxAge,
-    tagline: dto.tagline ?? dto.level,
+    tagline: dto.tagline ?? dto.tool,
     totalSessions: dto.totalSessions,
     sessionDurationMinutes: dto.sessionDurationMinutes,
     classes: dto.classes ?? 0,
     enrolled: dto.enrolled ?? 0,
     capacity: dto.capacity ?? dto.perClassCapacity,
     status: dto.status,
-    category: dto.category,
-    level: dto.level,
-    cover: deriveCover(dto.category),
+    tool: dto.tool,
+    cover: deriveCover(dto.tool),
     coverUrl: dto.coverUrl,
     introVideoUrl: dto.introVideoUrl,
     version: dto.version,
@@ -139,12 +127,12 @@ function mapCourse(dto: CourseDto): Course {
 
 function buildListQuery(params: CourseListParams): string {
   const search = new URLSearchParams();
-  // Backend supports server-side category + search filtering and pagination.
-  // The current UI loads all courses then category-tabs on top of that, so use a
+  // Backend supports server-side tool + search filtering and pagination.
+  // The current UI loads all courses then tool-tabs on top of that, so use a
   // generous default page size to keep behaviour identical to the previous mock.
   search.set('page', '1');
   search.set('size', '100');
-  if (params.category) search.set('category', params.category);
+  if (params.tool) search.set('tool', params.tool);
   if (params.status) search.set('status', params.status);
   if (params.search) search.set('search', params.search);
   return search.toString();
@@ -168,8 +156,7 @@ function toCreatePayload(
     title: input.title,
     code: input.code,
     description: input.description,
-    category: input.category,
-    level: input.level,
+    tool: input.tool,
     minAge: input.minAge,
     maxAge: input.maxAge,
     totalSessions: input.totalSessions,
@@ -193,8 +180,7 @@ function toUpdatePayload(
   if (input.title !== undefined) body.title = input.title;
   if (input.code !== undefined) body.code = input.code;
   if (input.description !== undefined) body.description = input.description;
-  if (input.category !== undefined) body.category = input.category;
-  if (input.level !== undefined) body.level = input.level;
+  if (input.tool !== undefined) body.tool = input.tool;
   if (input.status !== undefined) body.status = input.status;
   if (input.minAge !== undefined) body.minAge = input.minAge;
   if (input.maxAge !== undefined) body.maxAge = input.maxAge;
@@ -222,10 +208,10 @@ export async function getCourses(params: CourseListParams): Promise<Paginated<Co
   };
 }
 
-export async function getCourseCategoryTabs(): Promise<CourseCategoryTab[]> {
-  const tabs = await apiClient<{ value: string; count: number }[]>('/api/courses/category-tabs');
+export async function getCourseToolTabs(): Promise<CourseToolTab[]> {
+  const tabs = await apiClient<{ value: string; count: number }[]>('/api/courses/tool-tabs');
   return tabs.map((t) => ({
-    value: t.value as CourseCategoryFilter,
+    value: t.value as CourseToolFilter,
     count: t.count
   }));
 }

@@ -45,7 +45,7 @@ function formatDiscountValue(rule: DiscountRule): string {
 
 export function CourseDetailPanel({ course }: { course: Course }) {
   const t = useTranslations('courses.detail');
-  const tLevel = useTranslations('courses.addDialog.level');
+  const tTools = useTranslations('courses.tools');
   const setStatus = useSetCourseStatus();
   const deleteCourse = useDeleteCourse();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -135,7 +135,7 @@ export function CourseDetailPanel({ course }: { course: Course }) {
           </span>
           <StatusBadge status={course.status} />
           <span className='border-foreground/15 text-foreground/80 rounded-full border px-2 py-0.5 text-[10.5px] font-medium'>
-            {tLevel(course.level)}
+            {tTools(course.tool)}
           </span>
           <span className='text-muted-foreground ml-auto font-mono text-[11px]'>
             {course.version}

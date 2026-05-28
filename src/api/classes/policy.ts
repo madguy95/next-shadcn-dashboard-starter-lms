@@ -8,6 +8,7 @@ export type ClassEditableField =
   | 'courseId'
   | 'teacherId'
   | 'location'
+  | 'room'
   | 'capacity'
   | 'daySchedules'
   | 'startDate'
@@ -19,6 +20,7 @@ const ONGOING_EDITABLE: ReadonlySet<ClassEditableField> = new Set([
   'cover',
   'teacherId',
   'location',
+  'room',
   'visibility',
   'endDate'
 ]);
@@ -28,6 +30,7 @@ const PUBLISHED_HAS_ENROLL_EDITABLE: ReadonlySet<ClassEditableField> = new Set([
   'cover',
   'teacherId',
   'location',
+  'room',
   'capacity',
   'daySchedules',
   'startDate',

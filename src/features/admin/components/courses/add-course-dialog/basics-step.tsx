@@ -24,14 +24,12 @@ interface BasicsStepProps {
   tDialog: ReturnType<typeof useTranslations>;
   tagInput: string;
   setTagInput: (v: string) => void;
-  categoryOptions: { value: string; label: string }[];
-  levelOptions: { value: string; label: string }[];
+  toolOptions: { value: string; label: string }[];
   preview: {
     title: string;
     code: string;
     description: string;
-    category: string;
-    level: string;
+    tool: string;
     minAge: number | '';
     maxAge: number | '';
     totalSessions: number | '';
@@ -49,8 +47,7 @@ export function BasicsStep({
   tDialog,
   tagInput,
   setTagInput,
-  categoryOptions,
-  levelOptions,
+  toolOptions,
   preview,
   hidden
 }: BasicsStepProps) {
@@ -88,18 +85,12 @@ export function BasicsStep({
           validators={{ onBlur: baseSchema.shape.description }}
         />
 
-        <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
           <FormSelectField
-            name='category'
-            label={tDialog('fields.category')}
+            name='tool'
+            label={tDialog('fields.tool')}
             required
-            options={categoryOptions}
-          />
-          <FormSelectField
-            name='level'
-            label={tDialog('fields.level')}
-            required
-            options={levelOptions}
+            options={toolOptions}
           />
           <FormTextField
             name='minAge'
@@ -281,7 +272,9 @@ function BasicsPreview({
           ) : (
             <div className='text-muted-foreground font-mono text-[10px]'>
               {tDialog('preview.coverPlaceholder', {
-                category: tCourses(`categories.${preview.category}`).toUpperCase()
+                tool: preview.tool
+                  ? tCourses(`tools.${preview.tool}`).toUpperCase()
+                  : tDialog('preview.toolPlaceholder')
               })}
             </div>
           )}
@@ -301,8 +294,7 @@ function BasicsPreview({
           <div className='text-muted-foreground mt-0.5 text-[12px]'>
             {tDialog('preview.ages', {
               min: preview.minAge === '' ? '—' : String(preview.minAge),
-              max: preview.maxAge === '' ? '—' : String(preview.maxAge),
-              level: tDialog(`level.${preview.level}`)
+              max: preview.maxAge === '' ? '—' : String(preview.maxAge)
             })}
           </div>
           <div className='mt-3 grid grid-cols-3 gap-1 text-center font-mono text-[11px]'>
