@@ -192,7 +192,10 @@ export function TeachersView() {
   const rows = result?.data ?? [];
 
   return (
-    <div className='flex flex-1 flex-col gap-4'>
+    // min-h-0 lets the flex-1 children below establish a real scroll container —
+    // without it, flex-1 expands past the viewport instead of capping at it,
+    // and overflow-y-auto on descendants becomes a no-op.
+    <div className='flex min-h-0 flex-1 flex-col gap-4'>
       {/* Status tabs — horizontally scrollable so they don't wrap on narrow viewports. */}
       {statusTabs ? (
         <Tabs
@@ -236,15 +239,21 @@ export function TeachersView() {
         )}
       </div>
 
-      {/* < md : card list + separate pagination, sharing the same table instance */}
-      <div className='flex flex-col gap-2.5 md:hidden'>
-        {isLoading ? (
-          <TeachersCardListSkeleton rowCount={perPage} />
-        ) : (
-          <LoadingOverlay visible={isFetching} message={t('updatingList')}>
-            <TeachersCardList rows={rows} />
-          </LoadingOverlay>
-        )}
+      {/* < md : card list + separate pagination, sharing the same table instance.
+          PageContainer is scrollable={false} (so desktop DataTable owns its own
+          scroll), so the mobile branch has to provide its own scroll region —
+          flex-1 min-h-0 caps the height, and the inner wrapper does the actual
+          scrolling. Pagination stays pinned below the scroll area. */}
+      <div className='flex min-h-0 flex-1 flex-col gap-2.5 md:hidden'>
+        <div className='min-h-0 flex-1 overflow-y-auto'>
+          {isLoading ? (
+            <TeachersCardListSkeleton rowCount={perPage} />
+          ) : (
+            <LoadingOverlay visible={isFetching} message={t('updatingList')}>
+              <TeachersCardList rows={rows} />
+            </LoadingOverlay>
+          )}
+        </div>
         <DataTablePagination table={table} />
       </div>
     </div>

@@ -229,13 +229,16 @@ function Editor({ mode, initial }: { mode: Mode; initial?: BlogPost }) {
 
   return (
     <div className='-mt-2 flex flex-col'>
-      <div className='bg-background flex h-14 shrink-0 items-center gap-3 border-b px-2'>
-        <Button variant='ghost' size='sm' onClick={() => router.back()}>
+      <div className='bg-background flex h-14 shrink-0 items-center gap-2 border-b px-2 md:gap-3'>
+        <Button variant='ghost' size='sm' onClick={() => router.back()} className='shrink-0'>
           <Icons.chevronLeft className='size-3.5' />
-          {t('cancel')}
+          {/* "Hủy" label takes ~30px we can't spare on phone widths; chevron +
+              aria-label keep the affordance. */}
+          <span className='hidden sm:inline'>{t('cancel')}</span>
+          <span className='sr-only sm:hidden'>{t('cancel')}</span>
         </Button>
-        <div className='bg-border h-5 w-px' />
-        <span className='text-sm font-medium'>
+        <div className='bg-border hidden h-5 w-px sm:block' />
+        <span className='truncate text-sm font-medium'>
           {mode === 'edit' ? t('editTitle') : t('createTitle')}
         </span>
         <span className='text-muted-foreground hidden items-center gap-1.5 text-[12px] md:inline-flex'>
@@ -243,20 +246,28 @@ function Editor({ mode, initial }: { mode: Mode; initial?: BlogPost }) {
           {t('autosave')}
         </span>
         {/* Edit / Preview toggle. Lives in the header (not the body) so it's
-            still visible no matter how far the user has scrolled. */}
-        <Tabs value={view} onValueChange={(v) => setView(v as 'edit' | 'preview')} className='ml-2'>
+            still visible no matter how far the user has scrolled. Labels hide
+            on <sm so the toggle + back button + title fit on one line. */}
+        <Tabs
+          value={view}
+          onValueChange={(v) => setView(v as 'edit' | 'preview')}
+          className='ml-auto md:ml-2'
+        >
           <TabsList className='h-8'>
-            <TabsTrigger value='edit' className='px-3 text-xs'>
+            <TabsTrigger value='edit' className='px-2 text-xs md:px-3' aria-label={t('edit')}>
               <Icons.edit className='size-3' />
-              {t('edit')}
+              <span className='hidden sm:inline'>{t('edit')}</span>
             </TabsTrigger>
-            <TabsTrigger value='preview' className='px-3 text-xs'>
+            <TabsTrigger value='preview' className='px-2 text-xs md:px-3' aria-label={t('preview')}>
               <Icons.eye className='size-3' />
-              {t('preview')}
+              <span className='hidden sm:inline'>{t('preview')}</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className='ml-auto flex items-center gap-2'>
+        {/* Save Draft + Publish render in a sticky footer on <md (see
+            MobileActionBar below) so the header doesn't get cramped. md+ keeps
+            them inline at the right of the header. */}
+        <div className='ml-auto hidden items-center gap-2 md:flex'>
           <Button
             variant='outline'
             size='sm'
@@ -280,8 +291,13 @@ function Editor({ mode, initial }: { mode: Mode; initial?: BlogPost }) {
       {view === 'preview' ? (
         <EditorPreview form={form} />
       ) : (
-        <div className='mx-auto grid w-full max-w-[1400px] grid-cols-1 lg:grid-cols-[1fr_320px]'>
-          <div className='min-h-0 border-r px-6 py-8 lg:px-10'>
+        // pb-24 on <md leaves room for the sticky mobile action bar so the
+        // bottom of the editor / SettingsRail isn't hidden behind it.
+        <div className='mx-auto grid w-full max-w-[1400px] grid-cols-1 pb-24 md:pb-0 lg:grid-cols-[1fr_320px]'>
+          {/* border-r only on lg+ where the SettingsRail sits next to the
+              editor — on mobile (single column) there's no neighbor to
+              divide from and the orphan rule looked broken. */}
+          <div className='min-h-0 px-4 py-6 sm:px-6 sm:py-8 lg:border-r lg:px-10'>
             <CoverDropzone
               value={form.coverUrl}
               onFile={replaceCoverFile}
@@ -323,6 +339,32 @@ function Editor({ mode, initial }: { mode: Mode; initial?: BlogPost }) {
           />
         </div>
       )}
+
+      {/* Mobile action bar — pinned to the viewport bottom on <md because the
+          header's Save Draft + Publish buttons are hidden there. Lives outside
+          the edit/preview branch so the same actions are reachable from both
+          modes. */}
+      <div className='bg-background/95 sticky bottom-0 z-20 flex shrink-0 items-center gap-2 border-t px-4 py-3 backdrop-blur md:hidden'>
+        <Button
+          variant='outline'
+          size='sm'
+          className='h-9 flex-1'
+          onClick={() => submit('draft')}
+          isLoading={isPending}
+          disabled={coverUploading}
+        >
+          {t('saveDraft')}
+        </Button>
+        <Button
+          size='sm'
+          className='h-9 flex-1'
+          onClick={() => submit('published')}
+          isLoading={isPending}
+          disabled={coverUploading}
+        >
+          {t('publish')}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -352,7 +394,7 @@ function EditorPreview({ form }: { form: FormState }) {
   const maxWidth = isWorkshop ? 'max-w-[1100px]' : 'max-w-[920px]';
 
   return (
-    <div className={cn('mx-auto w-full px-6 pt-8 pb-16', maxWidth)}>
+    <div className={cn('mx-auto w-full px-4 pt-6 pb-24 sm:px-6 sm:pt-8 md:pb-16', maxWidth)}>
       <div className='border-primary/30 bg-primary/5 text-primary mb-6 rounded-md border px-3 py-2 text-[12px]'>
         {t('previewBanner')}
       </div>
@@ -546,7 +588,10 @@ function CoverDropzone({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={value} alt={t('coverAlt')} className='h-full w-full object-cover' />
         <div className='absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/30' />
-        <div className='absolute top-3 right-3 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100'>
+        {/* Replace/Remove buttons are hover-revealed on desktop, always visible
+            on <md — touch devices have no hover so otherwise these are
+            unreachable on phones. */}
+        <div className='absolute top-3 right-3 flex gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100'>
           <Button
             type='button'
             size='sm'
@@ -649,7 +694,7 @@ function SettingsRail({
   const t = useTranslations('blog.editor');
   const tCategory = useTranslations('blog.category');
   return (
-    <div className='space-y-7 px-6 py-8'>
+    <div className='space-y-7 px-4 py-6 sm:px-6 sm:py-8'>
       <div>
         <SectionLabel>{t('sectionType')}</SectionLabel>
         <Tabs value={form.type} onValueChange={(v) => set('type', v as BlogType)}>

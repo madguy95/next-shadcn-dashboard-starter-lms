@@ -4,7 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetTitle
+} from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -47,36 +53,44 @@ export function CourseDetailSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side='right'
-        className='flex w-full max-w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-[760px]'
+        // [&>button:last-of-type]:hidden strips Radix's default top-right
+        // close (a small low-contrast X that mobile users routinely miss). We
+        // render an explicit, same-weight close button in the header instead.
+        className='flex w-full max-w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-[760px] [&>button:last-of-type]:hidden'
       >
         <SheetTitle className='sr-only'>{course.name}</SheetTitle>
         <SheetDescription className='sr-only'>{detail?.tagline ?? course.goals}</SheetDescription>
 
-        <div className='bg-background z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b px-5'>
-          <div className='flex min-w-0 items-center gap-2'>
-            <span className='bg-muted/60 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
+        <div className='bg-background z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-5'>
+          <div className='flex min-w-0 flex-1 items-center gap-2'>
+            <span className='bg-muted/60 shrink-0 rounded-md border px-2 py-0.5 font-mono text-[11px]'>
               {course.code}
             </span>
             <span className='truncate font-semibold tracking-tight'>{course.name}</span>
           </div>
-          <div className='flex items-center gap-1 pr-8'>
+          <div className='flex shrink-0 items-center gap-1'>
             <Button variant='ghost' size='icon' className='h-8 w-8'>
               <Icons.star className='size-4' />
             </Button>
             <Button variant='ghost' size='icon' className='h-8 w-8'>
               <Icons.share className='size-4' />
             </Button>
+            <SheetClose asChild>
+              <Button variant='ghost' size='icon' className='h-8 w-8' aria-label='Đóng'>
+                <Icons.close className='size-4' />
+              </Button>
+            </SheetClose>
           </div>
         </div>
 
         <div className='flex-1 overflow-auto'>
           {/* Hero: cover image + intro video play affordance. Falls back to a striped placeholder
               while the detail loads or when the course has no cover uploaded yet. */}
-          <div className='px-5 pt-5'>
+          <div className='px-4 pt-4 sm:px-5 sm:pt-5'>
             <HeroMedia detail={detail} course={course} isLoading={isLoading} />
           </div>
 
-          <div className='px-5 pt-5'>
+          <div className='px-4 pt-4 sm:px-5 sm:pt-5'>
             <div className='flex items-start justify-between gap-4'>
               <div className='min-w-0'>
                 <h1 className='text-2xl font-semibold tracking-tight'>{course.name}</h1>
@@ -118,14 +132,14 @@ export function CourseDetailSheet({
           </div>
 
           {error ? (
-            <div className='border-destructive/30 bg-destructive/5 text-destructive mx-5 mt-5 rounded-md border p-4 text-sm'>
+            <div className='border-destructive/30 bg-destructive/5 text-destructive mx-4 mt-4 rounded-md border p-4 text-sm sm:mx-5 sm:mt-5'>
               Không tải được chi tiết khóa học. Vui lòng thử lại.
             </div>
           ) : null}
 
           <Tabs defaultValue='about' className='mt-5'>
             <div className='bg-background sticky top-0 z-10 border-b'>
-              <div className='px-5 py-2'>
+              <div className='px-4 py-2 sm:px-5'>
                 <TabsList className='h-9'>
                   <TabsTrigger value='about' className='h-7 px-3 text-xs'>
                     Giới thiệu
@@ -143,7 +157,7 @@ export function CourseDetailSheet({
               </div>
             </div>
 
-            <div className='px-5 py-5 text-sm'>
+            <div className='px-4 py-4 text-sm sm:px-5 sm:py-5'>
               <TabsContent value='about' className='space-y-6'>
                 {isLoading ? (
                   <div className='space-y-2'>
@@ -263,7 +277,10 @@ export function CourseDetailSheet({
           </Tabs>
         </div>
 
-        <div className='bg-background/95 flex shrink-0 items-center justify-between gap-3 border-t p-4 backdrop-blur'>
+        {/* Footer stacks on <sm so the two CTAs don't crash into the price
+            block (combined ~390px against ~382px viewport width). On sm+ it
+            returns to the inline price / actions split. */}
+        <div className='bg-background/95 flex shrink-0 flex-col gap-3 border-t p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between'>
           <div>
             <div className='text-muted-foreground text-xs'>Học phí</div>
             <div className='text-xl font-semibold tracking-tight tabular-nums'>
@@ -271,13 +288,14 @@ export function CourseDetailSheet({
               <span className='text-muted-foreground font-mono text-xs font-normal'>/khóa</span>
             </div>
           </div>
-          <div className='flex gap-2'>
-            <Button variant='outline'>
+          <div className='flex flex-col-reverse gap-2 sm:flex-row sm:items-center'>
+            <Button variant='outline' className='w-full sm:w-auto'>
               <Icons.sparkles className='size-3.5' />
               Học thử miễn phí
             </Button>
             <Button
               variant={isSelected ? 'secondary' : 'default'}
+              className='w-full sm:w-auto'
               onClick={() => {
                 onSelect();
                 onOpenChange(false);

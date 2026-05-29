@@ -86,7 +86,10 @@ function CourseCard({ course }: { course: PublicCourse }) {
       // Deep-link by course code so the enrollment view can auto-open the detail sheet.
       href={`/courses?course=${encodeURIComponent(course.code)}`}
       aria-label={tHeader('courseAriaLabel', { title: course.title })}
-      className='group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all hover:border-white/30 hover:bg-white/[0.08]'
+      // Fixed width + shrink-0 + snap-start make the card behave as a "shelf"
+      // item inside the mobile horizontal scroller; sm:w-auto returns to normal
+      // grid sizing on tablet+.
+      className='group relative flex w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all hover:border-white/30 hover:bg-white/[0.08] sm:w-auto'
     >
       {course.coverUrl ? (
         <div className='relative h-32 w-full overflow-hidden'>
@@ -178,7 +181,9 @@ function CourseCard({ course }: { course: PublicCourse }) {
 function EmptyCoursesState() {
   const t = useTranslations('home.courses');
   return (
-    <div className='col-span-full rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center backdrop-blur'>
+    // w-full + shrink-0 keep the empty state full-width inside the mobile flex
+    // scroller; col-span-full handles the same on the desktop grid.
+    <div className='w-full shrink-0 rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center backdrop-blur sm:w-auto sm:col-span-full'>
       <Icons.info className='mx-auto size-6 text-white/40' />
       <div className='mt-3 text-sm font-medium text-white/80'>{t('emptyTitle')}</div>
       <p className='mt-1 text-xs text-white/50'>{t('emptyDescription')}</p>
@@ -239,13 +244,13 @@ export default async function LandingPage() {
         }}
       />
 
-      <header className='relative z-10 flex items-center justify-between px-6 py-5 md:px-10'>
+      <header className='relative z-10 flex items-center justify-between px-4 py-4 md:px-10 md:py-5'>
         <div className='flex items-center gap-2'>
           <span className='text-xl font-bold tracking-tight text-cyan-400'>
             IQode<span className='font-light text-orange-300'>Lab</span>
           </span>
         </div>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-2 md:gap-3'>
           {/* Language picker — overrides ghost-button tokens because the
               landing page is hard-coded dark; without these overrides the
               theme-tinted ghost styles get washed out against pure black. */}
@@ -257,17 +262,25 @@ export default async function LandingPage() {
               </span>
               <Link
                 href={workspace.basePath}
-                className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-4 text-sm font-medium text-black transition-colors hover:bg-cyan-300'
+                className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-3 text-sm font-medium text-black transition-colors hover:bg-cyan-300 sm:px-4'
+                aria-label={t('header.enterWorkspace', { label: workspace.label })}
               >
-                {t('header.enterWorkspace', { label: workspace.label })}
+                {/* Long form on ≥sm, short label only on mobile so the header
+                    doesn't overflow on small phones (e.g. iPhone XR / 414px). */}
+                <span className='hidden sm:inline'>
+                  {t('header.enterWorkspace', { label: workspace.label })}
+                </span>
+                <span className='sm:hidden'>{workspace.label}</span>
                 <Icons.arrowRight className='size-3.5' />
               </Link>
               <form action={logout}>
                 <button
                   type='submit'
-                  className='text-sm text-white/70 transition-colors hover:text-white'
+                  className='inline-flex h-9 items-center text-sm text-white/70 transition-colors hover:text-white'
+                  aria-label={t('header.logout')}
                 >
-                  {t('header.logout')}
+                  <Icons.logout className='size-4 sm:hidden' />
+                  <span className='hidden sm:inline'>{t('header.logout')}</span>
                 </button>
               </form>
             </>
@@ -281,7 +294,7 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href='/login?mode=register'
-                className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-4 text-sm font-medium text-black transition-colors hover:bg-cyan-300'
+                className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-3 text-sm font-medium text-black transition-colors hover:bg-cyan-300 sm:px-4'
               >
                 {t('header.register')}
                 <Icons.arrowRight className='size-3.5' />
@@ -291,14 +304,14 @@ export default async function LandingPage() {
         </div>
       </header>
 
-      <main className='relative z-10 flex flex-col items-center px-6 pt-16 pb-12 text-center md:pt-24'>
-        <div className='relative inline-flex items-baseline gap-3'>
-          <h1 className='text-7xl font-bold tracking-tight text-cyan-400 sm:text-8xl md:text-9xl'>
+      <main className='relative z-10 flex flex-col items-center px-4 pt-12 pb-12 text-center md:px-6 md:pt-24'>
+        <div className='relative inline-flex items-baseline gap-2 sm:gap-3'>
+          <h1 className='text-6xl font-bold tracking-tight text-cyan-400 sm:text-8xl md:text-9xl'>
             IQode
           </h1>
           <div className='relative'>
             <span className='text-3xl font-light text-orange-300 sm:text-4xl md:text-5xl'>Lab</span>
-            <BrandAsterisk className='text-orange-300 absolute -top-6 -right-7 size-10 md:-top-8 md:-right-9 md:size-12' />
+            <BrandAsterisk className='text-orange-300 absolute -top-4 -right-5 size-8 sm:-top-6 sm:-right-7 sm:size-10 md:-top-8 md:-right-9 md:size-12' />
           </div>
         </div>
         <p className='mt-6 max-w-xl text-base text-white/80 md:text-lg'>{t('hero.tagline')}</p>
@@ -336,9 +349,9 @@ export default async function LandingPage() {
         )}
       </main>
 
-      <section className='relative z-10 px-6 pt-4 pb-16 md:px-10 md:pb-24'>
+      <section className='relative z-10 px-4 pt-4 pb-16 md:px-10 md:pb-24'>
         <div className='mx-auto max-w-6xl'>
-          <div className='mb-10 flex flex-wrap items-end justify-between gap-4'>
+          <div className='mb-8 flex flex-wrap items-end justify-between gap-3 md:mb-10 md:gap-4'>
             <div>
               <div className='text-[11px] tracking-wider text-cyan-300/80 uppercase'>
                 {t('courses.eyebrow')}
@@ -357,7 +370,11 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+          {/* Mobile (<sm): horizontal "shelf" with snap + edge-bleed so the next
+              card peeks past the right padding. The native (thin) scrollbar
+              from globals.css is left visible to reinforce the swipe
+              affordance; sm+ reverts to a normal grid. */}
+          <div className='-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pb-3 sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:overflow-visible sm:scroll-pl-0 sm:px-0 sm:pb-0 lg:grid-cols-4'>
             {courses.length === 0 ? (
               <EmptyCoursesState />
             ) : (
@@ -374,7 +391,7 @@ export default async function LandingPage() {
           ("Đăng ký học thử") in the hero so they don't need a second ask here;
           teachers aren't a conversion target. */}
       {user?.role === 'parent' && (
-        <section className='relative z-10 px-6 pt-4 pb-16 md:px-10 md:pb-20'>
+        <section className='relative z-10 px-4 pt-4 pb-16 md:px-10 md:pb-20'>
           <div className='mx-auto max-w-6xl'>
             <div className='rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur md:p-8'>
               <div className='flex flex-wrap items-center justify-between gap-4'>
@@ -406,7 +423,7 @@ export default async function LandingPage() {
         </section>
       )}
 
-      <footer className='relative z-10 border-t border-white/10 px-6 py-6 md:px-10'>
+      <footer className='relative z-10 border-t border-white/10 px-4 py-6 md:px-10'>
         <div className='mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-xs text-white/40'>
           <span>{t('footer.copyright')}</span>
           <div className='flex items-center gap-4'>

@@ -584,7 +584,11 @@ export function ScheduleHeaderAction() {
     view === 'month' ? t('nav.nextMonth') : view === 'day' ? t('nav.nextDay') : t('nav.nextWeek');
 
   return (
-    <div className='flex items-center gap-2'>
+    // flex-wrap so 3 groups (tabs / nav / date picker) drop to extra rows on
+    // <md instead of being clipped off-viewport. The PageContainer header row
+    // already stacks title and actions vertically on mobile, so taking 2-3
+    // rows here is fine — the visible alternative was losing prev/next entirely.
+    <div className='flex flex-wrap items-center gap-2'>
       <Tabs
         value={view}
         onValueChange={(next) => void setFilters({ view: isScheduleView(next) ? next : null })}
@@ -642,11 +646,6 @@ export function ScheduleHeaderAction() {
           />
         </PopoverContent>
       </Popover>
-
-      <Button size='sm' className='h-9'>
-        <Icons.add className='size-3.5' />
-        {t('newSession')}
-      </Button>
     </div>
   );
 }

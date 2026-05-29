@@ -26,9 +26,9 @@ export function HomeFeed({ items }: { items: HomeFeedItem[] }) {
   const tiles = rest.slice(0, 3);
 
   return (
-    <section className='relative z-10 px-6 pt-4 pb-16 md:px-10 md:pb-24'>
+    <section className='relative z-10 px-4 pt-4 pb-16 md:px-10 md:pb-24'>
       <div className='mx-auto max-w-6xl'>
-        <div className='mb-10 flex flex-wrap items-end justify-between gap-4'>
+        <div className='mb-8 flex flex-wrap items-end justify-between gap-3 md:mb-10 md:gap-4'>
           <div>
             <div className='text-[11px] tracking-wider text-orange-300/80 uppercase'>
               {t('eyebrow')}

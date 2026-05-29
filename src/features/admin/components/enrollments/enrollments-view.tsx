@@ -12,6 +12,14 @@ import { Input } from '@/components/ui/input';
 import { LoadingOverlay, LoadingState } from '@/components/ui/loading-state';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle
+} from '@/components/ui/sheet';
+import {
   Table,
   TableBody,
   TableCell,
@@ -32,6 +40,7 @@ import {
   type EnrollmentStatusFilter
 } from '@/api/enrollments';
 import { avatarToneClass } from '@/constants/avatar';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { formatApiError } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { ManualEnrollDialog } from './manual-enroll-dialog';
@@ -160,7 +169,8 @@ function EnrollmentDetailPanel({
   onEditPayment,
   isApprovePending,
   isWaitlistPending,
-  onClose
+  onClose,
+  hideClose = false
 }: {
   row: Enrollment;
   classes: ClassRow[];
@@ -173,6 +183,9 @@ function EnrollmentDetailPanel({
   isApprovePending: boolean;
   isWaitlistPending: boolean;
   onClose: () => void;
+  // Sheet provides its own close button; hide ours to avoid two X icons in
+  // the header area on mobile.
+  hideClose?: boolean;
 }) {
   const t = useTranslations('enrollments.detail');
   const tStatus = useTranslations('enrollments.detail.paymentStatusLabel');
@@ -204,37 +217,45 @@ function EnrollmentDetailPanel({
   })();
 
   return (
-    <aside className='bg-card flex flex-col overflow-hidden rounded-lg border shadow-sm'>
-      <div className='flex items-start justify-between gap-3 border-b px-5 pt-4 pb-3'>
-        <div className='flex items-center gap-3'>
+    // h-full + min-h-0 let the body's overflow-auto activate when this panel
+    // is mounted in a height-bounded container (the Sheet on <xl). On the xl
+    // inline mount the parent has no height, so h-full collapses to content
+    // height harmlessly and the page scrolls instead.
+    <aside className='bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border shadow-sm'>
+      <div className='flex shrink-0 items-start justify-between gap-3 border-b px-4 pt-4 pb-3 md:px-5'>
+        <div className='flex min-w-0 flex-1 items-center gap-3'>
           <span
             className={cn(
-              'grid h-12 w-12 place-items-center rounded-full text-base font-semibold',
+              'grid h-12 w-12 shrink-0 place-items-center rounded-full text-base font-semibold',
               avatarToneClass[row.tone]
             )}
           >
             {row.initials}
           </span>
-          <div className='leading-tight'>
+          <div className='min-w-0 flex-1 leading-tight'>
             <div className='text-muted-foreground font-mono text-[12px]'>
               {t('idLabel', { id: row.id })}
             </div>
-            <div className='text-[17px] font-semibold tracking-tight'>{row.studentName}</div>
+            <div className='truncate text-[17px] font-semibold tracking-tight'>
+              {row.studentName}
+            </div>
             <div className='text-muted-foreground text-[12px]'>{gradeAgeLabel}</div>
           </div>
         </div>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='h-7 w-7'
-          onClick={onClose}
-          aria-label={t('close')}
-        >
-          <Icons.close className='size-3.5' />
-        </Button>
+        {!hideClose && (
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-7 w-7 shrink-0'
+            onClick={onClose}
+            aria-label={t('close')}
+          >
+            <Icons.close className='size-3.5' />
+          </Button>
+        )}
       </div>
 
-      <div className='flex flex-col gap-4 overflow-auto px-5 py-4'>
+      <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-4 py-4 md:px-5'>
         <section>
           <div className='text-muted-foreground mb-2 text-[11px] font-medium tracking-wider uppercase'>
             {t('requestedCourse')}
@@ -302,20 +323,20 @@ function EnrollmentDetailPanel({
           )}
         </section>
 
-        <section className='grid grid-cols-2 gap-3'>
-          <div className='rounded-md border p-3'>
+        <section className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+          <div className='min-w-0 rounded-md border p-3'>
             <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
               {t('parent')}
             </div>
-            <div className='mt-1 text-sm font-medium'>{row.parentName}</div>
+            <div className='mt-1 truncate text-sm font-medium'>{row.parentName}</div>
             <div className='text-muted-foreground mt-0.5 font-mono text-[11px]'>
               {row.parentPhone ?? '—'}
             </div>
-            <div className='text-muted-foreground font-mono text-[11px]'>
+            <div className='text-muted-foreground truncate font-mono text-[11px]'>
               {row.parentEmail ?? '—'}
             </div>
           </div>
-          <div className='rounded-md border p-3'>
+          <div className='min-w-0 rounded-md border p-3'>
             <div className='flex items-start justify-between gap-2'>
               <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
                 {t('payment')}
@@ -379,22 +400,27 @@ function EnrollmentDetailPanel({
         ) : null}
       </div>
 
-      <div className='bg-muted/30 flex items-center justify-between gap-2 border-t px-5 py-3'>
+      {/* Footer sticks to the bottom because the body above is flex-1 +
+          overflow-auto. On <sm the actions stack so long Vietnamese labels
+          (e.g. "Phê duyệt & gán") don't crash into each other. Primary action
+          (Approve) goes first in the visual stack to stay reachable above the
+          fold of the keyboard / safe-area on phones. */}
+      <div className='bg-muted/30 flex shrink-0 flex-col-reverse gap-2 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 md:px-5'>
         <Button
           variant='ghost'
           size='sm'
-          className='text-muted-foreground hover:text-foreground text-[12px]'
+          className='text-muted-foreground hover:text-foreground self-start text-[12px] sm:self-auto'
           onClick={onReject}
           disabled={row.status === 'rejected'}
         >
           <Icons.trash className='size-3' />
           {t('rejectButton')}
         </Button>
-        <div className='flex items-center gap-2'>
+        <div className='flex flex-col-reverse gap-2 sm:flex-row sm:items-center'>
           <Button
             variant='outline'
             size='sm'
-            className='h-9'
+            className='h-9 w-full sm:w-auto'
             onClick={onWaitlist}
             disabled={row.status === 'waitlist' || isWaitlistPending}
           >
@@ -402,7 +428,7 @@ function EnrollmentDetailPanel({
           </Button>
           <Button
             size='sm'
-            className='h-9'
+            className='h-9 w-full sm:w-auto'
             onClick={onApprove}
             disabled={
               !selectedClassId ||
@@ -417,6 +443,117 @@ function EnrollmentDetailPanel({
         </div>
       </div>
     </aside>
+  );
+}
+
+// Mobile (<md) list item. Mirrors EnrollmentRowItem's data but laid out
+// vertically so it fits a phone-width card without the 5-column table.
+// Action buttons stay primary-visible because the queue's job is triage —
+// hiding them behind a tap would double the work per row.
+function EnrollmentCardItem({
+  row,
+  active,
+  selected,
+  onSelect,
+  onToggleSelect,
+  onApprove,
+  onWaitlist,
+  onReject
+}: {
+  row: Enrollment;
+  active: boolean;
+  selected: boolean;
+  onSelect: () => void;
+  onToggleSelect: () => void;
+  onApprove: () => void;
+  onWaitlist: () => void;
+  onReject: () => void;
+}) {
+  const t = useTranslations('enrollments.list');
+  const format = useFormatter();
+  const now = useNow({ updateInterval: 60 * 1000 });
+  const submittedLabel = row.submittedAt
+    ? format.relativeTime(new Date(row.submittedAt), now)
+    : '—';
+
+  return (
+    <li
+      onClick={onSelect}
+      className={cn(
+        'flex cursor-pointer items-start gap-3 p-4 transition-colors',
+        active && 'bg-foreground/[0.03]'
+      )}
+    >
+      <div className='pt-0.5' onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={selected}
+          onCheckedChange={onToggleSelect}
+          aria-label={t('selectAria', { name: row.studentName })}
+        />
+      </div>
+      <span
+        className={cn(
+          'grid h-10 w-10 shrink-0 place-items-center rounded-full text-[12px] font-semibold',
+          avatarToneClass[row.tone]
+        )}
+      >
+        {row.initials}
+      </span>
+      <div className='min-w-0 flex-1 space-y-1.5'>
+        <div className='flex items-start justify-between gap-2'>
+          <div className='min-w-0'>
+            <div className='truncate text-[14px] font-medium'>{row.studentName}</div>
+            <div className='text-muted-foreground truncate font-mono text-[11px]'>
+              {t('parentLabel', { name: row.parentName })}
+            </div>
+          </div>
+          <span className='text-muted-foreground shrink-0 font-mono text-[11px]'>
+            {submittedLabel}
+          </span>
+        </div>
+        <div className='text-[13px]'>
+          <span className='font-medium'>{row.requestedCourse?.title ?? '—'}</span>
+          {row.note ? (
+            <span className='text-muted-foreground line-clamp-1 font-mono text-[11px]'>
+              {row.note}
+            </span>
+          ) : null}
+        </div>
+        <div
+          className='-mr-1 flex items-center justify-end gap-1'
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            size='sm'
+            variant={active ? 'default' : 'outline'}
+            className='h-7 px-2.5 text-[12px]'
+            onClick={onApprove}
+            disabled={row.status === 'active'}
+          >
+            {t('actions.approve')}
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            className='h-7 px-2.5 text-[12px]'
+            onClick={onWaitlist}
+            disabled={row.status === 'waitlist'}
+          >
+            {t('actions.waitlist')}
+          </Button>
+          <Button
+            variant='outline'
+            size='icon'
+            className='h-7 w-7'
+            onClick={onReject}
+            disabled={row.status === 'rejected'}
+            aria-label={t('actions.reject')}
+          >
+            <Icons.close className='size-3' />
+          </Button>
+        </div>
+      </div>
+    </li>
   );
 }
 
@@ -437,6 +574,11 @@ export function EnrollmentsView() {
   const [rejectTarget, setRejectTarget] = React.useState<Enrollment | null>(null);
   const [paymentTarget, setPaymentTarget] = React.useState<Enrollment | null>(null);
   const [bulkSelection, setBulkSelection] = React.useState<Set<string>>(new Set());
+  // <xl: detail panel lives in a bottom Sheet that only opens on explicit row
+  // tap; selectedId still auto-syncs for desktop's inline panel. JS + CSS
+  // breakpoints (xl = 1280px) must stay in sync.
+  const isBelowXl = useMediaQuery('(max-width: 1279px)');
+  const [mobileDetailOpen, setMobileDetailOpen] = React.useState(false);
 
   const activeStatus: EnrollmentStatus = isEnrollmentStatus(statusParam) ? statusParam : 'pending';
 
@@ -509,6 +651,14 @@ export function EnrollmentsView() {
 
   const handleReject = (row: Enrollment) => setRejectTarget(row);
 
+  // Row tap on either the desktop table or the mobile card list. selectedId
+  // drives the inline panel on xl+; on <xl we also pop the Sheet because the
+  // inline panel is hidden.
+  const handleSelectRow = (id: string) => {
+    void setSelectedId(id);
+    if (isBelowXl) setMobileDetailOpen(true);
+  };
+
   const handleToggleSelectAll = () => {
     if (bulkSelection.size === enrollments.length) {
       setBulkSelection(new Set());
@@ -575,8 +725,12 @@ export function EnrollmentsView() {
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap items-end justify-between gap-2 border-b'>
-        <div className='-mb-px flex items-center'>
+      {/* Stack tabs and search on mobile so neither has to truncate; on md+
+          they share the border-b row like the original design. */}
+      <div className='flex flex-col gap-3 border-b md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-2'>
+        {/* Tabs are horizontally scrollable on narrow viewports — wrapping 4
+            tabs with badges to two lines breaks the underline alignment. */}
+        <div className='-mb-px flex items-center overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
           {tabKeys.map((key) => {
             const active = activeStatus === key;
             const count = tabCounts.get(key) ?? 0;
@@ -589,7 +743,7 @@ export function EnrollmentsView() {
                   setBulkSelection(new Set());
                 }}
                 className={cn(
-                  'relative inline-flex h-10 items-center gap-2 px-4 text-sm',
+                  'relative inline-flex h-10 shrink-0 items-center gap-2 px-3 text-sm md:px-4',
                   active
                     ? 'border-foreground -mb-px border-b-2 font-medium'
                     : 'text-muted-foreground hover:text-foreground'
@@ -608,7 +762,7 @@ export function EnrollmentsView() {
           })}
         </div>
         <div className='flex items-center gap-2 pb-2'>
-          <div className='relative w-64'>
+          <div className='relative w-full md:w-64'>
             <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2' />
             <Input
               value={search}
@@ -647,7 +801,9 @@ export function EnrollmentsView() {
             </div>
           ) : (
             <LoadingOverlay visible={listQuery.isFetching && !listQuery.isLoading}>
-              <Table>
+              {/* md+ : 5-column table. On <md the table overflows so we render
+                  the card list below instead. */}
+              <Table className='hidden md:table'>
                 <TableHeader className='bg-muted/30'>
                   <TableRow>
                     <TableHead className='w-8 px-4' />
@@ -672,7 +828,7 @@ export function EnrollmentsView() {
                       row={row}
                       active={row.id === selected?.id}
                       selected={bulkSelection.has(row.id)}
-                      onSelect={() => void setSelectedId(row.id)}
+                      onSelect={() => handleSelectRow(row.id)}
                       onToggleSelect={() => handleToggleSelect(row.id)}
                       onApprove={() => void handleApprove(row)}
                       onWaitlist={() => void handleWaitlist(row)}
@@ -681,10 +837,36 @@ export function EnrollmentsView() {
                   ))}
                 </TableBody>
               </Table>
+              <ul className='divide-y md:hidden'>
+                {enrollments.map((row) => (
+                  <EnrollmentCardItem
+                    key={row.id}
+                    row={row}
+                    active={row.id === selected?.id}
+                    selected={bulkSelection.has(row.id)}
+                    onSelect={() => handleSelectRow(row.id)}
+                    onToggleSelect={() => handleToggleSelect(row.id)}
+                    onApprove={() => void handleApprove(row)}
+                    onWaitlist={() => void handleWaitlist(row)}
+                    onReject={() => handleReject(row)}
+                  />
+                ))}
+              </ul>
             </LoadingOverlay>
           )}
 
-          <div className='text-muted-foreground flex items-center justify-between border-t px-4 py-2.5 text-[12px]'>
+          {/* On <md the bar floats above the card list (sticky bottom-0 inside
+              the scrolling page) only when there's a selection — empty state
+              would just add visual noise without an action target. On md+ it
+              sits inline at the bottom of the card like before. bg-card is
+              required for the sticky case so scrolling content doesn't bleed
+              through. */}
+          <div
+            className={cn(
+              'text-muted-foreground bg-card sticky bottom-0 z-10 flex items-center justify-between border-t px-4 py-2.5 text-[12px] md:static md:z-auto',
+              bulkSelection.size === 0 && 'hidden md:flex'
+            )}
+          >
             <div>
               {tList('bulk.label')}
               <button
@@ -707,7 +889,9 @@ export function EnrollmentsView() {
           </div>
         </div>
 
-        <div className='col-span-12 xl:col-span-5'>
+        {/* xl+ : inline detail panel beside the list. <xl uses the Sheet below
+            so the user isn't forced to scroll the whole page after tapping. */}
+        <div className='hidden xl:col-span-5 xl:block'>
           {selected ? (
             <EnrollmentDetailPanel
               row={selected}
@@ -729,6 +913,60 @@ export function EnrollmentsView() {
           )}
         </div>
       </div>
+
+      {/* <xl : detail in a bottom Sheet — opened explicitly by row tap so the
+          list stays the primary surface. EnrollmentDetailPanel's own card
+          chrome (border/rounded/shadow) is stripped so it blends into the
+          sheet surface, matching the courses-view pattern. */}
+      <Sheet open={isBelowXl && mobileDetailOpen} onOpenChange={setMobileDetailOpen}>
+        <SheetContent
+          side='bottom'
+          className='h-[92vh] gap-0 overflow-hidden rounded-t-lg p-0 [&>button:last-of-type]:hidden'
+        >
+          <SheetHeader className='sr-only'>
+            <SheetTitle>{selected?.studentName ?? tDetail('empty')}</SheetTitle>
+            <SheetDescription>{selected?.requestedCourse?.title ?? ''}</SheetDescription>
+          </SheetHeader>
+          <div className='relative flex shrink-0 items-center justify-center border-b py-2.5'>
+            <div className='bg-muted h-1 w-10 rounded-full' />
+            <SheetClose className='hover:bg-muted absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 transition-colors'>
+              <Icons.close className='size-4' />
+              <span className='sr-only'>{tDetail('close')}</span>
+            </SheetClose>
+          </div>
+          {/* flex flex-col so the aside child (h-full + flex-1 body) can pin
+              its footer to the bottom of the Sheet; scrolling happens inside
+              the panel's body, not at this wrapper level. */}
+          <div className='flex min-h-0 flex-1 flex-col [&>aside]:rounded-none [&>aside]:border-0 [&>aside]:shadow-none'>
+            {selected ? (
+              <EnrollmentDetailPanel
+                row={selected}
+                classes={classes}
+                selectedClassId={selectedClassId}
+                onSelectClass={setSelectedClassId}
+                onApprove={() => {
+                  void handleApprove(selected);
+                  setMobileDetailOpen(false);
+                }}
+                onWaitlist={() => {
+                  void handleWaitlist(selected);
+                  setMobileDetailOpen(false);
+                }}
+                onReject={() => handleReject(selected)}
+                onEditPayment={() => setPaymentTarget(selected)}
+                isApprovePending={approve.isPending}
+                isWaitlistPending={waitlist.isPending}
+                onClose={() => setMobileDetailOpen(false)}
+                hideClose
+              />
+            ) : (
+              <div className='text-muted-foreground grid min-h-[320px] place-items-center p-6 text-sm'>
+                {tDetail('empty')}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <RejectEnrollmentDialog
         enrollment={rejectTarget}
