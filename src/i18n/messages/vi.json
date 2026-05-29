@@ -456,8 +456,11 @@
       "schedule": "Lịch học",
       "capacity": "Sĩ số",
       "students": "Học viên",
-      "markAttendance": "Điểm danh",
-      "addStudent": "Thêm học viên",
+      "duration": "Thời gian học",
+      "durationRange": "{start} – {end}",
+      "durationStartOnly": "từ {start}",
+      "durationEndOnly": "đến {end}",
+      "durationUnknown": "Chưa đặt",
       "studentMeta": "lớp {grade} · {age} tuổi",
       "attendancePct": "Chuyên cần {value}%",
       "moreStudents": "Còn {count} học viên khác…",
@@ -624,6 +627,206 @@
         "capacityBelowEnrolled": "Sĩ số mới không được nhỏ hơn số học viên đã đăng ký ({enrolled}).",
         "visibilityRequired": "Vui lòng chọn quyền hiển thị."
       }
+    }
+  },
+  "enrollments": {
+    "title": "Ghi danh",
+    "pageDescription": "Duyệt, xếp lớp hoặc chuyển vào danh sách chờ",
+    "pageDescriptionWithCount": "Duyệt, xếp lớp hoặc chuyển vào danh sách chờ · {count} đơn đang chờ",
+    "export": "Xuất file",
+    "enrollManually": "Tạo đơn thủ công",
+    "searchPlaceholder": "Tìm theo tên học sinh, phụ huynh, khoá học…",
+    "loadingList": "Đang tải danh sách đơn…",
+    "noResults": "Không có đơn nào phù hợp bộ lọc.",
+    "tabs": {
+      "pending": "Chờ duyệt",
+      "active": "Đã duyệt",
+      "waitlist": "Danh sách chờ",
+      "rejected": "Đã từ chối"
+    },
+    "list": {
+      "selectAll": "Chọn tất cả",
+      "tabSummary": "{count} {status}",
+      "columns": {
+        "student": "Học sinh",
+        "requestedCourse": "Khoá học yêu cầu",
+        "submitted": "Gửi lúc",
+        "actions": "Thao tác"
+      },
+      "parentLabel": "phụ huynh · {name}",
+      "actions": {
+        "approve": "Duyệt",
+        "waitlist": "Vào danh sách chờ",
+        "reject": "Từ chối"
+      },
+      "bulk": {
+        "label": "Hành động hàng loạt:",
+        "approveSelected": "Duyệt các đơn đã chọn",
+        "moveToWaitlist": "Chuyển vào danh sách chờ",
+        "selectedCount": "Đã chọn {count}"
+      },
+      "selectAria": "Chọn {name}"
+    },
+    "detail": {
+      "empty": "Chọn một đơn để xem chi tiết.",
+      "idLabel": "ENR-{id}",
+      "gradeAgeNone": "—",
+      "requestedCourse": "Khoá học yêu cầu",
+      "assignToClass": "Xếp vào lớp",
+      "noOpenClasses": "Chưa có lớp nào đang mở. Hãy tạo / xuất bản lớp trước khi duyệt.",
+      "optionsCount": "{count} lớp",
+      "parent": "Phụ huynh",
+      "payment": "Thanh toán",
+      "paymentNotProvided": "chưa cập nhật",
+      "paymentStatusLabel": {
+        "unpaid": "Chưa thanh toán",
+        "paid": "Đã thanh toán",
+        "partial": "Thanh toán một phần"
+      },
+      "paymentEdit": "Cập nhật thanh toán",
+      "paymentMarkPaid": "Đánh dấu đã thanh toán",
+      "parentNote": "Ghi chú của phụ huynh",
+      "rejectionReason": "Lý do từ chối",
+      "rejectButton": "Từ chối",
+      "moveToWaitlist": "Chuyển vào danh sách chờ",
+      "moveToWaitlistPending": "Đang chuyển…",
+      "approveAndAssign": "Duyệt & xếp lớp",
+      "approving": "Đang duyệt…",
+      "close": "Đóng",
+      "gradeLabel": "Lớp {grade}",
+      "ageLabel": "{age} tuổi",
+      "courseMeta": "{code} · {sessions} buổi · {minAge}–{maxAge} tuổi",
+      "courseMetaCodeOnly": "{code}"
+    },
+    "toast": {
+      "approveSuccess": "Đã duyệt và xếp lớp cho {name}.",
+      "approveError": "Duyệt đơn thất bại.",
+      "waitlistSuccess": "Đã chuyển {name} sang danh sách chờ.",
+      "waitlistError": "Chuyển danh sách chờ thất bại.",
+      "rejectSuccess": "Đã từ chối đơn của {name}.",
+      "rejectError": "Từ chối đơn thất bại.",
+      "needClass": "Hãy chọn lớp trước khi duyệt.",
+      "needSelection": "Hãy chọn ít nhất một đơn.",
+      "bulkApproveSuccess": "Đã duyệt {updated} đơn ({skipped} bỏ qua).",
+      "bulkWaitlistSuccess": "Đã chuyển {updated} đơn sang danh sách chờ.",
+      "bulkError": "Hành động hàng loạt thất bại.",
+      "createSuccess": "Đã tạo đơn cho {name}.",
+      "createError": "Tạo đơn thất bại.",
+      "paymentSuccess": "Đã cập nhật thanh toán cho {name}.",
+      "paymentError": "Cập nhật thanh toán thất bại."
+    },
+    "paymentDialog": {
+      "title": "Cập nhật thanh toán",
+      "description": "Ghi nhận trạng thái và số tiền nhận từ phụ huynh của {name}.",
+      "statusLabel": "Trạng thái",
+      "amountLabel": "Số tiền (VND)",
+      "amountPlaceholder": "Ví dụ: 3600000",
+      "cancel": "Huỷ",
+      "save": "Lưu",
+      "saving": "Đang lưu…",
+      "validation": {
+        "amountInvalid": "Số tiền phải là số dương."
+      }
+    },
+    "rejectDialog": {
+      "title": "Từ chối đơn ghi danh",
+      "description": "Vui lòng nhập lý do từ chối đơn của {name}. Phụ huynh sẽ thấy nội dung này.",
+      "reasonLabel": "Lý do",
+      "reasonPlaceholder": "Ví dụ: học sinh chưa đủ tuổi tham gia khoá học này.",
+      "cancel": "Huỷ",
+      "confirm": "Xác nhận từ chối",
+      "confirmPending": "Đang xử lý…",
+      "reasonRequired": "Phải nhập lý do từ chối."
+    },
+    "manualDialog": {
+      "title": "Tạo đơn ghi danh thủ công",
+      "description": "Admin nhập thông tin học sinh + phụ huynh thay cho đơn không qua ứng dụng phụ huynh.",
+      "studentName": "Tên học sinh",
+      "studentNamePlaceholder": "Ví dụ: Minh An Trần",
+      "studentAge": "Tuổi",
+      "studentGrade": "Lớp",
+      "parentName": "Tên phụ huynh",
+      "parentPhone": "SĐT phụ huynh",
+      "parentPhonePlaceholder": "+84 …",
+      "parentEmail": "Email phụ huynh",
+      "requestedCourse": "Khoá học muốn ghi danh",
+      "requestedCoursePlaceholder": "Chọn khoá học",
+      "requestedCourseLoading": "Đang tải khoá học…",
+      "channel": "Kênh ghi danh",
+      "channelOptions": {
+        "parent_app": "Ứng dụng phụ huynh",
+        "website": "Website",
+        "referral": "Giới thiệu"
+      },
+      "note": "Ghi chú",
+      "notePlaceholder": "Ghi chú thêm cho hồ sơ.",
+      "cancel": "Huỷ",
+      "submit": "Tạo đơn",
+      "submitting": "Đang tạo…",
+      "required": "*",
+      "validation": {
+        "studentNameRequired": "Tên học sinh là bắt buộc.",
+        "studentAgeInvalid": "Tuổi phải là số nguyên từ 0 đến 30.",
+        "studentGradeInvalid": "Lớp phải là số nguyên từ 0 đến 20.",
+        "parentNameRequired": "Tên phụ huynh là bắt buộc.",
+        "parentPhoneInvalid": "Số điện thoại không hợp lệ.",
+        "parentEmailInvalid": "Email không hợp lệ.",
+        "requestedCourseRequired": "Hãy chọn khoá học.",
+        "noteTooLong": "Ghi chú không được vượt quá 1000 ký tự."
+      }
+    }
+  },
+  "schedule": {
+    "title": "Lịch",
+    "pageDescription": "Lịch quản trị — chuyển giữa ngày, tuần hoặc tháng",
+    "updatingList": "Đang cập nhật lịch…",
+    "newSession": "Tạo buổi học",
+    "exportICal": "Xuất iCal",
+    "view": {
+      "day": "Ngày",
+      "week": "Tuần",
+      "month": "Tháng"
+    },
+    "nav": {
+      "today": "Hôm nay",
+      "prevDay": "Ngày trước",
+      "prevWeek": "Tuần trước",
+      "prevMonth": "Tháng trước",
+      "nextDay": "Ngày sau",
+      "nextWeek": "Tuần sau",
+      "nextMonth": "Tháng sau"
+    },
+    "filters": {
+      "teacher": "Giáo viên",
+      "class": "Lớp",
+      "location": "Địa điểm",
+      "allTeachers": "Tất cả giáo viên",
+      "allTeachersWithCount": "Tất cả giáo viên ({count})",
+      "allClasses": "Tất cả lớp",
+      "allClassesWithCount": "Tất cả lớp ({count})",
+      "all": "Tất cả",
+      "allWithCount": "Tất cả ({count})"
+    },
+    "legend": {
+      "label": "Chú thích",
+      "scratch": "Scratch",
+      "python": "Python",
+      "web": "Web",
+      "robotics": "Robotics",
+      "gameAi": "Game / AI"
+    },
+    "summary": {
+      "scope": {
+        "day": "Hôm nay",
+        "week": "Tuần này",
+        "month": "Tháng này"
+      },
+      "sessions": "{count} buổi",
+      "teachers": "{count} giáo viên",
+      "studentHours": "{count} giờ học"
+    },
+    "monthCell": {
+      "more": "+{count} nữa"
     }
   }
 }

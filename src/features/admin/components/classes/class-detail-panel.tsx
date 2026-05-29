@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,11 +16,27 @@ const STUDENTS_PREVIEW_LIMIT = 7;
 
 export function ClassDetailPanel({ cls }: { cls: ClassRow }) {
   const t = useTranslations('classes.detail');
+  const format = useFormatter();
   const { data: students, isLoading } = useQuery(classStudentsOptions(cls.id));
 
   const roster = students ?? [];
   const visible = roster.slice(0, STUDENTS_PREVIEW_LIMIT);
   const remaining = Math.max(0, roster.length - visible.length);
+
+  // Dates come back from BE as ISO strings (yyyy-MM-dd). Render via the active
+  // locale so VI renders "23 thg 5, 2026" and EN renders "May 23, 2026".
+  const formatDay = (iso?: string) =>
+    iso ? format.dateTime(new Date(iso), { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+  const startLabel = formatDay(cls.startDate);
+  const endLabel = formatDay(cls.endDate);
+  const durationLabel =
+    startLabel && endLabel
+      ? t('durationRange', { start: startLabel, end: endLabel })
+      : startLabel
+        ? t('durationStartOnly', { start: startLabel })
+        : endLabel
+          ? t('durationEndOnly', { end: endLabel })
+          : t('durationUnknown');
 
   return (
     <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
@@ -54,7 +70,7 @@ export function ClassDetailPanel({ cls }: { cls: ClassRow }) {
           )}
           <ClassLifecycleActions cls={cls} />
         </div>
-        <div className='mt-3 grid grid-cols-2 gap-2 text-[12px] sm:grid-cols-3'>
+        <div className='mt-3 grid grid-cols-2 gap-2 text-[12px] sm:grid-cols-4'>
           <div className='rounded-md border p-2.5'>
             <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
               {t('teacher')}
@@ -81,6 +97,12 @@ export function ClassDetailPanel({ cls }: { cls: ClassRow }) {
           </div>
           <div className='col-span-2 rounded-md border p-2.5 sm:col-span-1'>
             <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
+              {t('duration')}
+            </div>
+            <div className='mt-0.5 font-mono text-[11.5px] font-medium'>{durationLabel}</div>
+          </div>
+          <div className='col-span-2 rounded-md border p-2.5 sm:col-span-1'>
+            <div className='text-muted-foreground text-[10px] tracking-wider uppercase'>
               {t('schedule')}
             </div>
             <div className='mt-0.5 font-mono text-[11.5px] font-medium'>{cls.schedule}</div>
@@ -88,18 +110,10 @@ export function ClassDetailPanel({ cls }: { cls: ClassRow }) {
         </div>
       </div>
 
-      <div className='flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:px-5'>
+      <div className='flex items-center justify-between border-b px-4 py-3 sm:px-5'>
         <div className='text-[13px] font-medium'>
           {t('students')}
           <span className='text-muted-foreground ml-1 font-mono'>{cls.enrolled}</span>
-        </div>
-        <div className='flex items-center gap-1.5'>
-          <Button variant='outline' size='sm' className='h-7 px-2 text-[12px]'>
-            {t('markAttendance')}
-          </Button>
-          <Button variant='outline' size='sm' className='h-7 px-2 text-[12px]'>
-            {t('addStudent')}
-          </Button>
         </div>
       </div>
 

@@ -1,7 +1,6 @@
 import type { AvatarTone } from '@/constants/avatar';
 import { apiClient, apiClientPaged } from '@/lib/api-client';
 import type { Paginated } from '../shared/types';
-import { classStudents } from './mock';
 import type {
   ClassLifecycleStatus,
   ClassListParams,
@@ -13,6 +12,7 @@ import type {
   ClassStudent,
   CreateClassInput,
   LifecycleActionInput,
+  StudentStatus,
   UpdateClassInput
 } from './types';
 
@@ -194,11 +194,34 @@ export async function getClassById(id: string): Promise<ClassRow> {
   return mapClass(dto);
 }
 
+type ClassStudentDto = {
+  id: number;
+  classId: number;
+  name: string;
+  initials?: string;
+  grade?: number;
+  age?: number;
+  attendance?: number;
+  status?: string;
+};
+
+function mapStudent(dto: ClassStudentDto): ClassStudent {
+  return {
+    id: String(dto.id),
+    classId: String(dto.classId),
+    name: dto.name,
+    initials: dto.initials || deriveInitials(dto.name),
+    tone: pickTone(dto.id),
+    grade: dto.grade ?? 0,
+    age: dto.age ?? 0,
+    attendance: dto.attendance ?? 0,
+    status: (dto.status as StudentStatus) ?? 'on_track'
+  };
+}
+
 export async function getClassStudents(classId: string): Promise<ClassStudent[]> {
-  // Roster endpoint is out of scope for the class CRUD wiring — keep the mock
-  // fallback so the detail panel still renders while the backend lands.
-  const roster = classStudents.filter((s) => s.classId === classId);
-  return roster.length ? roster : classStudents;
+  const data = await apiClient<ClassStudentDto[]>(`/api/classes/${classId}/students`);
+  return data.map(mapStudent);
 }
 
 export async function createClass(input: CreateClassInput): Promise<ClassRow> {

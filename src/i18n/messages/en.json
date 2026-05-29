@@ -456,8 +456,11 @@
       "schedule": "Schedule",
       "capacity": "Capacity",
       "students": "Students",
-      "markAttendance": "Mark attendance",
-      "addStudent": "Add student",
+      "duration": "Duration",
+      "durationRange": "{start} – {end}",
+      "durationStartOnly": "from {start}",
+      "durationEndOnly": "until {end}",
+      "durationUnknown": "Not set",
       "studentMeta": "grade {grade} · age {age}",
       "attendancePct": "{value}% attendance",
       "moreStudents": "{count, plural, one {# more student…} other {# more students…}}",
@@ -624,6 +627,206 @@
         "capacityBelowEnrolled": "New capacity can't be below current enrolment ({enrolled}).",
         "visibilityRequired": "Please pick a visibility."
       }
+    }
+  },
+  "enrollments": {
+    "title": "Enrollments",
+    "pageDescription": "Approve, place, or waitlist new students",
+    "pageDescriptionWithCount": "Approve, place, or waitlist new students · {count} awaiting review",
+    "export": "Export",
+    "enrollManually": "Enroll manually",
+    "searchPlaceholder": "Search name, parent, course…",
+    "loadingList": "Loading enrollments…",
+    "noResults": "No enrollments match the current filter.",
+    "tabs": {
+      "pending": "Pending",
+      "active": "Active",
+      "waitlist": "Waitlist",
+      "rejected": "Rejected"
+    },
+    "list": {
+      "selectAll": "Select all",
+      "tabSummary": "{count} {status}",
+      "columns": {
+        "student": "Student",
+        "requestedCourse": "Requested course",
+        "submitted": "Submitted",
+        "actions": "Actions"
+      },
+      "parentLabel": "parent · {name}",
+      "actions": {
+        "approve": "Approve",
+        "waitlist": "Waitlist",
+        "reject": "Reject"
+      },
+      "bulk": {
+        "label": "Bulk actions:",
+        "approveSelected": "Approve selected",
+        "moveToWaitlist": "Move to waitlist",
+        "selectedCount": "{count} selected"
+      },
+      "selectAria": "Select {name}"
+    },
+    "detail": {
+      "empty": "Select an enrollment to see details.",
+      "idLabel": "ENR-{id}",
+      "gradeAgeNone": "—",
+      "requestedCourse": "Requested course",
+      "assignToClass": "Assign to class",
+      "noOpenClasses": "No open classes available. Create or publish a class before approving.",
+      "optionsCount": "{count} options",
+      "parent": "Parent",
+      "payment": "Payment",
+      "paymentNotProvided": "not provided",
+      "paymentStatusLabel": {
+        "unpaid": "Unpaid",
+        "paid": "Paid",
+        "partial": "Partial"
+      },
+      "paymentEdit": "Edit payment",
+      "paymentMarkPaid": "Mark as paid",
+      "parentNote": "Parent note",
+      "rejectionReason": "Rejection reason",
+      "rejectButton": "Reject",
+      "moveToWaitlist": "Move to waitlist",
+      "moveToWaitlistPending": "Moving…",
+      "approveAndAssign": "Approve & assign",
+      "approving": "Approving…",
+      "close": "Close",
+      "gradeLabel": "Grade {grade}",
+      "ageLabel": "Age {age}",
+      "courseMeta": "{code} · {sessions} sessions · ages {minAge}–{maxAge}",
+      "courseMetaCodeOnly": "{code}"
+    },
+    "toast": {
+      "approveSuccess": "Approved and assigned {name}.",
+      "approveError": "Could not approve enrollment.",
+      "waitlistSuccess": "Moved {name} to waitlist.",
+      "waitlistError": "Could not move enrollment to waitlist.",
+      "rejectSuccess": "Rejected enrollment for {name}.",
+      "rejectError": "Could not reject enrollment.",
+      "needClass": "Please pick a class before approving.",
+      "needSelection": "Please select at least one enrollment.",
+      "bulkApproveSuccess": "Approved {updated} enrollments ({skipped} skipped).",
+      "bulkWaitlistSuccess": "Moved {updated} enrollments to waitlist.",
+      "bulkError": "Bulk action failed.",
+      "createSuccess": "Created enrollment for {name}.",
+      "createError": "Could not create enrollment.",
+      "paymentSuccess": "Updated payment for {name}.",
+      "paymentError": "Could not update payment."
+    },
+    "paymentDialog": {
+      "title": "Update payment",
+      "description": "Record payment status and the amount you received from {name}'s parent.",
+      "statusLabel": "Status",
+      "amountLabel": "Amount (VND)",
+      "amountPlaceholder": "e.g. 3600000",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "validation": {
+        "amountInvalid": "Amount must be a positive number."
+      }
+    },
+    "rejectDialog": {
+      "title": "Reject enrollment",
+      "description": "Please explain why you're rejecting {name}'s application. The parent will see this message.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "e.g. Student is below the age range for this course.",
+      "cancel": "Cancel",
+      "confirm": "Confirm rejection",
+      "confirmPending": "Rejecting…",
+      "reasonRequired": "A reason is required."
+    },
+    "manualDialog": {
+      "title": "Create enrollment manually",
+      "description": "Admin enters student + parent info on behalf of an application that didn't come through the parent app.",
+      "studentName": "Student name",
+      "studentNamePlaceholder": "e.g. Minh An Trần",
+      "studentAge": "Age",
+      "studentGrade": "Grade",
+      "parentName": "Parent name",
+      "parentPhone": "Parent phone",
+      "parentPhonePlaceholder": "+84 …",
+      "parentEmail": "Parent email",
+      "requestedCourse": "Requested course",
+      "requestedCoursePlaceholder": "Pick a course",
+      "requestedCourseLoading": "Loading courses…",
+      "channel": "Submission channel",
+      "channelOptions": {
+        "parent_app": "Parent app",
+        "website": "Website",
+        "referral": "Referral"
+      },
+      "note": "Note",
+      "notePlaceholder": "Optional note for the record.",
+      "cancel": "Cancel",
+      "submit": "Create",
+      "submitting": "Creating…",
+      "required": "*",
+      "validation": {
+        "studentNameRequired": "Student name is required.",
+        "studentAgeInvalid": "Age must be a whole number between 0 and 30.",
+        "studentGradeInvalid": "Grade must be a whole number between 0 and 20.",
+        "parentNameRequired": "Parent name is required.",
+        "parentPhoneInvalid": "Please enter a valid phone number.",
+        "parentEmailInvalid": "Please enter a valid email.",
+        "requestedCourseRequired": "Please pick a course.",
+        "noteTooLong": "Note must be at most 1000 characters."
+      }
+    }
+  },
+  "schedule": {
+    "title": "Schedule",
+    "pageDescription": "Admin calendar — switch between day, week or month",
+    "updatingList": "Updating…",
+    "newSession": "New session",
+    "exportICal": "Export iCal",
+    "view": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "nav": {
+      "today": "Today",
+      "prevDay": "Previous day",
+      "prevWeek": "Previous week",
+      "prevMonth": "Previous month",
+      "nextDay": "Next day",
+      "nextWeek": "Next week",
+      "nextMonth": "Next month"
+    },
+    "filters": {
+      "teacher": "Teacher",
+      "class": "Class",
+      "location": "Location",
+      "allTeachers": "All teachers",
+      "allTeachersWithCount": "All teachers ({count})",
+      "allClasses": "All classes",
+      "allClassesWithCount": "All classes ({count})",
+      "all": "All",
+      "allWithCount": "All ({count})"
+    },
+    "legend": {
+      "label": "Legend",
+      "scratch": "Scratch",
+      "python": "Python",
+      "web": "Web",
+      "robotics": "Robotics",
+      "gameAi": "Game / AI"
+    },
+    "summary": {
+      "scope": {
+        "day": "This day",
+        "week": "This week",
+        "month": "This month"
+      },
+      "sessions": "{count} sessions",
+      "teachers": "{count} teachers",
+      "studentHours": "{count} student-hours"
+    },
+    "monthCell": {
+      "more": "+{count} more"
     }
   }
 }
