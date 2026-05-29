@@ -237,6 +237,35 @@ export async function updateEnrollmentPayment(
   return mapEnrollment(dto);
 }
 
+/**
+ * Guest workshop signup — payload mirrors the BE's lightweight
+ * WorkshopSignupRequest. Calls the public endpoint; works without auth so
+ * parents browsing the marketing site can submit immediately.
+ */
+export type WorkshopSignupInput = {
+  classId: string;
+  parentName: string;
+  parentPhone: string;
+  studentName: string;
+  studentAge: number;
+  note?: string;
+};
+
+export async function submitWorkshopSignup(input: WorkshopSignupInput): Promise<void> {
+  const body = {
+    classId: Number(input.classId),
+    parentName: input.parentName.trim(),
+    parentPhone: input.parentPhone.trim(),
+    studentName: input.studentName.trim(),
+    studentAge: input.studentAge,
+    note: input.note?.trim() || undefined
+  };
+  await apiClient<EnrollmentDto>('/api/public/enrollments/workshop-signup', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
 export async function bulkActionEnrollments(input: BulkActionInput): Promise<BulkActionResult> {
   const body = {
     ids: input.ids.map(Number),

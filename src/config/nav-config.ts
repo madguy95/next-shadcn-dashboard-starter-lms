@@ -103,6 +103,15 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
           shortcut: ['a', 'k'],
           isActive: false,
           items: []
+        },
+        {
+          title: 'Blog & Workshop',
+          titleKey: 'items.blog',
+          url: '/blog',
+          icon: 'post',
+          shortcut: ['a', 'b'],
+          isActive: false,
+          items: []
         }
       ]
     }
@@ -144,6 +153,15 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
           shortcut: ['t', 'k'],
           isActive: false,
           items: []
+        },
+        {
+          title: 'Blog & Workshop',
+          titleKey: 'items.blog',
+          url: '/blog',
+          icon: 'post',
+          shortcut: ['t', 'b'],
+          isActive: false,
+          items: []
         }
       ]
     }
@@ -183,6 +201,15 @@ export const navByRole: Record<AppRole, NavGroup[]> = {
           url: '/courses',
           icon: 'book',
           shortcut: ['p', 'k'],
+          isActive: false,
+          items: []
+        },
+        {
+          title: 'Blog & Workshop',
+          titleKey: 'items.blog',
+          url: '/blog',
+          icon: 'post',
+          shortcut: ['p', 'b'],
           isActive: false,
           items: []
         }

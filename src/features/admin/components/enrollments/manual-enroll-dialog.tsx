@@ -9,7 +9,6 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -58,15 +57,25 @@ const defaultValues: ManualEnrollFormValues = {
 // without re-declaring identical literals at every call site.
 const PHONE_RE = /^[0-9+\-\s().]{8,}$/;
 
-function optionalIntInRange(min: number, max: number, message: string) {
-  return z.string().refine(
-    (value) => {
-      if (value.trim().length === 0) return true;
-      const num = Number(value);
-      return Number.isInteger(num) && num >= min && num <= max;
-    },
-    { message }
-  );
+// Required + bounded int. Two distinct error messages so the admin can tell
+// "field empty" apart from "out of range" — both are common mistakes and the
+// fix is different (type something vs. fix the number).
+function requiredIntInRange(
+  min: number,
+  max: number,
+  requiredMessage: string,
+  invalidMessage: string
+) {
+  return z
+    .string()
+    .min(1, requiredMessage)
+    .refine(
+      (value) => {
+        const num = Number(value);
+        return Number.isInteger(num) && num >= min && num <= max;
+      },
+      { message: invalidMessage }
+    );
 }
 
 export function ManualEnrollDialog() {
@@ -87,14 +96,27 @@ export function ManualEnrollDialog() {
     () =>
       z.object({
         studentName: z.string().trim().min(1, tValidation('studentNameRequired')),
-        studentAge: optionalIntInRange(0, 30, tValidation('studentAgeInvalid')),
-        studentGrade: optionalIntInRange(0, 20, tValidation('studentGradeInvalid')),
+        studentAge: requiredIntInRange(
+          1,
+          30,
+          tValidation('studentAgeRequired'),
+          tValidation('studentAgeInvalid')
+        ),
+        studentGrade: requiredIntInRange(
+          1,
+          20,
+          tValidation('studentGradeRequired'),
+          tValidation('studentGradeInvalid')
+        ),
         parentName: z.string().trim().min(1, tValidation('parentNameRequired')),
-        // Phone + email are optional, but if the admin types something it must
-        // be syntactically valid — otherwise we'd silently send garbage to the BE.
+        // Phone is now required — without it admin can't follow up. Email
+        // stays optional, but if typed it must be syntactically valid so we
+        // don't silently forward garbage to the BE.
         parentPhone: z
           .string()
-          .refine((value) => value.trim().length === 0 || PHONE_RE.test(value.trim()), {
+          .trim()
+          .min(1, tValidation('parentPhoneRequired'))
+          .refine((value) => PHONE_RE.test(value), {
             message: tValidation('parentPhoneInvalid')
           }),
         parentEmail: z
@@ -186,16 +208,29 @@ export function ManualEnrollDialog() {
                 />
               </div>
 
+              {/*
+                type='number' would make FormTextField cast the value to a JS
+                number, which clashes with the z.string()-shaped schema (the
+                form keeps string values so empty stays empty). Plain text +
+                inputMode='numeric' gives the same mobile keyboard UX without
+                the cast; maxLength caps mirror the schema's upper bound.
+              */}
               <FormTextField
                 name='studentAge'
                 label={t('studentAge')}
-                type='number'
+                inputMode='numeric'
+                pattern='[0-9]*'
+                maxLength={2}
                 validators={{ onBlur: schema.shape.studentAge }}
+                required
               />
               <FormTextField
                 name='studentGrade'
                 label={t('studentGrade')}
-                type='number'
+                inputMode='numeric'
+                pattern='[0-9]*'
+                maxLength={2}
+                required
                 validators={{ onBlur: schema.shape.studentGrade }}
               />
 
@@ -212,6 +247,7 @@ export function ManualEnrollDialog() {
                 name='parentPhone'
                 label={t('parentPhone')}
                 type='tel'
+                required
                 placeholder={t('parentPhonePlaceholder')}
                 validators={{ onBlur: schema.shape.parentPhone }}
               />
@@ -259,16 +295,25 @@ export function ManualEnrollDialog() {
           </form.Form>
 
           <DialogFooter>
-            <DialogClose asChild>
-              <Button
-                variant='outline'
-                size='sm'
-                className='h-9'
-                disabled={createEnrollment.isPending}
-              >
-                {t('cancel')}
-              </Button>
-            </DialogClose>
+            {/*
+              Direct onClick + explicit type='button' instead of <DialogClose>.
+              With DialogClose asChild, the cancel button's pointerdown blurs
+              whatever field is focused, the onBlur validator re-renders the
+              form mid-click, and Radix's pointerup-driven close handler can
+              miss the click — so the first click only shows validation, and a
+              second click is needed to actually close. Bypassing DialogClose
+              lets us close synchronously regardless of validation state.
+            */}
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              className='h-9'
+              disabled={createEnrollment.isPending}
+              onClick={() => handleOpenChange(false)}
+            >
+              {t('cancel')}
+            </Button>
             <form.SubmitButton size='sm' className='h-9' form='manual-enroll-form'>
               {createEnrollment.isPending ? t('submitting') : t('submit')}
             </form.SubmitButton>

@@ -10,10 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { setLocale } from '@/i18n/actions';
 import { LOCALE_LABELS, LOCALES, type Locale } from '@/i18n/config';
 
-export function LanguageSwitcher() {
+// className escape hatch so the same switcher can sit in both the themed app
+// header (uses tokens) and the hard-coded dark landing page (needs white-on-
+// black overrides). Defaulting keeps existing call sites unchanged.
+export function LanguageSwitcher({ className }: { className?: string }) {
   const currentLocale = useLocale() as Locale;
   const [isPending, startTransition] = useTransition();
 
@@ -23,7 +27,7 @@ export function LanguageSwitcher() {
         <Button
           variant='ghost'
           size='sm'
-          className='h-8 gap-1.5 px-2 text-[12px] uppercase'
+          className={cn('h-8 gap-1.5 px-2 text-[12px] uppercase', className)}
           disabled={isPending}
           aria-label='Change language'
         >

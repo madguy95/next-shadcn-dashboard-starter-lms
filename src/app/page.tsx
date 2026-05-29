@@ -1,10 +1,15 @@
+import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Icons } from '@/components/icons';
+import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { Button } from '@/components/ui/button';
+import { getPublicHomeFeed, type HomeFeedItem } from '@/api/blog';
 import { getPublicCourses } from '@/api/courses/service';
 import type { PublicCourse } from '@/api/courses/types';
 import { roleMeta } from '@/config/nav-config';
 import { formatVND } from '@/features/parent/data';
+import { HomeFeed } from '@/features/blog/components/home-feed';
 import { getAuthUser } from '@/lib/auth';
 import { logout } from '@/lib/auth-actions';
 
@@ -27,9 +32,10 @@ function isRecent(iso?: string): boolean {
   return Date.now() - new Date(iso).getTime() < NEW_BADGE_WINDOW_MS;
 }
 
-export const metadata = {
-  title: 'IQode Lab — Build thinking, not just coding.'
-};
+export async function generateMetadata() {
+  const t = await getTranslations('home');
+  return { title: t('metaTitle') };
+}
 
 // Always render fresh on each request — the landing page should reflect newly published courses
 // without waiting for ISR. Switch to `revalidate` if traffic warrants caching.
@@ -69,6 +75,8 @@ function BrandAsterisk({ className = '' }: { className?: string }) {
 }
 
 function CourseCard({ course }: { course: PublicCourse }) {
+  const t = useTranslations('home.courses');
+  const tHeader = useTranslations('home.header');
   const accent = toolAccents[course.tool] ?? { ...DEFAULT_ACCENT, label: course.tool };
   const isNew = isRecent(course.createdAt);
   const goalsText = course.tagline?.trim() || course.description?.trim() || '';
@@ -77,7 +85,7 @@ function CourseCard({ course }: { course: PublicCourse }) {
     <Link
       // Deep-link by course code so the enrollment view can auto-open the detail sheet.
       href={`/courses?course=${encodeURIComponent(course.code)}`}
-      aria-label={`Xem khóa ${course.title}`}
+      aria-label={tHeader('courseAriaLabel', { title: course.title })}
       className='group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all hover:border-white/30 hover:bg-white/[0.08]'
     >
       {course.coverUrl ? (
@@ -112,7 +120,7 @@ function CourseCard({ course }: { course: PublicCourse }) {
           </span>
           {isNew && (
             <span className='inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
-              ✨ Mới
+              {t('newBadge')}
             </span>
           )}
         </div>
@@ -122,7 +130,7 @@ function CourseCard({ course }: { course: PublicCourse }) {
             {course.title}
           </h3>
           <div className='mt-1 text-xs text-white/50'>
-            Độ tuổi {course.minAge}–{course.maxAge}
+            {t('ageRange', { min: course.minAge, max: course.maxAge })}
             {accent.label ? ` · ${accent.label}` : ''}
           </div>
         </div>
@@ -134,7 +142,7 @@ function CourseCard({ course }: { course: PublicCourse }) {
         <div className='mt-auto flex flex-wrap items-center gap-3 pt-3 text-[11px] text-white/50'>
           <span className='inline-flex items-center gap-1'>
             <Icons.book className='size-3' />
-            {course.totalSessions} buổi
+            {t('sessionsLabel', { count: course.totalSessions })}
           </span>
           <span className='inline-flex items-center gap-1'>
             <Icons.clock className='size-3' />
@@ -153,12 +161,12 @@ function CourseCard({ course }: { course: PublicCourse }) {
                   {formatVND(course.originalTuitionAmount)}
                 </div>
               )}
-            <div className='text-[10px] text-white/40'>/khóa</div>
+            <div className='text-[10px] text-white/40'>{t('perCourse')}</div>
           </div>
           <span
             className={`inline-flex items-center gap-1 text-xs font-medium ${accent.chip} transition-transform group-hover:translate-x-0.5`}
           >
-            Tìm hiểu
+            {t('learnMore')}
             <Icons.arrowRight className='size-3' />
           </span>
         </div>
@@ -168,13 +176,12 @@ function CourseCard({ course }: { course: PublicCourse }) {
 }
 
 function EmptyCoursesState() {
+  const t = useTranslations('home.courses');
   return (
     <div className='col-span-full rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center backdrop-blur'>
       <Icons.info className='mx-auto size-6 text-white/40' />
-      <div className='mt-3 text-sm font-medium text-white/80'>Đang cập nhật danh sách khóa học</div>
-      <p className='mt-1 text-xs text-white/50'>
-        Trung tâm sẽ sớm công bố các khóa mới. Hãy quay lại sau hoặc liên hệ tư vấn.
-      </p>
+      <div className='mt-3 text-sm font-medium text-white/80'>{t('emptyTitle')}</div>
+      <p className='mt-1 text-xs text-white/50'>{t('emptyDescription')}</p>
     </div>
   );
 }
@@ -189,8 +196,24 @@ async function loadPublicCourses(): Promise<PublicCourse[]> {
   }
 }
 
+// The blog/workshop feed is mock-backed (in-memory), but wrap in try/catch
+// anyway so a future swap to a real BE follows the same outage-safe pattern as
+// the courses fetch above.
+async function loadHomeFeed(): Promise<HomeFeedItem[]> {
+  try {
+    return await getPublicHomeFeed(4);
+  } catch {
+    return [];
+  }
+}
+
 export default async function LandingPage() {
-  const [courses, user] = await Promise.all([loadPublicCourses(), getAuthUser()]);
+  const [courses, feed, user, t] = await Promise.all([
+    loadPublicCourses(),
+    loadHomeFeed(),
+    getAuthUser(),
+    getTranslations('home')
+  ]);
   const workspace = user ? roleMeta[user.role] : null;
 
   return (
@@ -223,16 +246,20 @@ export default async function LandingPage() {
           </span>
         </div>
         <div className='flex items-center gap-3'>
+          {/* Language picker — overrides ghost-button tokens because the
+              landing page is hard-coded dark; without these overrides the
+              theme-tinted ghost styles get washed out against pure black. */}
+          <LanguageSwitcher className='text-white/70 hover:bg-white/10 hover:text-white' />
           {user && workspace ? (
             <>
               <span className='hidden text-sm text-white/60 sm:inline'>
-                Xin chào, <span className='text-white'>{user.name || user.phone}</span>
+                {t('header.greeting')} <span className='text-white'>{user.name || user.phone}</span>
               </span>
               <Link
                 href={workspace.basePath}
                 className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-4 text-sm font-medium text-black transition-colors hover:bg-cyan-300'
               >
-                Vào workspace {workspace.label}
+                {t('header.enterWorkspace', { label: workspace.label })}
                 <Icons.arrowRight className='size-3.5' />
               </Link>
               <form action={logout}>
@@ -240,7 +267,7 @@ export default async function LandingPage() {
                   type='submit'
                   className='text-sm text-white/70 transition-colors hover:text-white'
                 >
-                  Đăng xuất
+                  {t('header.logout')}
                 </button>
               </form>
             </>
@@ -250,13 +277,13 @@ export default async function LandingPage() {
                 href='/login'
                 className='text-sm text-white/70 transition-colors hover:text-white'
               >
-                Đăng nhập
+                {t('header.login')}
               </Link>
               <Link
                 href='/login?mode=register'
                 className='inline-flex h-9 items-center gap-1.5 rounded-md bg-cyan-400 px-4 text-sm font-medium text-black transition-colors hover:bg-cyan-300'
               >
-                Đăng ký
+                {t('header.register')}
                 <Icons.arrowRight className='size-3.5' />
               </Link>
             </>
@@ -274,46 +301,39 @@ export default async function LandingPage() {
             <BrandAsterisk className='text-orange-300 absolute -top-6 -right-7 size-10 md:-top-8 md:-right-9 md:size-12' />
           </div>
         </div>
-        <p className='mt-6 max-w-xl text-base text-white/80 md:text-lg'>
-          Build thinking, not just coding.
-        </p>
-        <p className='mt-3 max-w-md text-sm text-white/50'>
-          Học viện lập trình tư duy dành cho học sinh 6 — 16 tuổi. Học bằng dự án, bằng câu hỏi,
-          bằng sự tò mò.
-        </p>
+        <p className='mt-6 max-w-xl text-base text-white/80 md:text-lg'>{t('hero.tagline')}</p>
+        <p className='mt-3 max-w-md text-sm text-white/50'>{t('hero.description')}</p>
 
-        <div className='mt-10 flex flex-wrap items-center justify-center gap-3'>
-          {user && workspace ? (
+        {user && workspace ? (
+          <div className='mt-10 flex flex-wrap items-center justify-center gap-3'>
             <Button
               asChild
               className='h-11 rounded-md bg-cyan-400 px-6 text-base font-medium text-black hover:bg-cyan-300'
             >
               <Link href={workspace.basePath}>
-                Vào workspace {workspace.label}
+                {t('header.enterWorkspace', { label: workspace.label })}
                 <Icons.arrowRight className='ml-1 size-4' />
               </Link>
             </Button>
-          ) : (
-            <>
-              <Button
-                asChild
-                className='h-11 rounded-md bg-cyan-400 px-6 text-base font-medium text-black hover:bg-cyan-300'
-              >
-                <Link href='/login'>Đăng nhập</Link>
-              </Button>
-              <Button
-                asChild
-                variant='outline'
-                className='h-11 rounded-md border-white/20 bg-transparent px-6 text-base font-medium text-white hover:bg-white/10 hover:text-white'
-              >
-                <Link href='/login?mode=register'>
-                  Đăng ký
-                  <Icons.arrowRight className='ml-1 size-4' />
-                </Link>
-              </Button>
-            </>
-          )}
-        </div>
+          </div>
+        ) : (
+          // Guest hero CTA — login/register live in the header for returning
+          // users, so the hero focuses on the lead-gen ask (free trial class)
+          // instead of repeating the same auth buttons.
+          <div className='mt-10 flex flex-col items-center gap-3'>
+            <span className='text-sm text-white/60'>{t('hero.guestEyebrow')}</span>
+            <Button
+              asChild
+              className='h-12 rounded-md bg-cyan-400 px-7 text-base font-semibold text-black hover:bg-cyan-300'
+            >
+              <Link href='/login?mode=register'>
+                {t('hero.guestCta')}
+                <Icons.arrowRight className='ml-1 size-4' />
+              </Link>
+            </Button>
+            <p className='mt-1 max-w-sm text-xs text-white/40'>{t('hero.guestHint')}</p>
+          </div>
+        )}
       </main>
 
       <section className='relative z-10 px-6 pt-4 pb-16 md:px-10 md:pb-24'>
@@ -321,21 +341,18 @@ export default async function LandingPage() {
           <div className='mb-10 flex flex-wrap items-end justify-between gap-4'>
             <div>
               <div className='text-[11px] tracking-wider text-cyan-300/80 uppercase'>
-                Curriculum
+                {t('courses.eyebrow')}
               </div>
               <h2 className='mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl'>
-                Khóa học nổi bật
+                {t('courses.title')}
               </h2>
-              <p className='mt-2 max-w-xl text-sm text-white/50'>
-                Lộ trình từ Scratch kéo–thả đến Python, Web và AI — thiết kế theo độ tuổi và tốc độ
-                tiếp thu của từng học sinh.
-              </p>
+              <p className='mt-2 max-w-xl text-sm text-white/50'>{t('courses.description')}</p>
             </div>
             <Link
               href='/courses'
               className='inline-flex items-center gap-1.5 text-sm text-white/70 transition-colors hover:text-white'
             >
-              Xem tất cả khóa học
+              {t('courses.viewAll')}
               <Icons.arrowRight className='size-3.5' />
             </Link>
           </div>
@@ -347,9 +364,19 @@ export default async function LandingPage() {
               courses.map((c) => <CourseCard key={c.id} course={c} />)
             )}
           </div>
+        </div>
+      </section>
 
-          {user?.role === 'parent' ? (
-            <div className='mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur md:p-8'>
+      <HomeFeed items={feed} />
+
+      {/* Parent contextual CTA — kept near the bottom because it's about
+          courses, which were the section above. Guests already got their CTA
+          ("Đăng ký học thử") in the hero so they don't need a second ask here;
+          teachers aren't a conversion target. */}
+      {user?.role === 'parent' && (
+        <section className='relative z-10 px-6 pt-4 pb-16 md:px-10 md:pb-20'>
+          <div className='mx-auto max-w-6xl'>
+            <div className='rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur md:p-8'>
               <div className='flex flex-wrap items-center justify-between gap-4'>
                 <div className='flex items-start gap-4'>
                   <span className='grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-cyan-400/15 text-cyan-300 ring-1 ring-cyan-400/30'>
@@ -357,11 +384,10 @@ export default async function LandingPage() {
                   </span>
                   <div>
                     <div className='text-base font-semibold tracking-tight text-white'>
-                      Đăng ký khóa mới cho con
+                      {t('parentCta.title')}
                     </div>
                     <p className='mt-1 max-w-md text-sm text-white/60'>
-                      Chọn khóa phù hợp với độ tuổi và sở thích — đội ngũ IQode Lab sẽ tư vấn lộ
-                      trình tốt nhất.
+                      {t('parentCta.description')}
                     </p>
                   </div>
                 </div>
@@ -370,56 +396,28 @@ export default async function LandingPage() {
                   className='h-10 rounded-md bg-cyan-400 px-5 text-sm font-medium text-black hover:bg-cyan-300'
                 >
                   <Link href='/courses'>
-                    Đăng ký khóa mới
+                    {t('parentCta.button')}
                     <Icons.arrowRight className='ml-1 size-4' />
                   </Link>
                 </Button>
               </div>
             </div>
-          ) : user ? null : (
-            <div className='mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur md:p-8'>
-              <div className='flex flex-wrap items-center justify-between gap-4'>
-                <div className='flex items-start gap-4'>
-                  <span className='grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-cyan-400/15 text-cyan-300 ring-1 ring-cyan-400/30'>
-                    <Icons.sparkles className='size-5' />
-                  </span>
-                  <div>
-                    <div className='text-base font-semibold tracking-tight text-white'>
-                      Chưa biết bắt đầu từ đâu?
-                    </div>
-                    <p className='mt-1 max-w-md text-sm text-white/60'>
-                      Đăng ký buổi học thử miễn phí — đội ngũ IQode Lab sẽ tư vấn lộ trình phù hợp
-                      nhất cho con.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  asChild
-                  className='h-10 rounded-md bg-cyan-400 px-5 text-sm font-medium text-black hover:bg-cyan-300'
-                >
-                  <Link href='/login?mode=register'>
-                    Đăng ký học thử
-                    <Icons.arrowRight className='ml-1 size-4' />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       <footer className='relative z-10 border-t border-white/10 px-6 py-6 md:px-10'>
         <div className='mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-xs text-white/40'>
-          <span>© 2026 IQodeLab. Build thinking, not just coding.</span>
+          <span>{t('footer.copyright')}</span>
           <div className='flex items-center gap-4'>
             <Link href='/privacy-policy' className='hover:text-white/70'>
-              Chính sách
+              {t('footer.privacy')}
             </Link>
             <Link href='/terms-of-service' className='hover:text-white/70'>
-              Điều khoản
+              {t('footer.terms')}
             </Link>
             <a href='mailto:iqode.file@gmail.com' className='hover:text-white/70'>
-              Liên hệ
+              {t('footer.contact')}
             </a>
           </div>
         </div>

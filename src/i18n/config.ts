@@ -1,5 +1,5 @@
 export const LOCALE_COOKIE = 'NEXT_LOCALE';
-export const DEFAULT_LOCALE = 'en' as const;
+export const DEFAULT_LOCALE = 'vi' as const;
 export const LOCALES = ['en', 'vi'] as const;
 
 export type Locale = (typeof LOCALES)[number];
