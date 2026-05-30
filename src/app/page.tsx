@@ -74,7 +74,7 @@ function BrandAsterisk({ className = '' }: { className?: string }) {
   );
 }
 
-function CourseCard({ course }: { course: PublicCourse }) {
+function CourseCard({ course, index = 0 }: { course: PublicCourse; index?: number }) {
   const t = useTranslations('home.courses');
   const tHeader = useTranslations('home.header');
   const accent = toolAccents[course.tool] ?? { ...DEFAULT_ACCENT, label: course.tool };
@@ -88,8 +88,10 @@ function CourseCard({ course }: { course: PublicCourse }) {
       aria-label={tHeader('courseAriaLabel', { title: course.title })}
       // Fixed width + shrink-0 + snap-start make the card behave as a "shelf"
       // item inside the mobile horizontal scroller; sm:w-auto returns to normal
-      // grid sizing on tablet+.
-      className='group relative flex w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all hover:border-white/30 hover:bg-white/[0.08] sm:w-auto'
+      // grid sizing on tablet+. The hover translate-y mirrors the entrance
+      // direction so the card feels "lifted" without a heavy shadow.
+      style={{ animationDelay: `${600 + index * 80}ms` }}
+      className='group animate-landing-fade-up relative flex w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08] hover:shadow-lg hover:shadow-cyan-500/10 sm:w-auto'
     >
       {course.coverUrl ? (
         <div className='relative h-32 w-full overflow-hidden'>
@@ -122,7 +124,7 @@ function CourseCard({ course }: { course: PublicCourse }) {
             {course.code}
           </span>
           {isNew && (
-            <span className='inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
+            <span className='animate-landing-pulse-soft inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
               {t('newBadge')}
             </span>
           )}
@@ -231,14 +233,21 @@ export default async function LandingPage() {
           backgroundSize: '56px 56px'
         }}
       />
+      {/*
+        Ambient gradient blobs slowly drift to make the background feel alive
+        without ever pulling focus from the hero. The cyan blob moves at one
+        cadence and the orange at a slower one so they never sync into an
+        obvious orbit. Transform-origin centered so the rotation/translate
+        stays anchored around the visual mass.
+      */}
       <div
-        className='pointer-events-none absolute top-0 left-1/2 h-[600px] w-[800px] -translate-x-1/2 rounded-full'
+        className='animate-landing-float pointer-events-none absolute top-0 left-1/2 h-[600px] w-[800px] -translate-x-1/2 rounded-full will-change-transform'
         style={{
           background: 'radial-gradient(ellipse at center, rgba(20,210,220,0.18), transparent 60%)'
         }}
       />
       <div
-        className='pointer-events-none absolute right-0 bottom-0 h-[400px] w-[500px] rounded-full'
+        className='animate-landing-float-slow pointer-events-none absolute right-0 bottom-0 h-[400px] w-[500px] rounded-full will-change-transform'
         style={{
           background: 'radial-gradient(ellipse at center, rgba(244,164,96,0.12), transparent 70%)'
         }}
@@ -304,24 +313,45 @@ export default async function LandingPage() {
         </div>
       </header>
 
+      {/*
+        Staggered fade-up: each child sets animation-delay so the hero "writes
+        itself" left-to-right of the eye. Delays are inline so the page stays
+        a server component (no client-side orchestration like framer-motion).
+      */}
       <main className='relative z-10 flex flex-col items-center px-4 pt-12 pb-12 text-center md:px-6 md:pt-24'>
-        <div className='relative inline-flex items-baseline gap-2 sm:gap-3'>
+        <div
+          className='animate-landing-fade-up relative inline-flex items-baseline gap-2 sm:gap-3'
+          style={{ animationDelay: '0ms' }}
+        >
           <h1 className='text-6xl font-bold tracking-tight text-cyan-400 sm:text-8xl md:text-9xl'>
             IQode
           </h1>
           <div className='relative'>
             <span className='text-3xl font-light text-orange-300 sm:text-4xl md:text-5xl'>Lab</span>
-            <BrandAsterisk className='text-orange-300 absolute -top-4 -right-5 size-8 sm:-top-6 sm:-right-7 sm:size-10 md:-top-8 md:-right-9 md:size-12' />
+            <BrandAsterisk className='animate-landing-spin-slow text-orange-300 absolute -top-4 -right-5 size-8 sm:-top-6 sm:-right-7 sm:size-10 md:-top-8 md:-right-9 md:size-12' />
           </div>
         </div>
-        <p className='mt-6 max-w-xl text-base text-white/80 md:text-lg'>{t('hero.tagline')}</p>
-        <p className='mt-3 max-w-md text-sm text-white/50'>{t('hero.description')}</p>
+        <p
+          className='animate-landing-fade-up mt-6 max-w-xl text-base text-white/80 md:text-lg'
+          style={{ animationDelay: '120ms' }}
+        >
+          {t('hero.tagline')}
+        </p>
+        <p
+          className='animate-landing-fade-up mt-3 max-w-md text-sm text-white/50'
+          style={{ animationDelay: '220ms' }}
+        >
+          {t('hero.description')}
+        </p>
 
         {user && workspace ? (
-          <div className='mt-10 flex flex-wrap items-center justify-center gap-3'>
+          <div
+            className='animate-landing-fade-up mt-10 flex flex-wrap items-center justify-center gap-3'
+            style={{ animationDelay: '340ms' }}
+          >
             <Button
               asChild
-              className='h-11 rounded-md bg-cyan-400 px-6 text-base font-medium text-black hover:bg-cyan-300'
+              className='h-11 rounded-md bg-cyan-400 px-6 text-base font-medium text-black transition-transform hover:-translate-y-0.5 hover:bg-cyan-300'
             >
               <Link href={workspace.basePath}>
                 {t('header.enterWorkspace', { label: workspace.label })}
@@ -333,11 +363,14 @@ export default async function LandingPage() {
           // Guest hero CTA — login/register live in the header for returning
           // users, so the hero focuses on the lead-gen ask (free trial class)
           // instead of repeating the same auth buttons.
-          <div className='mt-10 flex flex-col items-center gap-3'>
+          <div
+            className='animate-landing-fade-up mt-10 flex flex-col items-center gap-3'
+            style={{ animationDelay: '340ms' }}
+          >
             <span className='text-sm text-white/60'>{t('hero.guestEyebrow')}</span>
             <Button
               asChild
-              className='h-12 rounded-md bg-cyan-400 px-7 text-base font-semibold text-black hover:bg-cyan-300'
+              className='h-12 rounded-md bg-cyan-400 px-7 text-base font-semibold text-black transition-transform hover:-translate-y-0.5 hover:bg-cyan-300'
             >
               <Link href='/login?mode=register'>
                 {t('hero.guestCta')}
@@ -351,7 +384,10 @@ export default async function LandingPage() {
 
       <section className='relative z-10 px-4 pt-4 pb-16 md:px-10 md:pb-24'>
         <div className='mx-auto max-w-6xl'>
-          <div className='mb-8 flex flex-wrap items-end justify-between gap-3 md:mb-10 md:gap-4'>
+          <div
+            className='animate-landing-fade-up mb-8 flex flex-wrap items-end justify-between gap-3 md:mb-10 md:gap-4'
+            style={{ animationDelay: '480ms' }}
+          >
             <div>
               <div className='text-[11px] tracking-wider text-cyan-300/80 uppercase'>
                 {t('courses.eyebrow')}
@@ -363,10 +399,10 @@ export default async function LandingPage() {
             </div>
             <Link
               href='/courses'
-              className='inline-flex items-center gap-1.5 text-sm text-white/70 transition-colors hover:text-white'
+              className='group inline-flex items-center gap-1.5 text-sm text-white/70 transition-colors hover:text-white'
             >
               {t('courses.viewAll')}
-              <Icons.arrowRight className='size-3.5' />
+              <Icons.arrowRight className='size-3.5 transition-transform group-hover:translate-x-0.5' />
             </Link>
           </div>
 
@@ -378,7 +414,7 @@ export default async function LandingPage() {
             {courses.length === 0 ? (
               <EmptyCoursesState />
             ) : (
-              courses.map((c) => <CourseCard key={c.id} course={c} />)
+              courses.map((c, i) => <CourseCard key={c.id} course={c} index={i} />)
             )}
           </div>
         </div>

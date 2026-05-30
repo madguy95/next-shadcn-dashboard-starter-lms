@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ type Mode = 'login' | 'register';
 
 export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
   const router = useRouter();
+  const t = useTranslations('auth.form');
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -30,13 +32,10 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
 
   const isRegister = mode === 'register';
 
-  const phoneError =
-    phone.length > 0 && !/^0\d{9}$/.test(phone)
-      ? 'Số điện thoại phải có 10 chữ số, bắt đầu bằng 0.'
-      : null;
+  const phoneError = phone.length > 0 && !/^0\d{9}$/.test(phone) ? t('phoneErrorFormat') : null;
   const confirmError =
     isRegister && confirmPassword.length > 0 && confirmPassword !== password
-      ? 'Mật khẩu nhập lại không khớp.'
+      ? t('confirmErrorMatch')
       : null;
 
   const canSubmit = isRegister
@@ -55,20 +54,20 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
 
     if (isRegister) {
       // Self-registration not wired to backend yet.
-      toast.info('Đăng ký phụ huynh chưa khả dụng. Vui lòng liên hệ trung tâm.');
+      toast.info(t('registerNotAvailable'));
       setSubmitting(false);
       return;
     }
 
     const result = await login(phone, password);
     if (!result.ok) {
-      toast.error('Đăng nhập thất bại', { description: result.message });
+      toast.error(t('loginFailed'), { description: result.message });
       setSubmitting(false);
       return;
     }
 
-    toast.success('Đăng nhập thành công', {
-      description: `Đang vào workspace ${roleMeta[result.user.role].label}…`
+    toast.success(t('loginSuccess'), {
+      description: t('enteringWorkspace', { label: roleMeta[result.user.role].label })
     });
     router.push(roleMeta[result.user.role].basePath);
     router.refresh();
@@ -84,12 +83,10 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
     <div>
       <div className='mb-6'>
         <h1 className='text-2xl font-semibold tracking-tight'>
-          {isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}
+          {isRegister ? t('titleRegister') : t('titleLogin')}
         </h1>
         <p className='mt-1.5 text-sm text-zinc-500'>
-          {isRegister
-            ? 'Đăng ký tài khoản phụ huynh để đăng ký khóa và theo dõi tiến độ con.'
-            : 'Nhập số điện thoại và mật khẩu để vào hệ thống.'}
+          {isRegister ? t('descRegister') : t('descLogin')}
         </p>
       </div>
 
@@ -102,7 +99,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
             mode === 'login' ? 'bg-white text-zinc-900 shadow-sm' : 'hover:text-zinc-900'
           )}
         >
-          Đăng nhập
+          {t('tabLogin')}
         </button>
         <button
           type='button'
@@ -112,7 +109,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
             mode === 'register' ? 'bg-white text-zinc-900 shadow-sm' : 'hover:text-zinc-900'
           )}
         >
-          Đăng ký
+          {t('tabRegister')}
         </button>
       </div>
 
@@ -120,7 +117,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
         {isRegister && (
           <div className='space-y-1.5'>
             <Label htmlFor='name' className='text-xs font-medium text-zinc-700'>
-              Họ và tên phụ huynh
+              {t('nameLabel')}
             </Label>
             <div className='relative'>
               <Icons.user className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400' />
@@ -128,7 +125,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
                 id='name'
                 type='text'
                 autoComplete='name'
-                placeholder='Nguyễn Văn An'
+                placeholder={t('namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className='h-11 border-zinc-200 pl-10 text-base'
@@ -140,7 +137,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
 
         <div className='space-y-1.5'>
           <Label htmlFor='phone' className='text-xs font-medium text-zinc-700'>
-            Số điện thoại
+            {t('phoneLabel')}
           </Label>
           <div className='relative'>
             <Icons.phone className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400' />
@@ -149,7 +146,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
               type='tel'
               inputMode='numeric'
               autoComplete='tel'
-              placeholder='09xx xxx xxx'
+              placeholder={t('phonePlaceholder')}
               value={phone}
               onChange={(e) => setPhone(e.target.value.replaceAll(/\D/g, '').slice(0, 10))}
               className={cn(
@@ -171,15 +168,15 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
         <div className='space-y-1.5'>
           <div className='flex items-baseline justify-between'>
             <Label htmlFor='password' className='text-xs font-medium text-zinc-700'>
-              Mật khẩu
+              {t('passwordLabel')}
             </Label>
             {!isRegister && (
               <button
                 type='button'
                 className='text-xs text-cyan-600 underline-offset-2 hover:underline'
-                onClick={() => toast('Vui lòng liên hệ trung tâm để khôi phục mật khẩu.')}
+                onClick={() => toast(t('forgotPasswordToast'))}
               >
-                Quên mật khẩu?
+                {t('forgotPassword')}
               </button>
             )}
           </div>
@@ -189,7 +186,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
               id='password'
               type={showPassword ? 'text' : 'password'}
               autoComplete={isRegister ? 'new-password' : 'current-password'}
-              placeholder='Tối thiểu 6 ký tự'
+              placeholder={t('passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className='h-11 border-zinc-200 pr-10 pl-10 text-base'
@@ -199,7 +196,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
               type='button'
               onClick={() => setShowPassword((v) => !v)}
               className='absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-700'
-              aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              aria-label={showPassword ? t('hidePassword') : t('showPassword')}
             >
               {showPassword ? (
                 <Icons.eyeOff className='size-4' />
@@ -213,7 +210,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
         {isRegister && (
           <div className='space-y-1.5'>
             <Label htmlFor='confirm' className='text-xs font-medium text-zinc-700'>
-              Nhập lại mật khẩu
+              {t('confirmLabel')}
             </Label>
             <div className='relative'>
               <Icons.lock className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400' />
@@ -221,7 +218,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
                 id='confirm'
                 type={showPassword ? 'text' : 'password'}
                 autoComplete='new-password'
-                placeholder='Nhập lại mật khẩu'
+                placeholder={t('confirmPlaceholder')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={cn(
@@ -253,21 +250,27 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
               className='mt-0.5'
             />
             <span>
-              Tôi đồng ý với{' '}
+              {/*
+                Multi-token agreement copy — split into prefix / link / mid /
+                link / suffix so translators can reorder around the two links.
+                Buttons stay buttons (not anchors) since they aren't wired to
+                real routes yet; swap to Link when terms / privacy pages exist.
+              */}
+              {t('agreePrefix')}{' '}
               <button
                 type='button'
                 className='font-medium text-cyan-600 underline-offset-2 hover:underline'
               >
-                điều khoản sử dụng
+                {t('agreeTerms')}
               </button>{' '}
-              và{' '}
+              {t('agreeMid')}{' '}
               <button
                 type='button'
                 className='font-medium text-cyan-600 underline-offset-2 hover:underline'
               >
-                chính sách bảo mật
+                {t('agreePrivacy')}
               </button>{' '}
-              của IQode Lab.
+              {t('agreeSuffix')}
             </span>
           </Label>
         ) : (
@@ -280,7 +283,7 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
               checked={remember}
               onCheckedChange={(v) => setRemember(v === true)}
             />
-            Ghi nhớ đăng nhập trên thiết bị này
+            {t('rememberMe')}
           </Label>
         )}
 
@@ -292,11 +295,11 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
           {submitting ? (
             <>
               <Icons.spinner className='size-4 animate-spin' />
-              {isRegister ? 'Đang tạo tài khoản…' : 'Đang đăng nhập…'}
+              {isRegister ? t('submittingRegister') : t('submittingLogin')}
             </>
           ) : (
             <>
-              {isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}
+              {isRegister ? t('submitRegister') : t('submitLogin')}
               <Icons.arrowRight className='size-4' />
             </>
           )}
@@ -306,24 +309,24 @@ export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
       <p className='mt-6 text-center text-xs text-zinc-500'>
         {isRegister ? (
           <>
-            Đã có tài khoản?{' '}
+            {t('haveAccount')}{' '}
             <button
               type='button'
               onClick={() => switchMode('login')}
               className='font-medium text-cyan-600 underline-offset-2 hover:underline'
             >
-              Đăng nhập
+              {t('switchToLogin')}
             </button>
           </>
         ) : (
           <>
-            Chưa có tài khoản?{' '}
+            {t('noAccount')}{' '}
             <button
               type='button'
               onClick={() => switchMode('register')}
               className='font-medium text-cyan-600 underline-offset-2 hover:underline'
             >
-              Đăng ký ngay
+              {t('switchToRegister')}
             </button>
           </>
         )}

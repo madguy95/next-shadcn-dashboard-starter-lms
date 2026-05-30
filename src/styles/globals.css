@@ -8,6 +8,17 @@
 
 @theme {
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  /* Landing-page ambient + entrance motion. Kept subtle so the dark hero
+     reads as "alive" without distracting from copy or the CTA. fade-up
+     starts the element 16px lower & invisible; consumers stagger via inline
+     animation-delay so the first paint can run from server-rendered HTML
+     without a client component. */
+  --animate-landing-fade-up: landing-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-landing-float: landing-float 14s ease-in-out infinite;
+  --animate-landing-float-slow: landing-float 20s ease-in-out infinite;
+  --animate-landing-spin-slow: landing-spin-slow 16s linear infinite;
+  --animate-landing-pulse-soft: landing-pulse-soft 2.4s ease-in-out infinite;
 }
 
 @keyframes shimmer {
@@ -16,6 +27,59 @@
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2%, -2%);
+  }
+}
+
+@keyframes landing-spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes landing-pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Honor the OS-level reduced-motion preference: cut entrance animations to
+   an instant and freeze the ambient loops at frame 0. We don't want to ship
+   a beautiful landing page that nauseates users with vestibular sensitivity. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-landing-fade-up {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+  .animate-landing-float,
+  .animate-landing-float-slow,
+  .animate-landing-spin-slow,
+  .animate-landing-pulse-soft {
+    animation: none !important;
   }
 }
 
