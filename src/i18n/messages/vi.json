@@ -1153,5 +1153,97 @@
     "monthCell": {
       "more": "+{count} nữa"
     }
+  },
+  "adminDashboard": {
+    "metaTitle": "Bảng điều khiển: Tổng quan LMS",
+    "updating": "Đang cập nhật…",
+    "header": {
+      "greeting": "Chào buổi sáng, {name}",
+      "greetingFallback": "Chào buổi sáng",
+      "subtitleWithTerm": "Đây là tình hình tại IQode Lab — {term}.",
+      "subtitle": "Đây là tình hình tại IQode Lab.",
+      "newCourse": "Khoá học mới"
+    },
+    "period": {
+      "week": "Tuần này",
+      "month": "Tháng",
+      "term": "Kỳ"
+    },
+    "kpi": {
+      "courses": {
+        "title": "Khoá học",
+        "unit": "đang mở",
+        "trendStart": "T2",
+        "trendEnd": "CN"
+      },
+      "classes": {
+        "title": "Lớp",
+        "unit": "đang chạy",
+        "offline": "Offline · {count}",
+        "online": "Online · {count}"
+      },
+      "students": {
+        "title": "Học viên",
+        "unit": "đã đăng ký"
+      },
+      "pending": {
+        "title": "Đăng ký chờ duyệt",
+        "chip": "cần duyệt",
+        "unit": "chờ phê duyệt",
+        "review": "Vào hàng chờ",
+        "avgWait": "chờ TB · {label}"
+      }
+    },
+    "recent": {
+      "title": "Đăng ký gần đây",
+      "subtitle": "{count} đăng ký mới nhất tất cả khoá học",
+      "tabs": {
+        "all": "Tất cả",
+        "pending": "Chờ duyệt",
+        "active": "Đang học",
+        "waitlist": "Danh sách chờ"
+      },
+      "viewAll": "Xem tất cả",
+      "empty": "Chưa có đăng ký nào.",
+      "emptyForTab": "Không có đăng ký nào trong {count} đăng ký gần đây khớp trạng thái này.",
+      "emptyOpenQueue": "Mở hàng chờ đầy đủ",
+      "columns": {
+        "student": "Học viên",
+        "course": "Khoá học",
+        "channel": "Kênh",
+        "submitted": "Gửi lúc",
+        "status": "Trạng thái"
+      },
+      "gradeAge": "lớp {grade} · {age} tuổi",
+      "gradeOnly": "lớp {grade}",
+      "ageOnly": "{age} tuổi",
+      "open": "Mở",
+      "channelLabel": {
+        "parent_app": "ứng dụng phụ huynh",
+        "website": "website",
+        "referral": "giới thiệu"
+      },
+      "statusLabel": {
+        "pending": "Chờ duyệt",
+        "active": "Đang học",
+        "waitlist": "Danh sách chờ",
+        "rejected": "Đã từ chối"
+      }
+    },
+    "upcoming": {
+      "title": "Lớp sắp tới",
+      "schedule": "Lịch dạy →",
+      "empty": "Không có lớp nào hôm nay.",
+      "duration": "{count} phút",
+      "badge": {
+        "live": "đang dạy",
+        "online": "online",
+        "low_cap": "ít HV"
+      }
+    },
+    "fill": {
+      "title": "Tỉ lệ lấp đầy khoá học",
+      "subtitle": "Top {count} khoá học · kỳ hiện tại"
+    }
   }
 }

@@ -1153,5 +1153,97 @@
     "monthCell": {
       "more": "+{count} more"
     }
+  },
+  "adminDashboard": {
+    "metaTitle": "Dashboard: LMS Overview",
+    "updating": "Updating dashboard…",
+    "header": {
+      "greeting": "Good morning, {name}",
+      "greetingFallback": "Good morning",
+      "subtitleWithTerm": "Here's what's happening at IQode Lab — {term}.",
+      "subtitle": "Here's what's happening at IQode Lab.",
+      "newCourse": "New course"
+    },
+    "period": {
+      "week": "This week",
+      "month": "Month",
+      "term": "Term"
+    },
+    "kpi": {
+      "courses": {
+        "title": "Courses",
+        "unit": "active",
+        "trendStart": "Mon",
+        "trendEnd": "Sun"
+      },
+      "classes": {
+        "title": "Classes",
+        "unit": "running",
+        "offline": "Offline · {count}",
+        "online": "Online · {count}"
+      },
+      "students": {
+        "title": "Students",
+        "unit": "enrolled"
+      },
+      "pending": {
+        "title": "Pending enrollments",
+        "chip": "needs review",
+        "unit": "awaiting approval",
+        "review": "Review queue",
+        "avgWait": "avg wait · {label}"
+      }
+    },
+    "recent": {
+      "title": "Recent enrollments",
+      "subtitle": "Latest {count} sign-ups across all courses",
+      "tabs": {
+        "all": "All",
+        "pending": "Pending",
+        "active": "Active",
+        "waitlist": "Waitlist"
+      },
+      "viewAll": "View all",
+      "empty": "No enrollments yet.",
+      "emptyForTab": "None of the latest {count} sign-ups match this status.",
+      "emptyOpenQueue": "Open the full queue",
+      "columns": {
+        "student": "Student",
+        "course": "Course",
+        "channel": "Channel",
+        "submitted": "Submitted",
+        "status": "Status"
+      },
+      "gradeAge": "grade {grade} · age {age}",
+      "gradeOnly": "grade {grade}",
+      "ageOnly": "age {age}",
+      "open": "Open",
+      "channelLabel": {
+        "parent_app": "parent app",
+        "website": "website",
+        "referral": "referral"
+      },
+      "statusLabel": {
+        "pending": "Pending",
+        "active": "Active",
+        "waitlist": "Waitlist",
+        "rejected": "Rejected"
+      }
+    },
+    "upcoming": {
+      "title": "Upcoming classes",
+      "schedule": "Schedule →",
+      "empty": "No classes scheduled.",
+      "duration": "{count} min",
+      "badge": {
+        "live": "live",
+        "online": "online",
+        "low_cap": "low cap"
+      }
+    },
+    "fill": {
+      "title": "Course fill rate",
+      "subtitle": "Top {count} courses · current term"
+    }
   }
 }
