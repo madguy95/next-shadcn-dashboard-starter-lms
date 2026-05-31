@@ -1245,5 +1245,230 @@
       "title": "Course fill rate",
       "subtitle": "Top {count} courses · current term"
     }
+  },
+  "teacherClasses": {
+    "metaTitle": "Teacher: My classes",
+    "pageTitle": "My classes",
+    "pageDescription": "Every class you're leading · Summer Term 2026",
+    "updating": "Updating…",
+    "filters": {
+      "all": "All",
+      "running": "Teaching",
+      "upcoming": "Starting soon",
+      "ended": "Ended"
+    },
+    "course": {
+      "label": "Course:",
+      "all": "All"
+    },
+    "searchPlaceholder": "Search class name or code…",
+    "exportCsv": "Export CSV",
+    "empty": "No classes match the current filters.",
+    "stats": {
+      "classes": {
+        "label": "Total classes",
+        "helper": "{running} teaching · {upcoming} upcoming · {ended} ended"
+      },
+      "students": {
+        "label": "Total students",
+        "helper": "across {count} classes"
+      }
+    },
+    "status": {
+      "running": "Teaching",
+      "upcoming": "Starting soon",
+      "ended": "Ended"
+    },
+    "card": {
+      "studentCount": "{count} std",
+      "capacityCount": "{count} / {capacity} std",
+      "session": "Session",
+      "daysRemaining": "{count} days left",
+      "needsReview": "Needs review: {count}",
+      "updated": "Up to date",
+      "ended": "Ended {date} · {count} students completed",
+      "viewReport": "View report"
+    }
+  },
+  "teacherSchedule": {
+    "metaTitle": "Teacher: Schedule",
+    "pageTitle": "Schedule",
+    "pageDescription": "Your teaching sessions for the week — including makeup classes.",
+    "updating": "Updating…",
+    "weekPrefix": "Week",
+    "monthYear": "{month}/{year}",
+    "weekdaysShort": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "weekdaysLong": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "classesLabel": "Class:",
+    "allClasses": "All",
+    "studentCount": "{count} std",
+    "sessionCount": "{count} sessions",
+    "makeupBadge": "Makeup",
+    "empty": "No sessions this week.",
+    "nav": {
+      "today": "Today",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week",
+      "prevDay": "Previous day",
+      "nextDay": "Next day"
+    },
+    "view": {
+      "week": "Week",
+      "day": "Day",
+      "list": "List"
+    },
+    "stats": {
+      "sessions": {
+        "label": "Sessions this week",
+        "labelDay": "Sessions this day",
+        "helper": "{hours} teaching hrs"
+      },
+      "online": {
+        "label": "Online",
+        "helper": "/{total} sessions"
+      },
+      "makeup": {
+        "label": "Makeup",
+        "helper": "off the regular cadence"
+      }
+    }
+  },
+  "teacherClassDetail": {
+    "metaTitle": "Teacher: Class detail",
+    "emptySessions": {
+      "title": "No sessions yet",
+      "description": "This class has no sessions to take attendance or review."
+    },
+    "back": "Back to class list",
+    "updating": "Updating…",
+    "statusTeaching": "Teaching",
+    "loadError": "Could not load class data. Please try again.",
+    "header": {
+      "progress": "Progress",
+      "sessionOf": "Session {current} / {total}",
+      "size": "Class size",
+      "studentsCount": "{count} students",
+      "weekPresentAbsent": "this week: {present} present · {absent} absent",
+      "attendanceAvg": "Avg. attendance",
+      "attendedRatio": "{attended}/{total} attendances",
+      "needsReview": "Needs review",
+      "needsReviewStudents": "{count} students"
+    },
+    "actions": {
+      "syllabus": "Syllabus",
+      "exportReport": "Export report",
+      "attendanceToday": "Take attendance"
+    },
+    "tabs": {
+      "students": "Students",
+      "attendance": "Attendance",
+      "notes": "Session notes",
+      "materials": "Materials & homework",
+      "sessionsCount": "{count} sessions"
+    },
+    "attendanceStatus": {
+      "present": "Present",
+      "excused": "Excused",
+      "absent": "Absent",
+      "makeup": "Makeup",
+      "unmarked": "Unmarked"
+    },
+    "sessionStatus": {
+      "reviewed": "Reviewed",
+      "in_progress": "Recording notes",
+      "taught": "Not reviewed",
+      "upcoming": "Not taught",
+      "remaining": "{count} left"
+    },
+    "rating": {
+      "weak": "Weak",
+      "average": "Avg",
+      "good": "Fair",
+      "great": "Good",
+      "excellent": "Excellent"
+    },
+    "students": {
+      "searchPlaceholder": "Search student name, ID, parent phone…",
+      "filter": "Filters",
+      "count": "{count} students",
+      "colStudent": "Student",
+      "colCode": "Student ID",
+      "colParent": "Parent",
+      "colContact": "Contact",
+      "colAttendance": "Attendance",
+      "colLastSession": "Last session",
+      "ageGrade": "Age {age} · Grade {grade}",
+      "empty": "No matching students found.",
+      "showing": "Showing {shown} / {total} students",
+      "prev": "Prev",
+      "next": "Next",
+      "selectAll": "Select all",
+      "select": "Select {name}"
+    },
+    "attendance": {
+      "sessionLabel": "Session:",
+      "today": "Today",
+      "marked": "marked",
+      "save": "Save attendance",
+      "quickSet": "Quick set all:",
+      "notePlaceholder": "Note…",
+      "unmarkedBadge": "unmarked",
+      "studentAttendance": "Attendance {attended}/{total}",
+      "considerCall": "consider calling",
+      "legendPresent": "Present",
+      "legendExcused": "Excused",
+      "legendAbsent": "Absent",
+      "legendUnmarked": "Unmarked",
+      "saveSuccess": "Attendance saved",
+      "saveError": "Failed to save attendance"
+    },
+    "notes": {
+      "sessionsTitle": "Sessions",
+      "recordingBadge": "Recording notes",
+      "openLesson": "Open lesson plan",
+      "sendToParents": "Send to parents",
+      "classComment": "Whole-class comment",
+      "objectiveLevel": "Objective completion:",
+      "attach": "Attach file / product photo",
+      "perStudentTitle": "Notes per student",
+      "perStudentDesc": "Only present students are shown. Each parent receives their own child's note.",
+      "aiSuggest": "AI suggest",
+      "present": "Present",
+      "saved": "Saved",
+      "unsaved": "Unsaved",
+      "rating": "Rating:",
+      "choose": "— Select —",
+      "skills": "Skills:",
+      "addTag": "+ Add tag",
+      "commentPlaceholder": "Write a note for {name}…",
+      "reviewedPrefix": "Reviewed",
+      "reviewedSuffix": "present students",
+      "saveDraft": "Save draft",
+      "saveAndSend": "Save & send",
+      "empty": "This session has no notes yet.",
+      "saveDraftSuccess": "Note draft saved",
+      "saveSendSuccess": "Notes saved & sent to parents",
+      "saveError": "Failed to save notes"
+    },
+    "materials": {
+      "title": "Materials & homework",
+      "description": "This area will show each session's lesson plan and homework — coming in a later round."
+    }
   }
 }

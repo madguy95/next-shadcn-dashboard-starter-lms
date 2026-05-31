@@ -1245,5 +1245,230 @@
       "title": "Tỉ lệ lấp đầy khoá học",
       "subtitle": "Top {count} khoá học · kỳ hiện tại"
     }
+  },
+  "teacherClasses": {
+    "metaTitle": "Giáo viên: Lớp dạy",
+    "pageTitle": "Lớp dạy",
+    "pageDescription": "Tất cả lớp bạn đang phụ trách · Học kỳ Hè 2026",
+    "updating": "Đang cập nhật…",
+    "filters": {
+      "all": "Tất cả",
+      "running": "Đang dạy",
+      "upcoming": "Sắp khai giảng",
+      "ended": "Đã kết thúc"
+    },
+    "course": {
+      "label": "Khóa:",
+      "all": "Tất cả"
+    },
+    "searchPlaceholder": "Tìm tên lớp, mã lớp…",
+    "exportCsv": "Xuất CSV",
+    "empty": "Không tìm thấy lớp phù hợp với bộ lọc.",
+    "stats": {
+      "classes": {
+        "label": "Tổng số lớp",
+        "helper": "{running} đang dạy · {upcoming} sắp mở · {ended} đã kết thúc"
+      },
+      "students": {
+        "label": "Tổng số học sinh",
+        "helper": "trên {count} lớp"
+      }
+    },
+    "status": {
+      "running": "Đang dạy",
+      "upcoming": "Sắp khai giảng",
+      "ended": "Đã kết thúc"
+    },
+    "card": {
+      "studentCount": "{count} hs",
+      "capacityCount": "{count} / {capacity} hs",
+      "session": "Buổi",
+      "daysRemaining": "Còn {count} ngày",
+      "needsReview": "Cần nhận xét: {count}",
+      "updated": "Đã cập nhật",
+      "ended": "Kết thúc {date} · {count} hs hoàn thành",
+      "viewReport": "Xem báo cáo"
+    }
+  },
+  "teacherSchedule": {
+    "metaTitle": "Giáo viên: Lịch dạy",
+    "pageTitle": "Lịch dạy",
+    "pageDescription": "Lịch các buổi dạy của bạn trong tuần — gồm cả buổi học bù.",
+    "updating": "Đang cập nhật…",
+    "weekPrefix": "Tuần",
+    "monthYear": "Tháng {month}, {year}",
+    "weekdaysShort": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "CN"
+    ],
+    "weekdaysLong": [
+      "Thứ Hai",
+      "Thứ Ba",
+      "Thứ Tư",
+      "Thứ Năm",
+      "Thứ Sáu",
+      "Thứ Bảy",
+      "Chủ Nhật"
+    ],
+    "classesLabel": "Lớp:",
+    "allClasses": "Tất cả",
+    "studentCount": "{count} hs",
+    "sessionCount": "{count} buổi",
+    "makeupBadge": "Học bù",
+    "empty": "Không có buổi dạy nào trong tuần này.",
+    "nav": {
+      "today": "Hôm nay",
+      "prevWeek": "Tuần trước",
+      "nextWeek": "Tuần sau",
+      "prevDay": "Ngày trước",
+      "nextDay": "Ngày sau"
+    },
+    "view": {
+      "week": "Tuần",
+      "day": "Ngày",
+      "list": "Danh sách"
+    },
+    "stats": {
+      "sessions": {
+        "label": "Buổi tuần này",
+        "labelDay": "Buổi trong ngày",
+        "helper": "{hours} giờ dạy"
+      },
+      "online": {
+        "label": "Online",
+        "helper": "/{total} buổi"
+      },
+      "makeup": {
+        "label": "Buổi học bù",
+        "helper": "ngoài định kỳ"
+      }
+    }
+  },
+  "teacherClassDetail": {
+    "metaTitle": "Giáo viên: Chi tiết lớp",
+    "emptySessions": {
+      "title": "Chưa có buổi học",
+      "description": "Lớp này chưa có buổi học nào để điểm danh hoặc nhận xét."
+    },
+    "back": "Quay lại danh sách lớp",
+    "updating": "Đang cập nhật…",
+    "statusTeaching": "Đang dạy",
+    "loadError": "Không tải được dữ liệu lớp. Vui lòng thử lại.",
+    "header": {
+      "progress": "Tiến độ",
+      "sessionOf": "Buổi {current} / {total}",
+      "size": "Sĩ số",
+      "studentsCount": "{count} học sinh",
+      "weekPresentAbsent": "tuần này: {present} đi · {absent} vắng",
+      "attendanceAvg": "Chuyên cần TB",
+      "attendedRatio": "{attended}/{total} lượt đi học",
+      "needsReview": "Cần nhận xét",
+      "needsReviewStudents": "{count} học sinh"
+    },
+    "actions": {
+      "syllabus": "Giáo trình",
+      "exportReport": "Xuất báo cáo",
+      "attendanceToday": "Điểm danh hôm nay"
+    },
+    "tabs": {
+      "students": "Danh sách học sinh",
+      "attendance": "Điểm danh",
+      "notes": "Nhận xét buổi học",
+      "materials": "Giáo trình & bài tập",
+      "sessionsCount": "{count} buổi"
+    },
+    "attendanceStatus": {
+      "present": "Có mặt",
+      "excused": "Có phép",
+      "absent": "Vắng",
+      "makeup": "Học bù",
+      "unmarked": "Chưa điểm danh"
+    },
+    "sessionStatus": {
+      "reviewed": "Đã nhận xét",
+      "in_progress": "Đang ghi nhận xét",
+      "taught": "Chưa nhận xét",
+      "upcoming": "Chưa dạy",
+      "remaining": "Còn {count} hs"
+    },
+    "rating": {
+      "weak": "Yếu",
+      "average": "TB",
+      "good": "Khá",
+      "great": "Tốt",
+      "excellent": "Xuất sắc"
+    },
+    "students": {
+      "searchPlaceholder": "Tìm tên học sinh, mã HS, SĐT phụ huynh…",
+      "filter": "Bộ lọc",
+      "count": "{count} học sinh",
+      "colStudent": "Học sinh",
+      "colCode": "Mã HS",
+      "colParent": "Phụ huynh",
+      "colContact": "Liên hệ",
+      "colAttendance": "Chuyên cần",
+      "colLastSession": "Buổi gần nhất",
+      "ageGrade": "{age} tuổi · Lớp {grade}",
+      "empty": "Không tìm thấy học sinh phù hợp.",
+      "showing": "Hiển thị {shown} / {total} học sinh",
+      "prev": "Trước",
+      "next": "Sau",
+      "selectAll": "Chọn tất cả",
+      "select": "Chọn {name}"
+    },
+    "attendance": {
+      "sessionLabel": "Buổi:",
+      "today": "Hôm nay",
+      "marked": "đã điểm danh",
+      "save": "Lưu điểm danh",
+      "quickSet": "Đặt nhanh tất cả:",
+      "notePlaceholder": "Ghi chú…",
+      "unmarkedBadge": "chưa điểm danh",
+      "studentAttendance": "Chuyên cần {attended}/{total}",
+      "considerCall": "cân nhắc gọi điện",
+      "legendPresent": "Có mặt",
+      "legendExcused": "Có phép",
+      "legendAbsent": "Vắng",
+      "legendUnmarked": "Chưa",
+      "saveSuccess": "Đã lưu điểm danh",
+      "saveError": "Lưu điểm danh thất bại"
+    },
+    "notes": {
+      "sessionsTitle": "Buổi học",
+      "recordingBadge": "Đang ghi nhận xét",
+      "openLesson": "Mở giáo án",
+      "sendToParents": "Gửi tới phụ huynh",
+      "classComment": "Nhận xét chung cả lớp",
+      "objectiveLevel": "Mức độ hoàn thành mục tiêu:",
+      "attach": "Đính file / ảnh sản phẩm",
+      "perStudentTitle": "Nhận xét theo từng học sinh",
+      "perStudentDesc": "Chỉ học sinh có mặt mới hiển thị. Phụ huynh sẽ nhận được nhận xét riêng của con mình.",
+      "aiSuggest": "Gợi ý bằng AI",
+      "present": "Có mặt",
+      "saved": "Đã lưu",
+      "unsaved": "Chưa lưu",
+      "rating": "Đánh giá:",
+      "choose": "— Chọn —",
+      "skills": "Kỹ năng:",
+      "addTag": "+ Thêm tag",
+      "commentPlaceholder": "Viết nhận xét cho {name}…",
+      "reviewedPrefix": "Đã nhận xét",
+      "reviewedSuffix": "học sinh có mặt",
+      "saveDraft": "Lưu nháp",
+      "saveAndSend": "Lưu & gửi PH",
+      "empty": "Buổi học này chưa có dữ liệu nhận xét.",
+      "saveDraftSuccess": "Đã lưu nháp nhận xét",
+      "saveSendSuccess": "Đã lưu & gửi nhận xét tới phụ huynh",
+      "saveError": "Lưu nhận xét thất bại"
+    },
+    "materials": {
+      "title": "Giáo trình & bài tập",
+      "description": "Khu vực này hiển thị giáo án từng buổi và bài tập về nhà — sẽ thiết kế ở vòng sau."
+    }
   }
 }

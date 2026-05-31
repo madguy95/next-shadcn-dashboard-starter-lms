@@ -1,11 +1,22 @@
 'use client';
 
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery
+} from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useState } from 'react';
+import * as React from 'react';
+import { toast } from 'sonner';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { LoadingOverlay } from '@/components/ui/loading-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -16,28 +27,39 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import {
+  ATTENDANCE_STATUSES,
+  NOTE_RATINGS,
+  classDetailOptions,
+  classSessionsOptions,
+  classStudentsOptions,
+  saveSessionAttendance,
+  saveSessionNotes,
+  sessionAttendanceOptions,
+  sessionNotesOptions,
+  teacherClassDetailKeys,
+  type AttendanceStatus,
+  type ClassDetail,
+  type ClassSession,
+  type ClassStudent,
+  type StudentNote,
+  type StudentNoteRating
+} from '@/api/teacher-class-detail';
+import { formatApiError } from '@/lib/api-client';
 import {
   attendanceStatusActive,
   attendanceStatusDot,
-  attendanceStatusLabel,
-  classA01B6Notes,
-  classA01Detail,
-  classA01Sessions,
-  classA01Students,
   classColorTokens,
   sessionStatusDot,
-  sessionStatusLabel,
   studentNoteRatingClass,
-  studentNoteRatingLabel,
-  studentToneClass,
-  type AttendanceStatus,
-  type ClassStudent,
-  type SessionRecord,
-  type StudentNote
+  studentToneClass
 } from '@/features/teacher/data';
+import { cn } from '@/lib/utils';
 
-const ATTENDANCE_ORDER: AttendanceStatus[] = ['present', 'excused', 'absent', 'makeup'];
+// Status buttons exclude 'unmarked' — it's the empty state, not a pickable mark.
+const ATTENDANCE_ORDER = ATTENDANCE_STATUSES.filter(
+  (s): s is Exclude<AttendanceStatus, 'unmarked'> => s !== 'unmarked'
+);
 
 function StudentAvatar({
   student,
@@ -63,7 +85,7 @@ function StudentAvatar({
 }
 
 function AttendanceBar({ attended, total }: { attended: number; total: number }) {
-  const pct = (attended / total) * 100;
+  const pct = total > 0 ? (attended / total) * 100 : 0;
   const tone = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
   return (
     <div className='flex items-center gap-2'>
@@ -77,8 +99,8 @@ function AttendanceBar({ attended, total }: { attended: number; total: number })
   );
 }
 
-function ClassHeader() {
-  const d = classA01Detail;
+function ClassHeader({ d }: { d: ClassDetail }) {
+  const t = useTranslations('teacherClassDetail');
   return (
     <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
       <div
@@ -95,10 +117,12 @@ function ClassHeader() {
               {d.id}
             </span>
             <span className='text-muted-foreground font-mono text-[11px]'>{d.courseCode}</span>
-            <span className='inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium tracking-wider text-emerald-800 uppercase'>
-              <span className='h-1.5 w-1.5 rounded-full bg-emerald-500' />
-              Đang dạy
-            </span>
+            {d.status === 'running' && (
+              <span className='inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium tracking-wider text-emerald-800 uppercase'>
+                <span className='h-1.5 w-1.5 rounded-full bg-emerald-500' />
+                {t('statusTeaching')}
+              </span>
+            )}
           </div>
           <h1 className='text-2xl font-semibold tracking-tight'>{d.title}</h1>
           <div className='text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-sm'>
@@ -115,15 +139,15 @@ function ClassHeader() {
         <div className='flex flex-wrap items-center gap-2'>
           <Button variant='outline' size='sm' className='h-9'>
             <Icons.book className='size-3.5' />
-            Giáo trình
+            {t('actions.syllabus')}
           </Button>
           <Button variant='outline' size='sm' className='h-9'>
             <Icons.upload className='size-3.5 rotate-180' />
-            Xuất báo cáo
+            {t('actions.exportReport')}
           </Button>
           <Button size='sm' className='h-9 px-4'>
             <Icons.check className='size-3.5' />
-            Điểm danh hôm nay
+            {t('actions.attendanceToday')}
           </Button>
         </div>
       </div>
@@ -131,10 +155,10 @@ function ClassHeader() {
       <div className='grid grid-cols-2 divide-x border-t md:grid-cols-4'>
         <div className='px-5 py-3'>
           <div className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
-            Tiến độ
+            {t('header.progress')}
           </div>
           <div className='text-lg leading-tight font-semibold'>
-            Buổi {d.sessionCurrent} / {d.sessionTotal}
+            {t('header.sessionOf', { current: d.sessionCurrent, total: d.sessionTotal })}
           </div>
           <div className='bg-muted mt-1.5 h-1.5 w-full overflow-hidden rounded-full'>
             <div
@@ -145,31 +169,36 @@ function ClassHeader() {
         </div>
         <div className='px-5 py-3'>
           <div className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
-            Sĩ số
+            {t('header.size')}
           </div>
-          <div className='text-lg leading-tight font-semibold'>{d.studentCount} học sinh</div>
+          <div className='text-lg leading-tight font-semibold'>
+            {t('header.studentsCount', { count: d.studentCount })}
+          </div>
           <div className='text-muted-foreground mt-0.5 font-mono text-[11px]'>
-            tuần này: {d.presentLastWeek} đi · {d.absentLastWeek} vắng
+            {t('header.weekPresentAbsent', {
+              present: d.presentLastWeek,
+              absent: d.absentLastWeek
+            })}
           </div>
         </div>
         <div className='px-5 py-3'>
           <div className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
-            Chuyên cần TB
+            {t('header.attendanceAvg')}
           </div>
           <div className='text-lg leading-tight font-semibold text-emerald-700'>
             {d.attendanceRate}
             <span className='text-muted-foreground text-sm font-normal'>%</span>
           </div>
           <div className='text-muted-foreground mt-0.5 font-mono text-[11px]'>
-            {d.attendedCount}/{d.attendedTotal} lượt đi học
+            {t('header.attendedRatio', { attended: d.attendedCount, total: d.attendedTotal })}
           </div>
         </div>
         <div className='px-5 py-3'>
           <div className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
-            Cần nhận xét
+            {t('header.needsReview')}
           </div>
           <div className='text-lg leading-tight font-semibold text-amber-700'>
-            {d.needsReviewCount} học sinh
+            {t('header.needsReviewStudents', { count: d.needsReviewCount })}
           </div>
           <div className='text-muted-foreground mt-0.5 font-mono text-[11px]'>
             {d.needsReviewSession}
@@ -180,94 +209,136 @@ function ClassHeader() {
   );
 }
 
-function StudentsTab() {
+function StudentsTab({ classId }: { classId: string }) {
+  const t = useTranslations('teacherClassDetail');
+  const [search, setSearch] = React.useState('');
+  const { data, isFetching } = useQuery({
+    ...classStudentsOptions(classId, search || undefined),
+    placeholderData: keepPreviousData
+  });
+
+  const students = data?.students ?? [];
+  const totalAll = data?.totalAll ?? 0;
+
   return (
     <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
       <div className='flex flex-wrap items-center gap-3 border-b p-3 px-4'>
-        <div className='relative w-72'>
+        <div className='relative w-full sm:w-72'>
           <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3 -translate-y-1/2' />
           <Input
-            placeholder='Tìm tên học sinh, mã HS, SĐT phụ huynh…'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('students.searchPlaceholder')}
             className='h-8 pl-8 text-xs'
           />
         </div>
         <Button variant='outline' size='sm' className='h-8 px-3 text-xs'>
           <Icons.adjustments className='size-3' />
-          Bộ lọc
+          {t('students.filter')}
         </Button>
         <span className='text-muted-foreground ml-auto font-mono text-xs'>
-          {classA01Students.length} học sinh
+          {t('students.count', { count: totalAll })}
         </span>
       </div>
 
-      <Table>
-        <TableHeader className='bg-muted/30'>
-          <TableRow>
-            <TableHead className='w-9 px-4'>
-              <Checkbox aria-label='Chọn tất cả' />
-            </TableHead>
-            <TableHead className='text-[11px] tracking-wider uppercase'>Học sinh</TableHead>
-            <TableHead className='text-[11px] tracking-wider uppercase'>Mã HS</TableHead>
-            <TableHead className='text-[11px] tracking-wider uppercase'>Phụ huynh</TableHead>
-            <TableHead className='text-[11px] tracking-wider uppercase'>Liên hệ</TableHead>
-            <TableHead className='text-[11px] tracking-wider uppercase'>Chuyên cần</TableHead>
-            <TableHead className='text-[11px] tracking-wider uppercase'>Buổi gần nhất</TableHead>
-            <TableHead className='px-4 text-right' />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {classA01Students.map((s) => (
-            <TableRow key={s.id}>
-              <TableCell className='px-4 py-3'>
-                <Checkbox aria-label={`Chọn ${s.name}`} />
-              </TableCell>
-              <TableCell className='py-3'>
-                <div className='flex items-center gap-2.5'>
-                  <StudentAvatar student={s} />
-                  <div className='leading-tight'>
-                    <div className='font-medium'>{s.name}</div>
-                    <div className='text-muted-foreground text-[11px]'>
-                      {s.age} tuổi · Lớp {s.grade}
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className='text-muted-foreground py-3 font-mono text-xs'>{s.id}</TableCell>
-              <TableCell className='py-3'>{s.parentName}</TableCell>
-              <TableCell className='text-muted-foreground py-3 font-mono text-xs'>
-                {s.parentPhone}
-              </TableCell>
-              <TableCell className='py-3'>
-                <AttendanceBar attended={s.attendedSessions} total={s.totalSessions} />
-              </TableCell>
-              <TableCell className='py-3'>
-                <span className='inline-flex items-center gap-1.5 text-xs'>
-                  <span
-                    className={cn('h-1.5 w-1.5 rounded-full', attendanceStatusDot[s.lastStatus])}
-                  />
-                  {attendanceStatusLabel[s.lastStatus]} · {s.lastSessionLabel}
-                </span>
-              </TableCell>
-              <TableCell className='px-4 py-3 text-right'>
-                <Button variant='ghost' size='icon' className='h-7 w-7'>
-                  <Icons.ellipsis className='size-3.5' />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <LoadingOverlay visible={isFetching} message={t('updating')}>
+        <div className='overflow-x-auto'>
+          <Table>
+            <TableHeader className='bg-muted/30'>
+              <TableRow>
+                <TableHead className='w-9 px-4'>
+                  <Checkbox aria-label={t('students.selectAll')} />
+                </TableHead>
+                <TableHead className='text-[11px] tracking-wider uppercase'>
+                  {t('students.colStudent')}
+                </TableHead>
+                <TableHead className='text-[11px] tracking-wider uppercase'>
+                  {t('students.colCode')}
+                </TableHead>
+                <TableHead className='text-[11px] tracking-wider uppercase'>
+                  {t('students.colParent')}
+                </TableHead>
+                <TableHead className='text-[11px] tracking-wider uppercase'>
+                  {t('students.colContact')}
+                </TableHead>
+                <TableHead className='text-[11px] tracking-wider uppercase'>
+                  {t('students.colAttendance')}
+                </TableHead>
+                <TableHead className='text-[11px] tracking-wider uppercase'>
+                  {t('students.colLastSession')}
+                </TableHead>
+                <TableHead className='px-4 text-right' />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {students.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className='text-muted-foreground py-10 text-center text-sm'
+                  >
+                    {t('students.empty')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                students.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className='px-4 py-3'>
+                      <Checkbox aria-label={t('students.select', { name: s.name })} />
+                    </TableCell>
+                    <TableCell className='py-3'>
+                      <div className='flex items-center gap-2.5'>
+                        <StudentAvatar student={s} />
+                        <div className='leading-tight'>
+                          <div className='font-medium'>{s.name}</div>
+                          <div className='text-muted-foreground text-[11px]'>
+                            {t('students.ageGrade', { age: s.age, grade: s.grade })}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className='text-muted-foreground py-3 font-mono text-xs'>
+                      {s.id}
+                    </TableCell>
+                    <TableCell className='py-3'>{s.parentName}</TableCell>
+                    <TableCell className='text-muted-foreground py-3 font-mono text-xs'>
+                      {s.parentPhone}
+                    </TableCell>
+                    <TableCell className='py-3'>
+                      <AttendanceBar attended={s.attendedSessions} total={s.totalSessions} />
+                    </TableCell>
+                    <TableCell className='py-3'>
+                      <span className='inline-flex items-center gap-1.5 text-xs'>
+                        <span
+                          className={cn(
+                            'h-1.5 w-1.5 rounded-full',
+                            attendanceStatusDot[s.lastStatus]
+                          )}
+                        />
+                        {t(`attendanceStatus.${s.lastStatus}`)} · {s.lastSessionLabel}
+                      </span>
+                    </TableCell>
+                    <TableCell className='px-4 py-3 text-right'>
+                      <Button variant='ghost' size='icon' className='h-7 w-7'>
+                        <Icons.ellipsis className='size-3.5' />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </LoadingOverlay>
 
       <div className='text-muted-foreground flex items-center justify-between gap-3 border-t px-4 py-3 text-xs'>
-        <span>
-          Hiển thị {classA01Students.length} / {classA01Students.length} học sinh
-        </span>
+        <span>{t('students.showing', { shown: students.length, total: totalAll })}</span>
         <div className='flex items-center gap-1'>
           <Button variant='outline' size='sm' className='h-7 px-2.5 text-xs'>
-            Trước
+            {t('students.prev')}
           </Button>
           <Button variant='outline' size='sm' className='h-7 px-2.5 text-xs'>
-            Sau
+            {t('students.next')}
           </Button>
         </div>
       </div>
@@ -275,7 +346,17 @@ function StudentsTab() {
   );
 }
 
-function AttendanceSessionPill({ session, active }: { session: SessionRecord; active: boolean }) {
+function AttendanceSessionPill({
+  session,
+  active,
+  label,
+  onSelect
+}: {
+  session: ClassSession;
+  active: boolean;
+  label: string;
+  onSelect: () => void;
+}) {
   if (session.status === 'upcoming') {
     return (
       <button
@@ -283,13 +364,14 @@ function AttendanceSessionPill({ session, active }: { session: SessionRecord; ac
         disabled
         className='text-muted-foreground inline-flex h-7 items-center gap-1 rounded-md border border-dashed px-2 font-mono text-xs whitespace-nowrap opacity-60'
       >
-        {session.id} · {session.dateLabel}
+        {label}
       </button>
     );
   }
   return (
     <button
       type='button'
+      onClick={onSelect}
       className={cn(
         'inline-flex h-7 items-center gap-1 rounded-md border px-2 font-mono text-xs whitespace-nowrap',
         active
@@ -297,38 +379,70 @@ function AttendanceSessionPill({ session, active }: { session: SessionRecord; ac
           : 'text-muted-foreground hover:bg-accent'
       )}
     >
-      {session.id} · {session.dateLabel}
+      {label}
       <span className={cn('h-1.5 w-1.5 rounded-full', sessionStatusDot[session.status])} />
     </button>
   );
 }
 
-function AttendanceTab() {
-  // Initial attendance state derived from each student's last status.
-  const initialAttendance: Record<string, AttendanceStatus> = {
-    'HS-2401': 'present',
-    'HS-2402': 'present',
-    'HS-2403': 'excused',
-    'HS-2404': 'present',
-    'HS-2405': 'absent',
-    'HS-2406': 'present',
-    'HS-2407': 'present',
-    'HS-2408': 'unmarked',
-    'HS-2409': 'present',
-    'HS-2410': 'present',
-    'HS-2411': 'present',
-    'HS-2412': 'present'
-  };
-  const [marks, setMarks] = useState<Record<string, AttendanceStatus>>(initialAttendance);
+function SessionsEmptyState() {
+  const t = useTranslations('teacherClassDetail');
+  return (
+    <div className='bg-card rounded-lg border p-10 text-center shadow-sm'>
+      <div className='bg-muted text-muted-foreground mx-auto grid h-12 w-12 place-items-center rounded-md'>
+        <Icons.check className='size-5' />
+      </div>
+      <h3 className='mt-3 font-semibold tracking-tight'>{t('emptySessions.title')}</h3>
+      <p className='text-muted-foreground mt-1 text-sm'>{t('emptySessions.description')}</p>
+    </div>
+  );
+}
 
-  const markedCount = classA01Students.filter((s) => marks[s.id] !== 'unmarked').length;
-  const counts = {
-    present: 0,
-    excused: 0,
-    absent: 0,
-    unmarked: 0
-  };
-  for (const s of classA01Students) {
+function AttendanceTab({
+  classId,
+  students,
+  sessions,
+  currentSessionId
+}: {
+  classId: string;
+  students: ClassStudent[];
+  sessions: ClassSession[];
+  currentSessionId: string;
+}) {
+  const t = useTranslations('teacherClassDetail');
+  const queryClient = useQueryClient();
+  const [sessionId, setSessionId] = React.useState(currentSessionId);
+  const { data, isFetching } = useQuery(sessionAttendanceOptions(classId, sessionId));
+
+  const [marks, setMarks] = React.useState<Record<string, AttendanceStatus>>({});
+  const [notes, setNotes] = React.useState<Record<string, string>>({});
+  React.useEffect(() => {
+    if (data?.marks) setMarks(data.marks);
+  }, [data?.marks]);
+  React.useEffect(() => {
+    if (data) setNotes(data.notes ?? {});
+  }, [data]);
+
+  const saveMutation = useMutation({
+    mutationFn: () => saveSessionAttendance(classId, sessionId, { marks, notes }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: teacherClassDetailKeys.attendance(classId, sessionId)
+      });
+      queryClient.invalidateQueries({ queryKey: teacherClassDetailKeys.detail(classId) });
+      toast.success(t('attendance.saveSuccess'));
+    },
+    onError: (err) => toast.error(formatApiError(err, t('attendance.saveError')).title)
+  });
+
+  if (!sessionId) return <SessionsEmptyState />;
+  if (!data) return <AttendanceTabSkeleton />;
+
+  const meta = data.meta;
+  const activeSession = sessions.find((s) => s.id === sessionId);
+  const markedCount = students.filter((s) => (marks[s.id] ?? 'unmarked') !== 'unmarked').length;
+  const counts = { present: 0, excused: 0, absent: 0, unmarked: 0 };
+  for (const s of students) {
     const m = marks[s.id] ?? 'unmarked';
     if (m === 'present') counts.present++;
     else if (m === 'excused') counts.excused++;
@@ -336,171 +450,462 @@ function AttendanceTab() {
     else counts.unmarked++;
   }
 
+  const setAll = (status: AttendanceStatus) =>
+    setMarks(Object.fromEntries(students.map((s) => [s.id, status])));
+
   return (
     <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
       <div className='flex flex-wrap items-center gap-3 border-b p-3 px-4'>
         <div className='flex items-center gap-2'>
-          <span className='text-muted-foreground text-[11px] tracking-wider uppercase'>Buổi:</span>
+          <span className='text-muted-foreground text-[11px] tracking-wider uppercase'>
+            {t('attendance.sessionLabel')}
+          </span>
           <Button variant='outline' size='sm' className='h-8 px-3 text-sm font-medium'>
-            <span className='font-mono'>B6 · T2 19/05</span>
-            <span className='bg-foreground text-background rounded px-1.5 py-0.5 text-[10px] tracking-wider uppercase'>
-              Hôm nay
+            <span className='font-mono'>
+              {activeSession ? `${activeSession.id} · ${activeSession.dateLabel}` : sessionId}
             </span>
+            {sessionId === currentSessionId && (
+              <span className='bg-foreground text-background rounded px-1.5 py-0.5 text-[10px] tracking-wider uppercase'>
+                {t('attendance.today')}
+              </span>
+            )}
             <Icons.chevronDown className='size-3' />
           </Button>
         </div>
 
         <div className='flex items-center gap-1.5 overflow-x-auto'>
-          {classA01Sessions.map((s) => (
-            <AttendanceSessionPill key={s.id} session={s} active={s.id === 'B6'} />
+          {sessions.map((s) => (
+            <AttendanceSessionPill
+              key={s.id}
+              session={s}
+              active={s.id === sessionId}
+              label={`${s.id} · ${s.dateLabel}`}
+              onSelect={() => setSessionId(s.id)}
+            />
           ))}
         </div>
 
         <div className='ml-auto flex items-center gap-2'>
           <span className='text-muted-foreground text-xs'>
             <span className='text-foreground font-mono'>
-              {markedCount}/{classA01Students.length}
+              {markedCount}/{students.length}
             </span>{' '}
-            đã điểm danh
+            {t('attendance.marked')}
           </span>
-          <Button size='sm' className='h-8 px-3 text-xs'>
-            <Icons.check className='size-3' />
-            Lưu điểm danh
+          <Button
+            size='sm'
+            className='h-8 px-3 text-xs'
+            disabled={saveMutation.isPending}
+            onClick={() => saveMutation.mutate()}
+          >
+            {saveMutation.isPending ? (
+              <Icons.spinner className='size-3 animate-spin' />
+            ) : (
+              <Icons.check className='size-3' />
+            )}
+            {t('attendance.save')}
           </Button>
         </div>
       </div>
 
-      <div className='bg-muted/30 flex items-center gap-2 px-4 py-2 text-xs'>
-        <span className='text-muted-foreground'>Đặt nhanh tất cả:</span>
+      <div className='bg-muted/30 flex flex-wrap items-center gap-2 px-4 py-2 text-xs'>
+        <span className='text-muted-foreground'>{t('attendance.quickSet')}</span>
         <button
           type='button'
-          onClick={() =>
-            setMarks(
-              Object.fromEntries(classA01Students.map((s) => [s.id, 'present' as AttendanceStatus]))
-            )
-          }
+          onClick={() => setAll('present')}
           className='bg-background inline-flex h-6 items-center gap-1 rounded-md border px-2 hover:bg-emerald-50'
         >
-          <span className='h-1.5 w-1.5 rounded-full bg-emerald-500' /> Có mặt
+          <span className='h-1.5 w-1.5 rounded-full bg-emerald-500' />{' '}
+          {t('attendanceStatus.present')}
         </button>
         <button
           type='button'
-          onClick={() =>
-            setMarks(
-              Object.fromEntries(classA01Students.map((s) => [s.id, 'absent' as AttendanceStatus]))
-            )
-          }
+          onClick={() => setAll('absent')}
           className='bg-background inline-flex h-6 items-center gap-1 rounded-md border px-2 hover:bg-rose-50'
         >
-          <span className='h-1.5 w-1.5 rounded-full bg-rose-500' /> Vắng
+          <span className='h-1.5 w-1.5 rounded-full bg-rose-500' /> {t('attendanceStatus.absent')}
         </button>
         <button
           type='button'
-          onClick={() =>
-            setMarks(
-              Object.fromEntries(classA01Students.map((s) => [s.id, 'excused' as AttendanceStatus]))
-            )
-          }
+          onClick={() => setAll('excused')}
           className='bg-background inline-flex h-6 items-center gap-1 rounded-md border px-2 hover:bg-amber-50'
         >
-          <span className='h-1.5 w-1.5 rounded-full bg-amber-500' /> Vắng có phép
+          <span className='h-1.5 w-1.5 rounded-full bg-amber-500' /> {t('attendanceStatus.excused')}
         </button>
-        <span className='text-muted-foreground ml-auto font-mono'>
-          Thời gian: 18:00–19:00 · Phòng 301
-        </span>
+        <span className='text-muted-foreground ml-auto font-mono'>{meta?.timeLabel ?? ''}</span>
       </div>
 
-      <ul className='divide-y'>
-        {classA01Students.map((s) => {
-          const status = marks[s.id] ?? 'unmarked';
-          const isHighlightExcused = status === 'excused';
-          const isHighlightAbsent = status === 'absent';
-          return (
-            <li
-              key={s.id}
-              className={cn(
-                'hover:bg-muted/30 flex flex-wrap items-center gap-3 px-4 py-3',
-                isHighlightExcused && 'bg-amber-50/40',
-                isHighlightAbsent && 'bg-rose-50/40'
-              )}
-            >
-              <StudentAvatar student={s} size={9} />
-              <div className='min-w-0 flex-1'>
-                <div className='font-medium'>
-                  {s.name}
-                  <span className='text-muted-foreground ml-1 font-mono text-[11px]'>{s.id}</span>
-                  {status === 'unmarked' && (
-                    <span className='bg-muted text-muted-foreground ml-2 inline-flex items-center rounded px-1.5 py-0.5 text-[10px]'>
-                      chưa điểm danh
-                    </span>
-                  )}
+      <LoadingOverlay visible={isFetching} message={t('updating')}>
+        <ul className='divide-y'>
+          {students.map((s) => {
+            const status = marks[s.id] ?? 'unmarked';
+            const isHighlightExcused = status === 'excused';
+            const isHighlightAbsent = status === 'absent';
+            return (
+              <li
+                key={s.id}
+                className={cn(
+                  'hover:bg-muted/30 flex flex-wrap items-center gap-3 px-4 py-3',
+                  isHighlightExcused && 'bg-amber-50/40',
+                  isHighlightAbsent && 'bg-rose-50/40'
+                )}
+              >
+                <StudentAvatar student={s} size={9} />
+                <div className='min-w-0 flex-1'>
+                  <div className='font-medium'>
+                    {s.name}
+                    <span className='text-muted-foreground ml-1 font-mono text-[11px]'>{s.id}</span>
+                    {status === 'unmarked' && (
+                      <span className='bg-muted text-muted-foreground ml-2 inline-flex items-center rounded px-1.5 py-0.5 text-[10px]'>
+                        {t('attendance.unmarkedBadge')}
+                      </span>
+                    )}
+                  </div>
+                  <div className='text-muted-foreground text-[11px]'>
+                    {t('attendance.studentAttendance', {
+                      attended: s.attendedSessions,
+                      total: s.totalSessions
+                    })}
+                    {isHighlightAbsent && ` · ${t('attendance.considerCall')}`}
+                  </div>
                 </div>
-                <div className='text-muted-foreground text-[11px]'>
-                  Chuyên cần {s.attendedSessions}/{s.totalSessions}
-                  {isHighlightAbsent && ' · cân nhắc gọi điện'}
+
+                <div className='bg-muted inline-flex items-center rounded-md border p-0.5'>
+                  {ATTENDANCE_ORDER.map((opt) => {
+                    const active = status === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type='button'
+                        onClick={() => setMarks((m) => ({ ...m, [s.id]: opt }))}
+                        className={cn(
+                          'inline-flex h-7 items-center gap-1.5 rounded px-2.5 text-xs font-medium transition',
+                          active
+                            ? attendanceStatusActive[opt]
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        <span
+                          className={cn('h-1.5 w-1.5 rounded-full', attendanceStatusDot[opt])}
+                        />
+                        {t(`attendanceStatus.${opt}`)}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
 
-              <div className='bg-muted inline-flex items-center rounded-md border p-0.5'>
-                {ATTENDANCE_ORDER.map((opt) => {
-                  const active = status === opt;
-                  return (
-                    <button
-                      key={opt}
-                      type='button'
-                      onClick={() => setMarks((m) => ({ ...m, [s.id]: opt }))}
-                      className={cn(
-                        'inline-flex h-7 items-center gap-1.5 rounded px-2.5 text-xs font-medium transition',
-                        active
-                          ? attendanceStatusActive[opt]
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      <span className={cn('h-1.5 w-1.5 rounded-full', attendanceStatusDot[opt])} />
-                      {attendanceStatusLabel[opt]}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <Input
-                placeholder='Ghi chú…'
-                className='h-8 w-40 text-xs'
-                defaultValue={s.id === 'HS-2403' ? 'Sắp xếp học bù B6 — 24/05' : ''}
-              />
-            </li>
-          );
-        })}
-      </ul>
+                <Input
+                  value={notes[s.id] ?? ''}
+                  onChange={(e) => setNotes((m) => ({ ...m, [s.id]: e.target.value }))}
+                  placeholder={t('attendance.notePlaceholder')}
+                  className='h-8 w-full text-xs sm:w-40'
+                />
+              </li>
+            );
+          })}
+        </ul>
+      </LoadingOverlay>
 
       <div className='bg-muted/20 flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3'>
         <div className='text-muted-foreground flex flex-wrap items-center gap-4 text-xs'>
           <span className='inline-flex items-center gap-1.5'>
-            <span className='h-2 w-2 rounded-full bg-emerald-500' /> Có mặt:{' '}
-            <span className='text-foreground font-mono'>{counts.present}</span>
+            <span className='h-2 w-2 rounded-full bg-emerald-500' /> {t('attendance.legendPresent')}
+            : <span className='text-foreground font-mono'>{counts.present}</span>
           </span>
           <span className='inline-flex items-center gap-1.5'>
-            <span className='h-2 w-2 rounded-full bg-amber-500' /> Có phép:{' '}
+            <span className='h-2 w-2 rounded-full bg-amber-500' /> {t('attendance.legendExcused')}:{' '}
             <span className='text-foreground font-mono'>{counts.excused}</span>
           </span>
           <span className='inline-flex items-center gap-1.5'>
-            <span className='h-2 w-2 rounded-full bg-rose-500' /> Vắng:{' '}
+            <span className='h-2 w-2 rounded-full bg-rose-500' /> {t('attendance.legendAbsent')}:{' '}
             <span className='text-foreground font-mono'>{counts.absent}</span>
           </span>
           <span className='inline-flex items-center gap-1.5'>
-            <span className='bg-muted-foreground h-2 w-2 rounded-full' /> Chưa:{' '}
+            <span className='bg-muted-foreground h-2 w-2 rounded-full' />{' '}
+            {t('attendance.legendUnmarked')}:{' '}
             <span className='text-foreground font-mono'>{counts.unmarked}</span>
           </span>
         </div>
-        <span className='text-muted-foreground font-mono text-xs'>
-          Tự động lưu lần cuối · 10:42
-        </span>
       </div>
     </div>
   );
 }
 
-function SessionNoteCard({ student, note }: { student: ClassStudent; note: StudentNote }) {
+function NotesTab({
+  classId,
+  students,
+  sessions,
+  currentSessionId
+}: {
+  classId: string;
+  students: ClassStudent[];
+  sessions: ClassSession[];
+  currentSessionId: string;
+}) {
+  const t = useTranslations('teacherClassDetail');
+  const queryClient = useQueryClient();
+  const [sessionId, setSessionId] = React.useState(currentSessionId);
+  const { data, isFetching } = useQuery(sessionNotesOptions(classId, sessionId));
+
+  const [summary, setSummary] = React.useState('');
+  const [rating, setRating] = React.useState<StudentNoteRating>('good');
+  const [noteText, setNoteText] = React.useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    if (!data) return;
+    setSummary(data.summary.comment);
+    setRating(data.summary.rating);
+    setNoteText(Object.fromEntries(data.notes.map((n) => [n.studentId, n.note ?? ''])));
+  }, [data]);
+
+  const notes = data?.notes ?? [];
+  const meta = data?.meta;
+
+  const saveMutation = useMutation({
+    mutationFn: async (sendToParents: boolean) => {
+      await saveSessionNotes(classId, sessionId, {
+        summary: { comment: summary, rating },
+        notes: notes.map((n) => ({
+          ...n,
+          note: noteText[n.studentId] ?? n.note,
+          saved: n.attendance === 'present' ? true : n.saved
+        })),
+        sendToParents
+      });
+      return sendToParents;
+    },
+    onSuccess: (sendToParents) => {
+      queryClient.invalidateQueries({ queryKey: teacherClassDetailKeys.notes(classId, sessionId) });
+      queryClient.invalidateQueries({ queryKey: teacherClassDetailKeys.detail(classId) });
+      toast.success(sendToParents ? t('notes.saveSendSuccess') : t('notes.saveDraftSuccess'));
+    },
+    onError: (err) => toast.error(formatApiError(err, t('notes.saveError')).title)
+  });
+
+  const presentNotes = notes.filter((n) => n.attendance === 'present');
+  const savedCount = presentNotes.filter((n) => n.saved).length;
+
+  if (sessions.length === 0) return <SessionsEmptyState />;
+
+  return (
+    <div className='grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]'>
+      <div className='bg-card h-fit overflow-hidden rounded-lg border shadow-sm'>
+        <div className='flex items-center justify-between border-b px-4 py-3'>
+          <h3 className='text-sm font-semibold tracking-tight'>{t('notes.sessionsTitle')}</h3>
+          <span className='text-muted-foreground font-mono text-[11px]'>
+            {t('tabs.sessionsCount', { count: sessions.length })}
+          </span>
+        </div>
+        <ul className='divide-y text-sm'>
+          {sessions.map((s) => {
+            const isActive = s.id === sessionId;
+            const isUpcoming = s.status === 'upcoming';
+            return (
+              <li key={s.id}>
+                <button
+                  type='button'
+                  disabled={isUpcoming}
+                  onClick={() => setSessionId(s.id)}
+                  className={cn(
+                    'block w-full px-4 py-3 text-left',
+                    isActive ? 'bg-accent border-foreground border-l-2' : 'hover:bg-muted/40',
+                    isUpcoming ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                  )}
+                >
+                  <div className='flex items-baseline justify-between'>
+                    <span
+                      className={cn(
+                        'font-mono text-xs',
+                        isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                      )}
+                    >
+                      {s.id} · {s.dateLabel}
+                    </span>
+                    <span
+                      className={cn(
+                        'inline-flex items-center gap-1 text-[10px]',
+                        s.status === 'reviewed' && 'text-emerald-700',
+                        s.status === 'in_progress' && 'text-amber-700',
+                        s.status === 'upcoming' && 'text-muted-foreground'
+                      )}
+                    >
+                      <span
+                        className={cn('h-1.5 w-1.5 rounded-full', sessionStatusDot[s.status])}
+                      />
+                      {s.status === 'in_progress'
+                        ? t('sessionStatus.remaining', { count: s.needsReviewCount ?? 0 })
+                        : t(`sessionStatus.${s.status}`)}
+                    </span>
+                  </div>
+                  <div className={cn('mt-0.5 text-[13px]', isActive && 'font-medium')}>
+                    {s.title}
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <LoadingOverlay visible={isFetching} message={t('updating')}>
+        <div className='space-y-4'>
+          <div className='bg-card rounded-lg border p-5 shadow-sm'>
+            <div className='flex flex-wrap items-start justify-between gap-4'>
+              <div>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <span className='bg-muted rounded px-2 py-0.5 font-mono text-xs'>
+                    {sessionId}
+                  </span>
+                  <span className='text-muted-foreground font-mono text-xs'>{meta?.dayLabel}</span>
+                  <span className='inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium tracking-wider text-amber-800 uppercase'>
+                    <span className='h-1.5 w-1.5 rounded-full bg-amber-500' />
+                    {t('notes.recordingBadge')}
+                  </span>
+                </div>
+                <h2 className='mt-1.5 text-xl font-semibold tracking-tight'>
+                  {meta?.title ?? sessions.find((s) => s.id === sessionId)?.title}
+                </h2>
+                {meta?.description && (
+                  <p className='text-muted-foreground mt-1 max-w-2xl text-sm'>{meta.description}</p>
+                )}
+              </div>
+              <div className='flex items-center gap-2'>
+                <Button variant='outline' size='sm' className='h-8 px-3 text-xs'>
+                  <Icons.book className='size-3' />
+                  {t('notes.openLesson')}
+                </Button>
+                <Button size='sm' className='h-8 px-3 text-xs'>
+                  <Icons.send className='size-3' />
+                  {t('notes.sendToParents')}
+                </Button>
+              </div>
+            </div>
+
+            <div className='mt-4 border-t pt-4'>
+              <div className='text-muted-foreground text-[11px] font-medium tracking-wider uppercase'>
+                {t('notes.classComment')}
+              </div>
+              <Textarea
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                className='mt-2 min-h-[80px] text-sm'
+              />
+              <div className='mt-2 flex flex-wrap items-center gap-3'>
+                <span className='text-muted-foreground text-[11px]'>
+                  {t('notes.objectiveLevel')}
+                </span>
+                <div className='bg-muted inline-flex items-center rounded-md border p-0.5'>
+                  {NOTE_RATINGS.map((r) => (
+                    <button
+                      key={r}
+                      type='button'
+                      onClick={() => setRating(r)}
+                      className={cn(
+                        'h-6 rounded px-2 text-[11px] font-medium',
+                        r === rating ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                      )}
+                    >
+                      {t(`rating.${r}`)}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type='button'
+                  className='text-muted-foreground hover:text-foreground ml-auto inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs'
+                >
+                  <Icons.paperclip className='size-3' />
+                  {t('notes.attach')}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
+            <div className='flex items-center justify-between border-b px-4 py-3'>
+              <div>
+                <h3 className='text-sm font-semibold tracking-tight'>
+                  {t('notes.perStudentTitle')}
+                </h3>
+                <p className='text-muted-foreground mt-0.5 text-[11px]'>
+                  {t('notes.perStudentDesc')}
+                </p>
+              </div>
+              <Button variant='outline' size='sm' className='h-8 px-3 text-xs'>
+                <Icons.sparkles className='size-3' />
+                {t('notes.aiSuggest')}
+              </Button>
+            </div>
+
+            {notes.length === 0 ? (
+              <p className='text-muted-foreground px-4 py-10 text-center text-sm'>
+                {t('notes.empty')}
+              </p>
+            ) : (
+              <ul className='divide-y'>
+                {notes.map((n) => {
+                  const student = students.find((s) => s.id === n.studentId);
+                  if (!student) return null;
+                  return (
+                    <SessionNoteCard
+                      key={n.studentId}
+                      student={student}
+                      note={n}
+                      value={noteText[n.studentId] ?? ''}
+                      onChange={(v) => setNoteText((p) => ({ ...p, [n.studentId]: v }))}
+                    />
+                  );
+                })}
+              </ul>
+            )}
+
+            <div className='bg-muted/20 flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-xs'>
+              <span className='text-muted-foreground'>
+                {t('notes.reviewedPrefix')}{' '}
+                <span className='text-foreground font-mono'>
+                  {savedCount} / {presentNotes.length}
+                </span>{' '}
+                {t('notes.reviewedSuffix')}
+              </span>
+              <div className='flex items-center gap-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='h-8 px-3 text-xs'
+                  disabled={saveMutation.isPending}
+                  onClick={() => saveMutation.mutate(false)}
+                >
+                  {t('notes.saveDraft')}
+                </Button>
+                <Button
+                  size='sm'
+                  className='h-8 px-3 text-xs'
+                  disabled={saveMutation.isPending}
+                  onClick={() => saveMutation.mutate(true)}
+                >
+                  {saveMutation.isPending && <Icons.spinner className='size-3 animate-spin' />}
+                  {t('notes.saveAndSend')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </LoadingOverlay>
+    </div>
+  );
+}
+
+function SessionNoteCard({
+  student,
+  note,
+  value,
+  onChange
+}: {
+  student: ClassStudent;
+  note: StudentNote;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const t = useTranslations('teacherClassDetail');
   if (note.attendance === 'excused' || note.attendance === 'absent') {
     return (
       <li className='flex gap-4 px-4 py-4 opacity-60'>
@@ -515,7 +920,7 @@ function SessionNoteCard({ student, note }: { student: ClassStudent; note: Stude
                 attendanceStatusActive[note.attendance]
               )}
             >
-              {attendanceStatusLabel[note.attendance]}
+              {t(`attendanceStatus.${note.attendance}`)}
             </span>
           </div>
           {note.note && <p className='text-muted-foreground mt-1 text-xs'>{note.note}</p>}
@@ -531,7 +936,7 @@ function SessionNoteCard({ student, note }: { student: ClassStudent; note: Stude
           <span className='font-medium'>{student.name}</span>
           <span className='text-muted-foreground font-mono text-[11px]'>{student.id}</span>
           <span className='inline-flex items-center gap-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700'>
-            Có mặt
+            {t('notes.present')}
           </span>
           <span
             className={cn(
@@ -541,22 +946,23 @@ function SessionNoteCard({ student, note }: { student: ClassStudent; note: Stude
           >
             {note.saved ? (
               <>
-                <Icons.check className='size-2.5' strokeWidth={3} /> Đã lưu
+                <Icons.check className='size-2.5' strokeWidth={3} /> {t('notes.saved')}
               </>
             ) : (
               <>
-                <span className='h-1.5 w-1.5 rounded-full bg-amber-500' /> Chưa lưu
+                <span className='h-1.5 w-1.5 rounded-full bg-amber-500' /> {t('notes.unsaved')}
               </>
             )}
           </span>
         </div>
         <Textarea
-          defaultValue={note.note ?? ''}
-          placeholder={`Viết nhận xét cho ${student.name}…`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t('notes.commentPlaceholder', { name: student.name })}
           className='mt-2 min-h-[60px] text-sm'
         />
         <div className='mt-2 flex flex-wrap items-center gap-2'>
-          <span className='text-muted-foreground text-[11px]'>Đánh giá:</span>
+          <span className='text-muted-foreground text-[11px]'>{t('notes.rating')}</span>
           {note.rating ? (
             <span
               className={cn(
@@ -564,32 +970,32 @@ function SessionNoteCard({ student, note }: { student: ClassStudent; note: Stude
                 studentNoteRatingClass[note.rating]
               )}
             >
-              {studentNoteRatingLabel[note.rating]}
+              {t(`rating.${note.rating}`)}
             </span>
           ) : (
             <button
               type='button'
               className='text-muted-foreground inline-flex h-6 items-center gap-1 rounded-md border px-2 text-[11px]'
             >
-              — Chọn —
+              {t('notes.choose')}
             </button>
           )}
           {note.tags && note.tags.length > 0 && (
             <>
-              <span className='text-muted-foreground ml-2 text-[11px]'>Kỹ năng:</span>
-              {note.tags.map((t) => (
+              <span className='text-muted-foreground ml-2 text-[11px]'>{t('notes.skills')}</span>
+              {note.tags.map((tag) => (
                 <span
-                  key={t}
+                  key={tag}
                   className='bg-muted inline-flex h-6 items-center gap-1 rounded-md border px-2 text-[11px]'
                 >
-                  {t}
+                  {tag}
                 </span>
               ))}
               <button
                 type='button'
                 className='text-muted-foreground inline-flex h-6 items-center gap-1 rounded-md border border-dashed px-2 text-[11px]'
               >
-                + Thêm tag
+                {t('notes.addTag')}
               </button>
             </>
           )}
@@ -599,188 +1005,59 @@ function SessionNoteCard({ student, note }: { student: ClassStudent; note: Stude
   );
 }
 
-function NotesTab() {
-  return (
-    <div className='grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]'>
-      <div className='bg-card h-fit overflow-hidden rounded-lg border shadow-sm'>
-        <div className='flex items-center justify-between border-b px-4 py-3'>
-          <h3 className='text-sm font-semibold tracking-tight'>Buổi học</h3>
-          <span className='text-muted-foreground font-mono text-[11px]'>6 / 16</span>
-        </div>
-        <ul className='divide-y text-sm'>
-          {classA01Sessions.map((s) => {
-            const isActive = s.id === 'B6';
-            const isUpcoming = s.status === 'upcoming';
-            return (
-              <li
-                key={s.id}
-                className={cn(
-                  'cursor-pointer px-4 py-3',
-                  isActive ? 'bg-accent border-foreground border-l-2' : 'hover:bg-muted/40',
-                  isUpcoming && 'opacity-60'
-                )}
-              >
-                <div className='flex items-baseline justify-between'>
-                  <span
-                    className={cn(
-                      'font-mono text-xs',
-                      isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
-                    )}
-                  >
-                    {s.id} · {s.dateLabel}
-                  </span>
-                  <span
-                    className={cn(
-                      'inline-flex items-center gap-1 text-[10px]',
-                      s.status === 'reviewed' && 'text-emerald-700',
-                      s.status === 'in_progress' && 'text-amber-700',
-                      s.status === 'upcoming' && 'text-muted-foreground'
-                    )}
-                  >
-                    <span className={cn('h-1.5 w-1.5 rounded-full', sessionStatusDot[s.status])} />
-                    {s.status === 'in_progress'
-                      ? `Còn ${s.needsReviewCount ?? 0} hs`
-                      : sessionStatusLabel[s.status]}
-                  </span>
-                </div>
-                <div className={cn('mt-0.5 text-[13px]', isActive && 'font-medium')}>{s.title}</div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <div className='space-y-4'>
-        <div className='bg-card rounded-lg border p-5 shadow-sm'>
-          <div className='flex flex-wrap items-start justify-between gap-4'>
-            <div>
-              <div className='flex flex-wrap items-center gap-2'>
-                <span className='bg-muted rounded px-2 py-0.5 font-mono text-xs'>B6</span>
-                <span className='text-muted-foreground font-mono text-xs'>
-                  T2 · 19/05/2026 · 18:00–19:00
-                </span>
-                <span className='inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium tracking-wider text-amber-800 uppercase'>
-                  <span className='h-1.5 w-1.5 rounded-full bg-amber-500' />
-                  Đang ghi nhận xét
-                </span>
-              </div>
-              <h2 className='mt-1.5 text-xl font-semibold tracking-tight'>
-                Buổi 6 · Mini game Cat &amp; Mouse
-              </h2>
-              <p className='text-muted-foreground mt-1 max-w-2xl text-sm'>
-                Học sinh áp dụng vòng lặp + điều kiện + biến điểm số để hoàn thành mini game đầu
-                tiên. Sản phẩm cần demo trong 5 phút cuối.
-              </p>
-            </div>
-            <div className='flex items-center gap-2'>
-              <Button variant='outline' size='sm' className='h-8 px-3 text-xs'>
-                <Icons.book className='size-3' />
-                Mở giáo án
-              </Button>
-              <Button size='sm' className='h-8 px-3 text-xs'>
-                <Icons.send className='size-3' />
-                Gửi tới phụ huynh
-              </Button>
-            </div>
-          </div>
-
-          <div className='mt-4 border-t pt-4'>
-            <div className='text-muted-foreground text-[11px] font-medium tracking-wider uppercase'>
-              Nhận xét chung cả lớp
-            </div>
-            <Textarea
-              defaultValue='Lớp tiếp thu nhanh khái niệm vòng lặp lồng. 8/10 hs hoàn thành mini game; 2 hs cần hỗ trợ thêm về vị trí (x,y). Bài tập về nhà: thêm 1 con mèo thứ hai vào game.'
-              className='mt-2 min-h-[80px] text-sm'
-            />
-            <div className='mt-2 flex flex-wrap items-center gap-3'>
-              <span className='text-muted-foreground text-[11px]'>Mức độ hoàn thành mục tiêu:</span>
-              <div className='bg-muted inline-flex items-center rounded-md border p-0.5'>
-                {(['weak', 'average', 'good', 'great', 'excellent'] as const).map((r) => (
-                  <button
-                    key={r}
-                    type='button'
-                    className={cn(
-                      'h-6 rounded px-2 text-[11px] font-medium',
-                      r === 'great' ? 'bg-background shadow-sm' : 'text-muted-foreground'
-                    )}
-                  >
-                    {studentNoteRatingLabel[r]}
-                  </button>
-                ))}
-              </div>
-              <button
-                type='button'
-                className='text-muted-foreground hover:text-foreground ml-auto inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs'
-              >
-                <Icons.paperclip className='size-3' />
-                Đính file / ảnh sản phẩm
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
-          <div className='flex items-center justify-between border-b px-4 py-3'>
-            <div>
-              <h3 className='text-sm font-semibold tracking-tight'>Nhận xét theo từng học sinh</h3>
-              <p className='text-muted-foreground mt-0.5 text-[11px]'>
-                Chỉ học sinh có mặt mới hiển thị. Phụ huynh sẽ nhận được nhận xét riêng của con
-                mình.
-              </p>
-            </div>
-            <Button variant='outline' size='sm' className='h-8 px-3 text-xs'>
-              <Icons.sparkles className='size-3' />
-              Gợi ý bằng AI
-            </Button>
-          </div>
-
-          <ul className='divide-y'>
-            {classA01B6Notes.map((n) => {
-              const student = classA01Students.find((s) => s.id === n.studentId);
-              if (!student) return null;
-              return <SessionNoteCard key={n.studentId} student={student} note={n} />;
-            })}
-          </ul>
-
-          <div className='bg-muted/20 flex items-center justify-between gap-3 border-t px-4 py-3 text-xs'>
-            <span className='text-muted-foreground'>
-              Đã nhận xét{' '}
-              <span className='text-foreground font-mono'>
-                {classA01B6Notes.filter((n) => n.attendance === 'present' && n.saved).length} /{' '}
-                {classA01B6Notes.filter((n) => n.attendance === 'present').length}
-              </span>{' '}
-              học sinh có mặt
-            </span>
-            <div className='flex items-center gap-2'>
-              <Button variant='outline' size='sm' className='h-8 px-3 text-xs'>
-                Lưu nháp
-              </Button>
-              <Button size='sm' className='h-8 px-3 text-xs'>
-                Lưu &amp; gửi PH
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function MaterialsTab() {
+  const t = useTranslations('teacherClassDetail');
   return (
     <div className='bg-card rounded-lg border p-10 text-center shadow-sm'>
       <div className='bg-muted text-muted-foreground mx-auto grid h-12 w-12 place-items-center rounded-md'>
         <Icons.book className='size-5' />
       </div>
-      <h3 className='mt-3 font-semibold tracking-tight'>Giáo trình &amp; bài tập</h3>
-      <p className='text-muted-foreground mt-1 text-sm'>
-        Khu vực này hiển thị giáo án từng buổi và bài tập về nhà — sẽ thiết kế ở vòng sau.
-      </p>
+      <h3 className='mt-3 font-semibold tracking-tight'>{t('materials.title')}</h3>
+      <p className='text-muted-foreground mt-1 text-sm'>{t('materials.description')}</p>
     </div>
   );
 }
 
-export function ClassDetailView() {
+function AttendanceTabSkeleton() {
+  return (
+    <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
+      <div className='flex items-center gap-3 border-b p-3 px-4'>
+        <Skeleton className='h-8 w-40' />
+        <Skeleton className='h-7 w-48' />
+        <Skeleton className='ml-auto h-8 w-32' />
+      </div>
+      <ul className='divide-y'>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <li key={i} className='flex items-center gap-3 px-4 py-3'>
+            <Skeleton className='size-9 rounded-full' />
+            <div className='flex-1 space-y-1.5'>
+              <Skeleton className='h-4 w-40' />
+              <Skeleton className='h-3 w-24' />
+            </div>
+            <Skeleton className='h-7 w-64' />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function ClassDetailView({ classId }: { classId: string }) {
+  const t = useTranslations('teacherClassDetail');
+  const detailQuery = useSuspenseQuery(classDetailOptions(classId));
+  const sessionsQuery = useSuspenseQuery(classSessionsOptions(classId));
+  const studentsQuery = useSuspenseQuery(classStudentsOptions(classId));
+
+  const detail = detailQuery.data;
+  const sessions = sessionsQuery.data.sessions;
+  const currentSessionId = detail.currentSessionId || sessionsQuery.data.currentSessionId;
+  const students = studentsQuery.data.students;
+
+  const taughtCount = React.useMemo(
+    () => sessions.filter((s) => s.status !== 'upcoming').length,
+    [sessions]
+  );
+
   return (
     <div className='space-y-6'>
       <Link
@@ -788,21 +1065,21 @@ export function ClassDetailView() {
         className='text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm'
       >
         <Icons.chevronLeft className='size-3.5' />
-        Quay lại danh sách lớp
+        {t('back')}
       </Link>
 
-      <ClassHeader />
+      <ClassHeader d={detail} />
 
       <Tabs defaultValue='students'>
-        <TabsList className='h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0'>
+        <TabsList className='h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b bg-transparent p-0'>
           <TabsTrigger
             value='students'
             className='data-[state=active]:border-foreground data-[state=active]:text-foreground -mb-px h-10 rounded-none border-b-2 border-transparent px-4 text-sm font-medium shadow-none data-[state=active]:shadow-none'
           >
             <Icons.teams className='size-3.5' />
-            Danh sách học sinh
+            {t('tabs.students')}
             <span className='text-muted-foreground font-mono text-[11px]'>
-              {classA01Students.length}
+              {studentsQuery.data.totalAll}
             </span>
           </TabsTrigger>
           <TabsTrigger
@@ -810,36 +1087,50 @@ export function ClassDetailView() {
             className='data-[state=active]:border-foreground data-[state=active]:text-foreground -mb-px h-10 rounded-none border-b-2 border-transparent px-4 text-sm font-medium shadow-none data-[state=active]:shadow-none'
           >
             <Icons.check className='size-3.5' />
-            Điểm danh
-            <span className='text-muted-foreground font-mono text-[11px]'>6 buổi</span>
+            {t('tabs.attendance')}
+            <span className='text-muted-foreground font-mono text-[11px]'>
+              {t('tabs.sessionsCount', { count: taughtCount })}
+            </span>
           </TabsTrigger>
           <TabsTrigger
             value='notes'
             className='data-[state=active]:border-foreground data-[state=active]:text-foreground -mb-px h-10 rounded-none border-b-2 border-transparent px-4 text-sm font-medium shadow-none data-[state=active]:shadow-none'
           >
             <Icons.post className='size-3.5' />
-            Nhận xét buổi học
-            <span className='inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-amber-100 px-1 font-mono text-[10px] font-medium text-amber-900'>
-              2
-            </span>
+            {t('tabs.notes')}
+            {detail.needsReviewCount > 0 && (
+              <span className='inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-amber-100 px-1 font-mono text-[10px] font-medium text-amber-900'>
+                {detail.needsReviewCount}
+              </span>
+            )}
           </TabsTrigger>
           <TabsTrigger
             value='materials'
             className='data-[state=active]:border-foreground data-[state=active]:text-foreground -mb-px h-10 rounded-none border-b-2 border-transparent px-4 text-sm font-medium shadow-none data-[state=active]:shadow-none'
           >
             <Icons.book className='size-3.5' />
-            Giáo trình &amp; bài tập
+            {t('tabs.materials')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value='students' className='mt-6'>
-          <StudentsTab />
+          <StudentsTab classId={classId} />
         </TabsContent>
         <TabsContent value='attendance' className='mt-6'>
-          <AttendanceTab />
+          <AttendanceTab
+            classId={classId}
+            students={students}
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+          />
         </TabsContent>
         <TabsContent value='notes' className='mt-6'>
-          <NotesTab />
+          <NotesTab
+            classId={classId}
+            students={students}
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+          />
         </TabsContent>
         <TabsContent value='materials' className='mt-6'>
           <MaterialsTab />

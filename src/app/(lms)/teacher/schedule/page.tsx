@@ -1,27 +1,45 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import PageContainer from '@/components/layout/page-container';
+import { teacherScheduleWeekOptions } from '@/api/teacher-schedule';
 import {
   TeacherScheduleHeaderAction,
-  TeacherScheduleStats,
   TeacherScheduleView
 } from '@/features/teacher/components/teacher-schedule-view';
+import { getQueryClient } from '@/lib/query-client';
 
-export const metadata = {
-  title: 'Teacher: Lịch dạy'
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('teacherSchedule');
+  return { title: t('metaTitle') };
+}
 
-export default function TeacherSchedulePage() {
+type SearchParams = Promise<{ view?: string; anchor?: string; classId?: string }>;
+
+export default async function TeacherSchedulePage({
+  searchParams
+}: {
+  searchParams: SearchParams;
+}) {
+  const [sp, t] = await Promise.all([searchParams, getTranslations('teacherSchedule')]);
+  const params = { anchor: sp.anchor, classId: sp.classId };
+
+  const queryClient = getQueryClient();
+  // Prefetch (streamed via shouldDehydrateQuery: pending) so the client hydrates
+  // with data on first paint. TeacherScheduleView uses useQuery: it renders its
+  // own skeleton while this first load resolves, then a LoadingOverlay (not the
+  // skeleton) for every subsequent week / day / class navigation.
+  void queryClient.prefetchQuery(teacherScheduleWeekOptions(params));
+
   return (
     <PageContainer
-      pageTitle='Lịch dạy'
-      pageDescription='Lịch các buổi dạy của bạn trong tuần — gồm cả buổi học bù.'
-      pageHeaderAction={
-        <div className='flex flex-col items-end gap-3'>
-          <TeacherScheduleHeaderAction />
-          <TeacherScheduleStats />
-        </div>
-      }
+      pageTitle={t('pageTitle')}
+      pageDescription={t('pageDescription')}
+      pageHeaderAction={<TeacherScheduleHeaderAction />}
     >
-      <TeacherScheduleView />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <TeacherScheduleView />
+      </HydrationBoundary>
     </PageContainer>
   );
 }
