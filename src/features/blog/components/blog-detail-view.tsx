@@ -256,6 +256,9 @@ function WorkshopSidebar({
     );
   }
 
+  const today = new Date().toISOString().slice(0, 10);
+  const isEnded = !!cls.endDate && cls.endDate < today;
+
   const seats = workshopSeatsLeft(cls);
   const isFull = seats === 0 || cls.status === 'full';
 
@@ -274,7 +277,10 @@ function WorkshopSidebar({
         />
         <InfoRow icon='billing' title={formatFee(cls.tuitionAmount)} />
       </div>
-      <SignupTrigger cls={cls} disabled={isFull} />
+      {!isEnded && <SignupTrigger cls={cls} disabled={isFull} />}
+      {isEnded && (
+        <p className='text-muted-foreground mt-5 text-center text-[13px]'>{t('ended')}</p>
+      )}
     </div>
   );
 }

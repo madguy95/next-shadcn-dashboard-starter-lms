@@ -19,8 +19,13 @@ const META_THEME_COLORS = {
 };
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://iqode.vn'),
+  title: {
+    default: 'IQode Lab',
+    template: '%s | IQode Lab'
+  },
+  description:
+    'IQode Lab — Trung tâm công nghệ giáo dục dành cho trẻ em với các khóa học lập trình Scratch, mBot2, mTiny và AI thực hành.'
 };
 
 export const viewport: Viewport = {

@@ -13,7 +13,26 @@ import { getQueryClient } from '@/lib/query-client';
 
 export async function generateMetadata() {
   const t = await getTranslations('blog');
-  return { title: t('metaTitleList') };
+  const title = t('metaTitleList');
+  const description = t('metaDescriptionList');
+  return {
+    title,
+    description,
+    alternates: { canonical: '/blog' },
+    openGraph: {
+      title,
+      description,
+      url: '/blog',
+      siteName: 'IQode Lab',
+      type: 'website',
+      locale: 'vi_VN'
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description
+    }
+  };
 }
 
 export default async function BlogPage() {

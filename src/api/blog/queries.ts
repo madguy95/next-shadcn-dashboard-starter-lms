@@ -4,6 +4,7 @@ import {
   deleteBlogPost,
   getBlogPostBySlug,
   getBlogPosts,
+  getPublicHomeFeed,
   updateBlogPost
 } from './service';
 import type { BlogListParams, CreateBlogPostInput, UpdateBlogPostInput } from './types';
@@ -27,6 +28,14 @@ export function blogDetailOptions(slug: string) {
     queryKey: blogKeys.detail(slug),
     queryFn: () => getBlogPostBySlug(slug),
     enabled: !!slug
+  });
+}
+
+export function homeFeedOptions(limit = 4) {
+  return queryOptions({
+    queryKey: ['public', 'blog', 'home-feed', { limit }] as const,
+    queryFn: () => getPublicHomeFeed(limit),
+    staleTime: 5 * 60 * 1000
   });
 }
 

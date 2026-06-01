@@ -276,11 +276,21 @@ export async function setCourseStatus(id: string, status: CourseStatus): Promise
 }
 
 /**
- * Public, unauthenticated landing-page courses. Hits a permitAll endpoint so it can be called
- * from the marketing site without a JWT.
+ * Public, unauthenticated course catalog. Hits a permitAll endpoint so it can be called
+ * from the marketing site without a JWT. Uses server-side pagination for SEO.
  */
-export async function getPublicCourses(limit = 4): Promise<PublicCourse[]> {
-  return apiClient<PublicCourse[]>(`/api/public/courses?limit=${limit}`);
+export async function getPublicCourses(params: {
+  page: number;
+  size: number;
+}): Promise<Paginated<PublicCourse>> {
+  const paged = await apiClientPaged<PublicCourse>(
+    `/api/public/courses?page=${params.page}&size=${params.size}`
+  );
+  return {
+    data: paged.data,
+    total: paged.totalElements,
+    pageCount: paged.totalPages
+  };
 }
 
 /**

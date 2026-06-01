@@ -1,6 +1,9 @@
 User-agent: *
-Disallow: /auth
-Disallow: /dashboard
-Disallow: /sign-in
-Disallow: /sign-up
-Disallow: /v1/
+Allow: /
+Disallow: /login
+Disallow: /admin/
+Disallow: /teacher/
+Disallow: /parent/
+Disallow: /api/
+
+Sitemap: https://iqode.vn/sitemap.xml

@@ -21,16 +21,12 @@ import { formatVND, type ParentCourse } from '@/features/parent/data';
 
 export function CourseDetailSheet({
   course,
-  isSelected,
   open,
-  onOpenChange,
-  onSelect
+  onOpenChange
 }: {
   course: ParentCourse | null;
-  isSelected: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: () => void;
 }) {
   // course.id is BE numeric id stringified by the adapter. Only fetch while the sheet is open,
   // so closing it doesn't keep the request alive.
@@ -47,8 +43,6 @@ export function CourseDetailSheet({
     );
   }
 
-  const ModeIcon = course.mode.includes('Online') ? Icons.video : Icons.workspace;
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -59,7 +53,7 @@ export function CourseDetailSheet({
         className='flex w-full max-w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-[760px] [&>button:last-of-type]:hidden'
       >
         <SheetTitle className='sr-only'>{course.name}</SheetTitle>
-        <SheetDescription className='sr-only'>{detail?.tagline ?? course.goals}</SheetDescription>
+        <SheetDescription className='sr-only'>{detail?.tagline}</SheetDescription>
 
         <div className='bg-background z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4 sm:px-5'>
           <div className='flex min-w-0 flex-1 items-center gap-2'>
@@ -109,12 +103,6 @@ export function CourseDetailSheet({
             <div className='mt-3 flex flex-wrap items-center gap-1.5'>
               <Badge variant='secondary' className='font-mono text-[11px] font-normal'>
                 <Icons.teams className='mr-1 size-2.5' /> {course.ageRange} tuổi
-              </Badge>
-              <Badge variant='secondary' className='font-mono text-[11px] font-normal'>
-                {course.level}
-              </Badge>
-              <Badge variant='secondary' className='font-mono text-[11px] font-normal'>
-                <ModeIcon className='mr-1 size-2.5' /> {course.mode}
               </Badge>
               <Badge variant='secondary' className='font-mono text-[11px] font-normal'>
                 <Icons.book className='mr-1 size-2.5' /> {course.sessions} buổi
@@ -191,9 +179,9 @@ export function CourseDetailSheet({
                     value={`${course.ageRange} tuổi`}
                   />
                   <InfoCard
-                    icon={<Icons.adjustments className='size-4' />}
-                    label='Cấp độ'
-                    value={course.level}
+                    icon={<Icons.info className='size-4' />}
+                    label='Mô tả'
+                    value={course.goals || 'Đang cập nhật.'}
                   />
                 </div>
               </TabsContent>
@@ -292,26 +280,6 @@ export function CourseDetailSheet({
             <Button variant='outline' className='w-full sm:w-auto'>
               <Icons.sparkles className='size-3.5' />
               Học thử miễn phí
-            </Button>
-            <Button
-              variant={isSelected ? 'secondary' : 'default'}
-              className='w-full sm:w-auto'
-              onClick={() => {
-                onSelect();
-                onOpenChange(false);
-              }}
-            >
-              {isSelected ? (
-                <>
-                  <Icons.check className='size-3.5' />
-                  Đã chọn khóa
-                </>
-              ) : (
-                <>
-                  Chọn khóa này
-                  <Icons.arrowRight className='size-3.5' />
-                </>
-              )}
             </Button>
           </div>
         </div>

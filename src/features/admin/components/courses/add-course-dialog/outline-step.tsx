@@ -35,7 +35,7 @@ export function OutlineStep({ tDialog, form, totalSessionsValue }: OutlineStepPr
     for (let i = 0; i < expected; i++) {
       for (const sub of ['title', 'description'] as const) {
         form.setFieldMeta(`sessions[${i}].${sub}`, (prev: any) => ({
-          ...(prev ?? {}),
+          ...prev,
           isTouched: false,
           errors: [],
           errorMap: {}

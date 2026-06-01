@@ -15,29 +15,23 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { useAppForm, useFormFields } from '@/components/ui/tanstack-form';
-import { submitWorkshopSignup } from '@/api/enrollments/service';
-import type { AttachedClass } from '@/api/blog';
+import { submitCourseInquiry } from '@/api/enrollments/service';
+import type { PublicCourse } from '@/api/courses/types';
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workshop: AttachedClass;
+  course: Pick<PublicCourse, 'id' | 'title' | 'code' | 'minAge' | 'maxAge'>;
 };
 
-// studentAge kept as a string so the empty-initial state is representable
-// without sentinel values. Validation refines the numeric range; the submit
-// handler is the single place that converts to a number for the BE payload.
 type FormValues = {
   parentName: string;
   parentPhone: string;
-  studentName: string;
-  studentAge: string;
+  childName: string;
+  childAge: string;
   note: string;
 };
 
-// Inline label suffix — e.g. "(8 - 12)", "(≥ 8)", "(≤ 12)". Tighter than the
-// full descriptive label; fits beside "Tuổi" without a separate hint line.
-// Pure numeric output, so locale-independent.
 function formatAgeRangeSuffix(minAge?: number, maxAge?: number): string {
   if (minAge != null && maxAge != null) return ` (${minAge} - ${maxAge})`;
   if (minAge != null) return ` (≥ ${minAge})`;
@@ -48,114 +42,80 @@ function formatAgeRangeSuffix(minAge?: number, maxAge?: number): string {
 const EMPTY: FormValues = {
   parentName: '',
   parentPhone: '',
-  studentName: '',
-  studentAge: '',
+  childName: '',
+  childAge: '',
   note: ''
 };
 
-export function WorkshopSignupDialog({ open, onOpenChange, workshop }: Props) {
-  const t = useTranslations('blog.signup');
-  const tValidation = useTranslations('blog.signup.validation');
-  const tWorkshop = useTranslations('blog.workshop');
-  // Successful submissions swap the dialog body to a thank-you panel. Owned
-  // here (not in the form) so the form unmount after success doesn't blow
-  // away the success state mid-render.
+export function CourseInquiryDialog({ open, onOpenChange, course }: Props) {
+  const t = useTranslations('public.courseInquiry');
   const [success, setSuccess] = useState<{ phone: string; childName: string } | null>(null);
 
-  // Static field schemas — built inside the component so they can pull
-  // localized error messages from useTranslations.
   const staticFieldSchemas = useMemo(
     () => ({
-      parentName: z.string().trim().min(2, tValidation('parentNameRequired')).max(120),
+      parentName: z.string().trim().min(2, t('validation.parentNameRequired')).max(120),
       parentPhone: z
         .string()
         .trim()
-        .min(1, tValidation('parentPhoneRequired'))
-        .regex(/^[0-9+\-\s]{8,20}$/, tValidation('parentPhoneInvalid')),
-      studentName: z.string().trim().min(1, tValidation('studentNameRequired')).max(120),
-      // Note is always a string on the form side (empty when blank); we only
-      // forward it to the BE if non-empty in the submit handler below.
-      note: z.string().trim().max(500, tValidation('noteTooLong'))
+        .min(1, t('validation.parentPhoneRequired'))
+        .regex(/^[0-9+\-\s]{8,20}$/, t('validation.parentPhoneInvalid')),
+      childName: z.string().trim().min(1, t('validation.childNameRequired')).max(120),
+      note: z.string().trim().max(500, t('validation.noteTooLong'))
     }),
-    [tValidation]
+    [t]
   );
 
-  // Localized "5 – 10 tuổi" / "from 5 yrs" descriptive form used in error
-  // messages. Pure numeric (8 - 12) suffix is handled separately.
-  const formatAgeRangeDescriptive = (minAge?: number, maxAge?: number) => {
-    if (minAge != null && maxAge != null) return tWorkshop('ageBoth', { min: minAge, max: maxAge });
-    if (minAge != null) return tWorkshop('ageMin', { min: minAge });
-    if (maxAge != null) return tWorkshop('ageMax', { max: maxAge });
-    return '';
-  };
-
-  // Age bounds come from the workshop's linked class/course. Build the schemas
-  // once per workshop change so onBlur (field-level) and onSubmit (form-level)
-  // share the same source of truth — if min/max ever change the form picks it
-  // up next render without a hand-wired refresh.
   const ageSchema = useMemo(() => {
-    const min = workshop.minAge ?? 1;
-    const max = workshop.maxAge ?? 99;
-    const range = formatAgeRangeDescriptive(workshop.minAge, workshop.maxAge);
-    // Two distinct messages so the parent gets actionable feedback: "needs to be
-    // a number" vs "needs to be inside the workshop's range".
+    const min = course.minAge ?? 1;
+    const max = course.maxAge ?? 99;
     return z
       .string()
-      .min(1, tValidation('ageRequired'))
+      .min(1, t('validation.ageRequired'))
       .refine((v) => {
         const n = Number(v);
         return Number.isInteger(n) && n >= 1;
-      }, tValidation('ageInteger'))
-      .refine(
-        (v) => {
-          const n = Number(v);
-          return n >= min && n <= max;
-        },
-        range ? tValidation('ageRangeMessage', { range }) : tValidation('ageRangeFallback')
-      );
-    // formatAgeRangeDescriptive depends on tWorkshop which is stable per render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workshop.minAge, workshop.maxAge, tValidation, tWorkshop]);
+      }, t('validation.ageInteger'))
+      .refine((v) => {
+        const n = Number(v);
+        return n >= min && n <= max;
+      }, t('validation.ageRange'));
+  }, [course.minAge, course.maxAge, t]);
 
   const formSchema = useMemo(
-    () => z.object({ ...staticFieldSchemas, studentAge: ageSchema }),
+    () => z.object({ ...staticFieldSchemas, childAge: ageSchema }),
     [ageSchema, staticFieldSchemas]
   );
+
   const ageLabel = useMemo(
-    () => `${t('ageLabel')}${formatAgeRangeSuffix(workshop.minAge, workshop.maxAge)}`,
-    [workshop.minAge, workshop.maxAge, t]
+    () => `${t('ageLabel')}${formatAgeRangeSuffix(course.minAge, course.maxAge)}`,
+    [course.minAge, course.maxAge, t]
   );
 
   const form = useAppForm({
     defaultValues: EMPTY,
-    validators: {
-      // Form-level safety net — runs if field-level validators were skipped.
-      onSubmit: formSchema
-    },
+    validators: { onSubmit: formSchema },
     onSubmit: async ({ value }) => {
       try {
-        await submitWorkshopSignup({
-          classId: workshop.id,
+        await submitCourseInquiry({
+          courseId: course.id,
           parentName: value.parentName,
           parentPhone: value.parentPhone,
-          studentName: value.studentName,
-          studentAge: Number(value.studentAge),
-          note: value.note?.trim() || undefined
+          childName: value.childName,
+          childAge: Number(value.childAge),
+          note: value.note.trim() || undefined
         });
-        setSuccess({ phone: value.parentPhone, childName: value.studentName });
+        setSuccess({ phone: value.parentPhone, childName: value.childName });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : t('submitError'));
       }
     }
   });
 
-  // Strongly-typed field shortcuts — name + validator inference is keyed off FormValues.
   const { FormTextField, FormTextareaField } = useFormFields<FormValues>();
 
   const handleClose = (next: boolean) => {
     onOpenChange(next);
     if (!next) {
-      // Reset after the close animation so the next open is clean.
       setTimeout(() => {
         form.reset();
         setSuccess(null);
@@ -166,7 +126,7 @@ export function WorkshopSignupDialog({ open, onOpenChange, workshop }: Props) {
   if (success) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className='sm:max-w-[440px]'>
+        <DialogContent className='sm:max-w-[520px]'>
           <DialogHeader>
             <div className='bg-success/15 text-success mx-auto mb-2 grid size-12 place-items-center rounded-full'>
               <Icons.check className='size-6' />
@@ -191,12 +151,12 @@ export function WorkshopSignupDialog({ open, onOpenChange, workshop }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className='sm:max-w-[460px]'>
+      <DialogContent className='sm:max-w-[560px]'>
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            <span className='text-foreground font-medium'>{workshop.courseTitle}</span>
-            <span className='text-muted-foreground'> · {workshop.schedule}</span>
+            <span className='text-foreground font-medium'>{course.title}</span>
+            <span className='text-muted-foreground'> · {course.code}</span>
             <br />
             {t('description')}
           </DialogDescription>
@@ -226,18 +186,14 @@ export function WorkshopSignupDialog({ open, onOpenChange, workshop }: Props) {
 
             <div className='grid grid-cols-[2fr_1fr] gap-3'>
               <FormTextField
-                name='studentName'
-                label={t('studentName')}
+                name='childName'
+                label={t('childName')}
                 required
-                placeholder={t('studentNamePlaceholder')}
-                validators={{ onBlur: staticFieldSchemas.studentName }}
+                placeholder={t('childNamePlaceholder')}
+                validators={{ onBlur: staticFieldSchemas.childName }}
               />
               <FormTextField
-                // type='number' would make FormTextField cast the value to a
-                // JS number, which collides with the z.string() schema below.
-                // Plain text + inputMode='numeric' gives the same mobile
-                // keyboard UX without the cast.
-                name='studentAge'
+                name='childAge'
                 label={ageLabel}
                 required
                 placeholder={t('agePlaceholder')}

@@ -18,6 +18,7 @@ export type ParentCourse = {
   goals: string;
   rating: number;
   learners: number;
+  description?: string;
   // Real cover image URL from Cloudinary (or empty if not uploaded yet). The card UI uses
   // this when present and falls back to a stripe placeholder otherwise.
   coverUrl?: string;
@@ -46,6 +47,7 @@ export function publicCourseToParentCourse(c: PublicCourse): ParentCourse {
     code: c.code,
     name: c.title,
     ageRange: `${c.minAge}–${c.maxAge}`,
+    description: c.description || '',
     // BE no longer carries a level field — default to Beginner for the parent badge UI
     // until a richer signal lands upstream.
     level: 'Beginner',

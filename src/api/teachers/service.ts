@@ -69,7 +69,7 @@ function deriveInitials(fullName: string): string {
 }
 
 function mapTeacher(dto: TeacherDto): Teacher {
-  const sortedSubjects = [...(dto.subjects ?? [])].sort(
+  const sortedSubjects = [...(dto.subjects ?? [])].toSorted(
     (a, b) => Number(b.primary) - Number(a.primary)
   );
   return {

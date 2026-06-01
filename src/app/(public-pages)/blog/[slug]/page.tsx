@@ -11,8 +11,30 @@ import { getQueryClient } from '@/lib/query-client';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [post, t] = await Promise.all([getBlogPostBySlug(slug), getTranslations('blog')]);
+  const title = post ? t('metaTitleDetail', { title: post.title }) : t('metaTitleDetailFallback');
+  const description = post?.excerpt ?? '';
+  const canonicalUrl = `/blog/${slug}`;
   return {
-    title: post ? t('metaTitleDetail', { title: post.title }) : t('metaTitleDetailFallback')
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: 'IQode Lab',
+      type: 'article',
+      locale: 'vi_VN',
+      ...(post?.coverUrl
+        ? { images: [{ url: post.coverUrl, width: 1200, height: 630, alt: post.title }] }
+        : {})
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(post?.coverUrl ? { images: [post.coverUrl] } : {})
+    }
   };
 }
 

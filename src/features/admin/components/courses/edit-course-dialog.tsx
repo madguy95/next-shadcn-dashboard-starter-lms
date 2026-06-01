@@ -279,10 +279,10 @@ export function EditCourseDialog({
         // `prev` is undefined for fields that haven't mounted yet (e.g. newly
         // grown session entries before their inputs render).
         f.setFieldMeta(name, (prev: { errorMap?: Record<string, unknown> } | undefined) => ({
-          ...(prev ?? {}),
+          ...prev,
           isTouched: true,
           errorMap: {
-            ...(prev?.errorMap ?? {}),
+            ...prev?.errorMap,
             onSubmit: errors && errors.length ? errors : undefined
           }
         }));

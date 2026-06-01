@@ -19,6 +19,8 @@ import type {
   UpdateCourseInput
 } from './types';
 
+export const PUBLIC_COURSES_PAGE_SIZE = 12;
+
 export const courseKeys = {
   all: ['admin', 'courses'] as const,
   list: (params: CourseListParams) => [...courseKeys.all, 'list', params] as const,
@@ -27,7 +29,7 @@ export const courseKeys = {
   // Separate key space — public list lives outside the 'admin' subtree so admin
   // mutations don't accidentally invalidate the unauthenticated landing/enrollment query
   // (different endpoint, different shape, different cache lifetime).
-  publicList: (limit: number) => ['public', 'courses', { limit }] as const,
+  publicList: (params: { page: number; size: number }) => ['public', 'courses', params] as const,
   publicDetail: (id: string) => ['public', 'courses', 'detail', id] as const
 };
 
@@ -54,13 +56,14 @@ export function courseToolTabsOptions() {
   });
 }
 
-export function publicCoursesOptions(limit = 24) {
+export function publicCoursesOptions(params: { page: number; size: number }) {
   return queryOptions({
-    queryKey: courseKeys.publicList(limit),
-    queryFn: () => getPublicCourses(limit),
+    queryKey: courseKeys.publicList(params),
+    queryFn: () => getPublicCourses(params),
     // Marketing/enrollment data doesn't change minute-to-minute; cache for 5 min so navigating
     // home → enrollment → back doesn't refetch.
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData
   });
 }
 

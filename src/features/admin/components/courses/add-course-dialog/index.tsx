@@ -182,10 +182,10 @@ export function AddCourseDialog({ trigger }: { trigger?: React.ReactNode } = {})
       // `prev` is undefined for fields that haven't mounted yet (e.g. newly
       // grown session entries before their inputs render).
       form.setFieldMeta(name as never, (prev) => ({
-        ...(prev ?? {}),
+        ...prev,
         isTouched: true,
         errorMap: {
-          ...(prev?.errorMap ?? {}),
+          ...prev?.errorMap,
           onSubmit: errors && errors.length ? errors : undefined
         }
       }));

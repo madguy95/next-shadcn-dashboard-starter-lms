@@ -1,22 +1,22 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { PublicTopNav } from '@/components/layout/public-top-nav';
-import { AboutPage } from '@/features/public/components/about-page';
+import { MethodPage } from '@/features/public/components/method-page';
 import { roleMeta } from '@/config/nav-config';
 import { getAuthUser } from '@/lib/auth';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('about');
+  const t = await getTranslations('method');
   const title = t('metaTitle');
   const description = t('metaDescription');
   return {
     title,
     description,
-    alternates: { canonical: '/about' },
+    alternates: { canonical: '/method' },
     openGraph: {
       title,
       description,
-      url: '/about',
+      url: '/method',
       siteName: 'IQode Lab',
       type: 'website',
       locale: 'vi_VN'
@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function AboutRoute() {
+export default async function MethodRoute() {
   const user = await getAuthUser();
   const workspace = user ? roleMeta[user.role] : null;
 
@@ -37,7 +37,7 @@ export default async function AboutRoute() {
     <>
       <PublicTopNav user={user} workspace={workspace} />
       <main>
-        <AboutPage />
+        <MethodPage />
       </main>
     </>
   );

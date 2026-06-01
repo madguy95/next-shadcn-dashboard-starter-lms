@@ -1055,7 +1055,7 @@ export function ClassDetailView({ classId }: { classId: string }) {
 
   const detail = detailQuery.data;
   const sessions = sessionsQuery.data?.sessions;
-  const currentSessionId = detail?.currentSessionId || sessionsQuery.data?.currentSessionId;
+  const currentSessionId = detail?.currentSessionId || sessionsQuery.data?.currentSessionId || '';
   const students = studentsQuery.data?.students;
 
   const taughtCount = React.useMemo(
@@ -1086,7 +1086,7 @@ export function ClassDetailView({ classId }: { classId: string }) {
             <Icons.teams className='size-3.5' />
             {t('tabs.students')}
             <span className='text-muted-foreground font-mono text-[11px]'>
-              {studentsQuery.data.totalAll}
+              {studentsQuery.data?.totalAll}
             </span>
           </TabsTrigger>
           <TabsTrigger

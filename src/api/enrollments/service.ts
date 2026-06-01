@@ -266,6 +266,50 @@ export async function submitWorkshopSignup(input: WorkshopSignupInput): Promise<
   });
 }
 
+export type ConsultationRequestInput = {
+  parentName: string;
+  parentPhone: string;
+  childName?: string;
+  interestedCourseId?: number;
+  note?: string;
+};
+
+export async function submitConsultationRequest(input: ConsultationRequestInput): Promise<void> {
+  await apiClient<void>('/api/public/consultations', {
+    method: 'POST',
+    body: JSON.stringify({
+      parentName: input.parentName.trim(),
+      parentPhone: input.parentPhone.trim(),
+      childName: input.childName?.trim() || undefined,
+      interestedCourseId: input.interestedCourseId ?? undefined,
+      note: input.note?.trim() || undefined
+    })
+  });
+}
+
+export type CourseInquiryInput = {
+  parentName: string;
+  parentPhone: string;
+  childName: string;
+  childAge: number;
+  courseId: number;
+  note?: string;
+};
+
+export async function submitCourseInquiry(input: CourseInquiryInput): Promise<void> {
+  await apiClient<void>('/api/public/enrollments/course-inquiry', {
+    method: 'POST',
+    body: JSON.stringify({
+      parentName: input.parentName.trim(),
+      parentPhone: input.parentPhone.trim(),
+      childName: input.childName.trim(),
+      childAge: input.childAge,
+      courseId: input.courseId,
+      note: input.note?.trim() || undefined
+    })
+  });
+}
+
 export async function bulkActionEnrollments(input: BulkActionInput): Promise<BulkActionResult> {
   const body = {
     ids: input.ids.map(Number),
