@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server';
 import PageContainer from '@/components/layout/page-container';
-import { getCourseStats } from '@/api/courses';
 import { CoursesHeaderAction, CoursesView } from '@/features/admin/components/courses/courses-view';
 
 export const metadata = {
@@ -8,17 +7,12 @@ export const metadata = {
 };
 
 export default async function CoursesPage() {
-  const [t, stats] = await Promise.all([getTranslations('courses'), getCourseStats()]);
+  const t = await getTranslations('courses');
   return (
     <PageContainer
       pageTitle={t('title')}
-      pageDescription={t('pageDescription', {
-        published: stats.published,
-        drafts: stats.drafts
-      })}
+      pageDescription={t('pageDescription')}
       pageHeaderAction={<CoursesHeaderAction />}
-      // CoursesView owns its scroll so the detail panel stays pinned on the
-      // right while the card grid scrolls on the left.
       scrollable={false}
     >
       <CoursesView />

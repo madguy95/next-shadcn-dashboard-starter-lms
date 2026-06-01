@@ -44,6 +44,7 @@ type ClassDetailDto = {
   needsReviewSession: string;
   color?: ClassDetailColor;
   currentSessionId: string;
+  coverUrl?: string;
 };
 
 type ClassStudentDto = {
@@ -165,7 +166,8 @@ function mapDetail(dto: ClassDetailDto): ClassDetail {
     needsReviewCount: dto.needsReviewCount,
     needsReviewSession: dto.needsReviewSession,
     color: dto.color ?? pickColor(id),
-    currentSessionId: dto.currentSessionId
+    currentSessionId: dto.currentSessionId,
+    coverUrl: dto.coverUrl
   };
 }
 

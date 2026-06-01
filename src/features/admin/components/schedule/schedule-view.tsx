@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { addDays, addMonths, format, parseISO, startOfMonth, startOfWeek } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryStates } from 'nuqs';
@@ -28,6 +28,7 @@ import {
   type ScheduleView as ScheduleViewMode,
   type ScheduleWeek
 } from '@/api/schedule';
+import { ScheduleViewSkeleton } from '@/features/admin/components/schedule/schedule-skeleton';
 import { scheduleCategoryClass, scheduleCategoryDot } from '@/features/admin/data';
 import { cn } from '@/lib/utils';
 
@@ -469,7 +470,7 @@ function WeekOrDayBody({
   view: ScheduleViewMode;
 }) {
   const t = useTranslations('schedule');
-  const { data: week, isFetching } = useSuspenseQuery(
+  const { data: week, isFetching } = useQuery(
     scheduleWeekOptions({
       view,
       anchor: filters.anchor ?? undefined,
@@ -479,6 +480,8 @@ function WeekOrDayBody({
     })
   );
   const scopeLabel = t(view === 'day' ? 'summary.scope.day' : 'summary.scope.week');
+
+  if (!week) return <ScheduleViewSkeleton view={view === 'day' ? 'day' : 'week'} />;
 
   return (
     <div className='space-y-4'>
@@ -513,7 +516,7 @@ function MonthBody({
   setFilters: SetFilters;
 }) {
   const t = useTranslations('schedule');
-  const { data: month, isFetching } = useSuspenseQuery(
+  const { data: month, isFetching } = useQuery(
     scheduleMonthOptions({
       anchor: filters.anchor ?? undefined,
       teacherId: filters.teacherId ?? undefined,
@@ -521,6 +524,8 @@ function MonthBody({
       location: filters.location ?? undefined
     })
   );
+
+  if (!month) return <ScheduleViewSkeleton view='month' />;
 
   const drillIntoDay = (iso: string) => void setFilters({ view: 'day', anchor: iso });
 

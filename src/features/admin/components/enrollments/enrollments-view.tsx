@@ -2,7 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
-import { parseAsString, useQueryState } from 'nuqs';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { Icons } from '@/components/icons';
@@ -10,6 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { LoadingOverlay, LoadingState } from '@/components/ui/loading-state';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPageSize
+} from '@/components/ui/pagination';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Sheet,
@@ -46,8 +54,6 @@ import { cn } from '@/lib/utils';
 import { ManualEnrollDialog } from './manual-enroll-dialog';
 import { PaymentDialog } from './payment-dialog';
 import { RejectEnrollmentDialog } from './reject-enrollment-dialog';
-
-const PAGE_SIZE = 20;
 
 const tabKeys: EnrollmentStatusFilter[] = ['pending', 'active', 'waitlist', 'rejected'];
 
@@ -563,6 +569,7 @@ export function EnrollmentsView() {
   const tList = useTranslations('enrollments.list');
   const tDetail = useTranslations('enrollments.detail');
   const tToast = useTranslations('enrollments.toast');
+  const tTable = useTranslations('table');
 
   const [statusParam, setStatusParam] = useQueryState(
     'status',
@@ -570,6 +577,15 @@ export function EnrollmentsView() {
   );
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [selectedId, setSelectedId] = useQueryState('selected', parseAsString);
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [perPage, setPerPage] = useQueryState('perPage', parseAsInteger.withDefault(20));
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const buildPageUrl = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(p));
+    return `${pathname}?${params.toString()}`;
+  };
   const [selectedClassId, setSelectedClassId] = React.useState<string>('');
   const [rejectTarget, setRejectTarget] = React.useState<Enrollment | null>(null);
   const [paymentTarget, setPaymentTarget] = React.useState<Enrollment | null>(null);
@@ -584,21 +600,19 @@ export function EnrollmentsView() {
 
   const listQuery = useQuery(
     enrollmentListOptions({
-      page: 1,
-      perPage: PAGE_SIZE,
+      page,
+      perPage,
       status: activeStatus,
       search: search || undefined
     })
   );
   const tabsQuery = useQuery(enrollmentStatusTabsOptions());
-  // Use open classes here so admin can pick from anything currently accepting
-  // new enrolments. The BE assignable-class guard rejects bad picks at submit
-  // time too, so this list is purely a convenience for the admin.
-  const classesQuery = useQuery(classListOptions({ status: 'open' }));
 
   const enrollments = listQuery.data?.data ?? [];
   const selected =
     enrollments.find((e) => e.id === selectedId) ?? (selectedId ? null : enrollments[0]) ?? null;
+
+  const classesQuery = useQuery(classListOptions({ courseId: selected?.requestedCourse?.id }));
 
   const visibleIds = enrollments.map((e) => e.id).join(',');
   React.useEffect(() => {
@@ -613,6 +627,10 @@ export function EnrollmentsView() {
   React.useEffect(() => {
     setSelectedClassId('');
   }, [selected?.id]);
+
+  React.useEffect(() => {
+    setBulkSelection(new Set());
+  }, [page]);
 
   const approve = useApproveEnrollment();
   const waitlist = useWaitlistEnrollment();
@@ -719,15 +737,17 @@ export function EnrollmentsView() {
     }
   };
 
-  const classes = classesQuery.data?.data ?? [];
+  const classes = (classesQuery.data?.data ?? []).filter(
+    (c) => c.status === 'open' || (c.status === 'ongoing' && c.enrolled < c.capacity)
+  );
   const totalForTab = tabCounts.get(activeStatus) ?? enrollments.length;
   const allSelected = enrollments.length > 0 && bulkSelection.size === enrollments.length;
 
   return (
-    <div className='space-y-4'>
+    <div className='flex min-h-0 flex-1 flex-col gap-4'>
       {/* Stack tabs and search on mobile so neither has to truncate; on md+
           they share the border-b row like the original design. */}
-      <div className='flex flex-col gap-3 border-b md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-2'>
+      <div className='flex shrink-0 flex-col gap-3 border-b md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-2'>
         {/* Tabs are horizontally scrollable on narrow viewports — wrapping 4
             tabs with badges to two lines breaks the underline alignment. */}
         <div className='-mb-px flex items-center overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
@@ -740,6 +760,7 @@ export function EnrollmentsView() {
                 type='button'
                 onClick={() => {
                   void setStatusParam(key);
+                  void setPage(1);
                   setBulkSelection(new Set());
                 }}
                 className={cn(
@@ -766,7 +787,10 @@ export function EnrollmentsView() {
             <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2' />
             <Input
               value={search}
-              onChange={(e) => void setSearch(e.target.value || null)}
+              onChange={(e) => {
+                void setSearch(e.target.value || null);
+                void setPage(1);
+              }}
               placeholder={t('searchPlaceholder')}
               className='h-8 pl-8 text-[13px]'
             />
@@ -774,124 +798,165 @@ export function EnrollmentsView() {
         </div>
       </div>
 
-      <div className='grid grid-cols-12 gap-4'>
-        <div className='bg-card col-span-12 overflow-hidden rounded-lg border shadow-sm xl:col-span-7'>
-          <div className='bg-muted/40 flex items-center justify-between border-b px-4 py-2.5 text-[12px]'>
-            <div className='flex items-center gap-2'>
-              <Checkbox
-                id='select-all-enrollments'
-                checked={allSelected}
-                onCheckedChange={handleToggleSelectAll}
-                aria-label={tList('selectAll')}
-              />
-              <label htmlFor='select-all-enrollments' className='text-muted-foreground'>
-                {tList('selectAll')}
-              </label>
+      <div className='flex min-h-0 flex-1 gap-4'>
+        <div className='flex min-h-0 flex-1 flex-col xl:flex-[7]'>
+          <div className='bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border shadow-sm'>
+            <div className='bg-muted/40 flex shrink-0 items-center justify-between border-b px-4 py-2.5 text-[12px]'>
+              <div className='flex items-center gap-2'>
+                <Checkbox
+                  id='select-all-enrollments'
+                  checked={allSelected}
+                  onCheckedChange={handleToggleSelectAll}
+                  aria-label={tList('selectAll')}
+                />
+                <label htmlFor='select-all-enrollments' className='text-muted-foreground'>
+                  {tList('selectAll')}
+                </label>
+              </div>
+              <div className='text-muted-foreground font-mono'>
+                {tList('tabSummary', { count: totalForTab, status: tTabs(activeStatus) })}
+              </div>
             </div>
-            <div className='text-muted-foreground font-mono'>
-              {tList('tabSummary', { count: totalForTab, status: tTabs(activeStatus) })}
+
+            <div className='min-h-0 flex-1 overflow-y-auto'>
+              {listQuery.isLoading ? (
+                <LoadingState minHeight='320px' message={t('loadingList')} />
+              ) : enrollments.length === 0 ? (
+                <div className='text-muted-foreground grid min-h-[280px] place-items-center px-6 text-center text-sm'>
+                  {t('noResults')}
+                </div>
+              ) : (
+                <LoadingOverlay visible={listQuery.isFetching && !listQuery.isLoading}>
+                  {/* md+ : 5-column table. On <md the table overflows so we render
+                  the card list below instead. */}
+                  <Table className='hidden md:table'>
+                    <TableHeader className='bg-muted/30'>
+                      <TableRow>
+                        <TableHead className='w-8 px-4' />
+                        <TableHead className='text-[11px] tracking-wider uppercase'>
+                          {tList('columns.student')}
+                        </TableHead>
+                        <TableHead className='text-[11px] tracking-wider uppercase'>
+                          {tList('columns.requestedCourse')}
+                        </TableHead>
+                        <TableHead className='text-[11px] tracking-wider uppercase'>
+                          {tList('columns.submitted')}
+                        </TableHead>
+                        <TableHead className='px-4 text-right text-[11px] tracking-wider uppercase'>
+                          {tList('columns.actions')}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {enrollments.map((row) => (
+                        <EnrollmentRowItem
+                          key={row.id}
+                          row={row}
+                          active={row.id === selected?.id}
+                          selected={bulkSelection.has(row.id)}
+                          onSelect={() => handleSelectRow(row.id)}
+                          onToggleSelect={() => handleToggleSelect(row.id)}
+                          onApprove={() => void handleApprove(row)}
+                          onWaitlist={() => void handleWaitlist(row)}
+                          onReject={() => handleReject(row)}
+                        />
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <ul className='divide-y md:hidden'>
+                    {enrollments.map((row) => (
+                      <EnrollmentCardItem
+                        key={row.id}
+                        row={row}
+                        active={row.id === selected?.id}
+                        selected={bulkSelection.has(row.id)}
+                        onSelect={() => handleSelectRow(row.id)}
+                        onToggleSelect={() => handleToggleSelect(row.id)}
+                        onApprove={() => void handleApprove(row)}
+                        onWaitlist={() => void handleWaitlist(row)}
+                        onReject={() => handleReject(row)}
+                      />
+                    ))}
+                  </ul>
+                </LoadingOverlay>
+              )}
+            </div>
+
+            <div
+              className={cn(
+                'text-muted-foreground bg-card flex shrink-0 items-center justify-between border-t px-4 py-2.5 text-[12px]',
+                bulkSelection.size === 0 && 'hidden md:flex'
+              )}
+            >
+              <div>
+                {tList('bulk.label')}
+                <button
+                  className='hover:text-foreground ml-1 underline decoration-dotted disabled:opacity-50'
+                  disabled={bulk.isPending || bulkSelection.size === 0}
+                  onClick={() => void handleBulkApprove()}
+                >
+                  {tList('bulk.approveSelected')}
+                </button>{' '}
+                ·
+                <button
+                  className='hover:text-foreground ml-1 underline decoration-dotted disabled:opacity-50'
+                  disabled={bulk.isPending || bulkSelection.size === 0}
+                  onClick={() => void handleBulkWaitlist()}
+                >
+                  {tList('bulk.moveToWaitlist')}
+                </button>
+              </div>
+              <div>{tList('bulk.selectedCount', { count: bulkSelection.size })}</div>
             </div>
           </div>
 
-          {listQuery.isLoading ? (
-            <LoadingState minHeight='320px' message={t('loadingList')} />
-          ) : enrollments.length === 0 ? (
-            <div className='text-muted-foreground grid min-h-[280px] place-items-center px-6 text-center text-sm'>
-              {t('noResults')}
+          {/* pagination — outside the card */}
+          <div className='flex items-center justify-between px-4 py-2.5 text-[12px]'>
+            <div className='text-muted-foreground flex items-center gap-2'>
+              <span>
+                {tTable('page', { current: page, total: listQuery.data?.pageCount ?? 1 })}
+              </span>
+              <PaginationPageSize
+                value={perPage}
+                onChange={(v) => {
+                  void setPerPage(v);
+                  void setPage(1);
+                }}
+                label={tTable('rowsPerPage')}
+              />
             </div>
-          ) : (
-            <LoadingOverlay visible={listQuery.isFetching && !listQuery.isLoading}>
-              {/* md+ : 5-column table. On <md the table overflows so we render
-                  the card list below instead. */}
-              <Table className='hidden md:table'>
-                <TableHeader className='bg-muted/30'>
-                  <TableRow>
-                    <TableHead className='w-8 px-4' />
-                    <TableHead className='text-[11px] tracking-wider uppercase'>
-                      {tList('columns.student')}
-                    </TableHead>
-                    <TableHead className='text-[11px] tracking-wider uppercase'>
-                      {tList('columns.requestedCourse')}
-                    </TableHead>
-                    <TableHead className='text-[11px] tracking-wider uppercase'>
-                      {tList('columns.submitted')}
-                    </TableHead>
-                    <TableHead className='px-4 text-right text-[11px] tracking-wider uppercase'>
-                      {tList('columns.actions')}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {enrollments.map((row) => (
-                    <EnrollmentRowItem
-                      key={row.id}
-                      row={row}
-                      active={row.id === selected?.id}
-                      selected={bulkSelection.has(row.id)}
-                      onSelect={() => handleSelectRow(row.id)}
-                      onToggleSelect={() => handleToggleSelect(row.id)}
-                      onApprove={() => void handleApprove(row)}
-                      onWaitlist={() => void handleWaitlist(row)}
-                      onReject={() => handleReject(row)}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-              <ul className='divide-y md:hidden'>
-                {enrollments.map((row) => (
-                  <EnrollmentCardItem
-                    key={row.id}
-                    row={row}
-                    active={row.id === selected?.id}
-                    selected={bulkSelection.has(row.id)}
-                    onSelect={() => handleSelectRow(row.id)}
-                    onToggleSelect={() => handleToggleSelect(row.id)}
-                    onApprove={() => void handleApprove(row)}
-                    onWaitlist={() => void handleWaitlist(row)}
-                    onReject={() => handleReject(row)}
-                  />
-                ))}
-              </ul>
-            </LoadingOverlay>
-          )}
-
-          {/* On <md the bar floats above the card list (sticky bottom-0 inside
-              the scrolling page) only when there's a selection — empty state
-              would just add visual noise without an action target. On md+ it
-              sits inline at the bottom of the card like before. bg-card is
-              required for the sticky case so scrolling content doesn't bleed
-              through. */}
-          <div
-            className={cn(
-              'text-muted-foreground bg-card sticky bottom-0 z-10 flex items-center justify-between border-t px-4 py-2.5 text-[12px] md:static md:z-auto',
-              bulkSelection.size === 0 && 'hidden md:flex'
-            )}
-          >
-            <div>
-              {tList('bulk.label')}
-              <button
-                className='hover:text-foreground ml-1 underline decoration-dotted disabled:opacity-50'
-                disabled={bulk.isPending || bulkSelection.size === 0}
-                onClick={() => void handleBulkApprove()}
-              >
-                {tList('bulk.approveSelected')}
-              </button>{' '}
-              ·
-              <button
-                className='hover:text-foreground ml-1 underline decoration-dotted disabled:opacity-50'
-                disabled={bulk.isPending || bulkSelection.size === 0}
-                onClick={() => void handleBulkWaitlist()}
-              >
-                {tList('bulk.moveToWaitlist')}
-              </button>
-            </div>
-            <div>{tList('bulk.selectedCount', { count: bulkSelection.size })}</div>
+            <Pagination className='mx-0 w-auto'>
+              <PaginationContent className='gap-0'>
+                <PaginationItem>
+                  <PaginationLink
+                    href={buildPageUrl(page - 1)}
+                    size='icon'
+                    aria-disabled={page <= 1}
+                    aria-label={tTable('previousPage')}
+                    className={`size-7${page <= 1 ? ' pointer-events-none opacity-50' : ''}`}
+                  >
+                    <Icons.chevronLeft className='size-3.5' />
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink
+                    href={buildPageUrl(page + 1)}
+                    size='icon'
+                    aria-disabled={page >= (listQuery.data?.pageCount ?? 1)}
+                    aria-label={tTable('nextPage')}
+                    className={`size-7${page >= (listQuery.data?.pageCount ?? 1) ? ' pointer-events-none opacity-50' : ''}`}
+                  >
+                    <Icons.chevronRight className='size-3.5' />
+                  </PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         </div>
 
         {/* xl+ : inline detail panel beside the list. <xl uses the Sheet below
             so the user isn't forced to scroll the whole page after tapping. */}
-        <div className='hidden xl:col-span-5 xl:block'>
+        <div className='hidden xl:flex xl:min-h-0 xl:flex-[5] xl:flex-col'>
           {selected ? (
             <EnrollmentDetailPanel
               row={selected}

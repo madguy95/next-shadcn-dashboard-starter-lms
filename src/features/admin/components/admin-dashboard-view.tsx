@@ -1,6 +1,6 @@
 'use client';
 
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -520,20 +520,11 @@ function DashboardHeaderBar({
 
 export function AdminDashboardView() {
   const t = useTranslations('adminDashboard');
-  // Why useTransition: useSuspenseQuery re-suspends whenever the query key
-  // changes (period swap), and Suspense's outer fallback would flash the
-  // skeleton each time. Wrapping the URL update in a React transition tells
-  // the reconciler to keep the previous tree mounted until the new fetch
-  // resolves — no fallback flash. keepPreviousData additionally covers
-  // background refetches (window focus, staleTime) that aren't URL-driven.
-  const [isPending, startTransition] = React.useTransition();
-  const [periodParam, setPeriodParam] = useQueryState(
-    'period',
-    parseAsString.withDefault('week').withOptions({ startTransition })
-  );
+  const [periodParam, setPeriodParam] = useQueryState('period', parseAsString.withDefault('week'));
   const period: DashboardPeriod = isDashboardPeriod(periodParam) ? periodParam : 'week';
-  const { data, isFetching } = useSuspenseQuery(adminDashboardSummaryOptions({ period }));
-  const showOverlay = isPending || isFetching;
+  const { data, isFetching } = useQuery(adminDashboardSummaryOptions({ period }));
+
+  if (!data) return <AdminDashboardSkeleton />;
 
   return (
     <div className='flex min-h-0 flex-1 flex-col gap-6'>
@@ -543,7 +534,7 @@ export function AdminDashboardView() {
         onPeriodChange={(next) => void setPeriodParam(next)}
       />
 
-      <LoadingOverlay visible={showOverlay} message={t('updating')}>
+      <LoadingOverlay visible={isFetching} message={t('updating')}>
         <div className='space-y-6'>
           <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'>
             <CoursesKpi data={data.kpis.courses} />

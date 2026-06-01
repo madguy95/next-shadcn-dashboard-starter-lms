@@ -58,6 +58,7 @@ export type ClassDetail = {
   color: ClassDetailColor;
   /** Session currently being taught/reviewed — default for attendance + notes tabs. */
   currentSessionId: string;
+  coverUrl?: string;
 };
 
 // ── Roster ───────────────────────────────────────────────────────────────────

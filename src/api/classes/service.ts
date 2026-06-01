@@ -122,10 +122,11 @@ function mapClass(dto: ClassDto): ClassRow {
 
 function buildListQuery(params: ClassListParams): string {
   const search = new URLSearchParams();
-  search.set('page', '1');
-  search.set('size', '100');
+  search.set('page', String(params.page ?? 1));
+  search.set('size', String(params.size ?? 20));
   if (params.status) search.set('status', params.status);
   if (params.search) search.set('search', params.search);
+  if (params.courseId) search.set('courseId', params.courseId);
   return search.toString();
 }
 

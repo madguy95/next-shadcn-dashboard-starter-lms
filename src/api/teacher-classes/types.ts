@@ -55,6 +55,7 @@ export type TeacherClass = {
   endedAt?: string;
   daysRemaining?: number;
   studentsPreview: TeacherClassStudentPreview[];
+  coverUrl?: string;
 };
 
 export type TeacherClassesStats = {

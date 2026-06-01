@@ -263,7 +263,7 @@
   },
   "courses": {
     "title": "Khóa học",
-    "pageDescription": "{published} đã xuất bản · {drafts} bản nháp · thư viện giáo trình",
+    "pageDescription": "Quản lý thư viện giáo trình",
     "newCourse": "Thêm khóa học",
     "viewCards": "Thẻ",
     "viewTable": "Bảng",
@@ -492,7 +492,7 @@
   },
   "classes": {
     "title": "Lớp học",
-    "pageDescription": "{ongoing} đang dạy · {open} đang mở đăng ký · chọn một lớp để xem học viên",
+    "pageDescription": "Chọn một lớp để xem học viên và buổi học",
     "newClass": "Thêm lớp",
     "filters": "Bộ lọc",
     "loadingList": "Đang tải danh sách lớp…",

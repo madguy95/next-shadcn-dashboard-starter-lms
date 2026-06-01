@@ -2,11 +2,19 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { parseAsString, useQueryState } from 'nuqs';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPageSize
+} from '@/components/ui/pagination';
 import { LoadingOverlay } from '@/components/ui/loading-state';
 import {
   Sheet,
@@ -29,10 +37,20 @@ import { ClassesTable, ClassesTableSkeleton } from './classes-table';
 
 export function ClassesView() {
   const t = useTranslations('classes');
+  const tTable = useTranslations('table');
   const [statusParam, setStatusParam] = useQueryState('status', parseAsString);
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [selectedId, setSelectedId] = useQueryState('selected', parseAsString);
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [perPage, setPerPage] = useQueryState('perPage', parseAsInteger.withDefault(20));
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const buildPageUrl = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(p));
+    return `${pathname}?${params.toString()}`;
+  };
 
   // The split layout kicks in at lg; below it, the detail lives in a Sheet
   // that opens on row tap. Matching breakpoints in JS + CSS keeps the two in sync.
@@ -46,6 +64,8 @@ export function ClassesView() {
     isLoading
   } = useQuery(
     classListOptions({
+      page,
+      size: perPage,
       status: isClassStatus(statusParam) ? statusParam : undefined,
       search: search || undefined
     })
@@ -79,7 +99,10 @@ export function ClassesView() {
           <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2' />
           <Input
             value={search}
-            onChange={(e) => void setSearch(e.target.value || null)}
+            onChange={(e) => {
+              void setSearch(e.target.value || null);
+              void setPage(1);
+            }}
             placeholder={t('searchPlaceholder')}
             className='h-8 pl-8 text-[13px]'
           />
@@ -97,17 +120,59 @@ export function ClassesView() {
             <ClassesTableSkeleton />
           ) : (
             <LoadingOverlay visible={isFetching} message={t('updatingList')}>
-              <ClassesTable
-                rows={visible}
-                selectedId={selected?.id ?? null}
-                onSelect={handleSelect}
-                filter={filter}
-                onFilterChange={(v) => {
-                  void setStatusParam(v === 'all' ? null : v);
-                }}
-                tabs={statusTabs}
-                totalAll={totalAll}
-              />
+              <>
+                <ClassesTable
+                  rows={visible}
+                  selectedId={selected?.id ?? null}
+                  onSelect={handleSelect}
+                  filter={filter}
+                  onFilterChange={(v) => {
+                    void setStatusParam(v === 'all' ? null : v);
+                    void setPage(1);
+                  }}
+                  tabs={statusTabs}
+                  totalAll={totalAll}
+                />
+                <div className='flex items-center justify-between border-t px-4 py-2.5 text-[12px]'>
+                  <div className='text-muted-foreground flex items-center gap-2'>
+                    <span>{tTable('page', { current: page, total: result?.pageCount ?? 1 })}</span>
+                    <PaginationPageSize
+                      value={perPage}
+                      onChange={(v) => {
+                        void setPerPage(v);
+                        void setPage(1);
+                      }}
+                      label={tTable('rowsPerPage')}
+                    />
+                  </div>
+                  <Pagination className='mx-0 w-auto'>
+                    <PaginationContent className='gap-0'>
+                      <PaginationItem>
+                        <PaginationLink
+                          href={buildPageUrl(page - 1)}
+                          size='icon'
+                          aria-disabled={page <= 1}
+                          aria-label={tTable('previousPage')}
+                          className={`size-7${page <= 1 ? ' pointer-events-none opacity-50' : ''}`}
+                        >
+                          <Icons.chevronLeft className='size-3.5' />
+                        </PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink
+                          href={buildPageUrl(page + 1)}
+                          size='icon'
+                          aria-disabled={page >= (result?.pageCount ?? 1)}
+                          aria-label={tTable('nextPage')}
+                          className={`size-7${page >= (result?.pageCount ?? 1) ? ' pointer-events-none opacity-50' : ''}`}
+                        >
+                          <Icons.chevronRight className='size-3.5' />
+                        </PaginationLink>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              </>
             </LoadingOverlay>
           )}
         </div>

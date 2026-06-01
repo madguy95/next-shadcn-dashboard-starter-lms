@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  useSuspenseQuery
-} from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import * as React from 'react';
@@ -46,6 +40,7 @@ import {
   type StudentNoteRating
 } from '@/api/teacher-class-detail';
 import { formatApiError } from '@/lib/api-client';
+import { ClassDetailSkeleton } from './class-detail-skeleton';
 import {
   attendanceStatusActive,
   attendanceStatusDot,
@@ -105,11 +100,21 @@ function ClassHeader({ d }: { d: ClassDetail }) {
     <div className='bg-card overflow-hidden rounded-lg border shadow-sm'>
       <div
         className={cn(
-          'h-24 border-b',
-          classColorTokens[d.color].bg,
-          'bg-[repeating-linear-gradient(45deg,color-mix(in_srgb,currentColor_4%,transparent)_0_8px,transparent_8px_16px)]'
+          'relative h-24 border-b',
+          !d.coverUrl && classColorTokens[d.color].bg,
+          !d.coverUrl &&
+            'bg-[repeating-linear-gradient(45deg,color-mix(in_srgb,currentColor_4%,transparent)_0_8px,transparent_8px_16px)]'
         )}
-      />
+      >
+        {d.coverUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={d.coverUrl}
+            alt={d.title}
+            className='absolute inset-0 h-full w-full object-cover'
+          />
+        )}
+      </div>
       <div className='flex flex-wrap items-start justify-between gap-6 p-5'>
         <div>
           <div className='mb-1 flex flex-wrap items-center gap-2'>
@@ -1044,19 +1049,21 @@ function AttendanceTabSkeleton() {
 
 export function ClassDetailView({ classId }: { classId: string }) {
   const t = useTranslations('teacherClassDetail');
-  const detailQuery = useSuspenseQuery(classDetailOptions(classId));
-  const sessionsQuery = useSuspenseQuery(classSessionsOptions(classId));
-  const studentsQuery = useSuspenseQuery(classStudentsOptions(classId));
+  const detailQuery = useQuery(classDetailOptions(classId));
+  const sessionsQuery = useQuery(classSessionsOptions(classId));
+  const studentsQuery = useQuery(classStudentsOptions(classId));
 
   const detail = detailQuery.data;
-  const sessions = sessionsQuery.data.sessions;
-  const currentSessionId = detail.currentSessionId || sessionsQuery.data.currentSessionId;
-  const students = studentsQuery.data.students;
+  const sessions = sessionsQuery.data?.sessions;
+  const currentSessionId = detail?.currentSessionId || sessionsQuery.data?.currentSessionId;
+  const students = studentsQuery.data?.students;
 
   const taughtCount = React.useMemo(
-    () => sessions.filter((s) => s.status !== 'upcoming').length,
+    () => (sessions ?? []).filter((s) => s.status !== 'upcoming').length,
     [sessions]
   );
+
+  if (!detail || !sessions || !students) return <ClassDetailSkeleton />;
 
   return (
     <div className='space-y-6'>

@@ -55,6 +55,7 @@ type TeacherClassDto = {
   endedAt?: string;
   daysRemaining?: number;
   studentsPreview?: StudentPreviewDto[];
+  coverUrl?: string;
 };
 
 type TeacherClassesStatsDto = {
@@ -112,7 +113,8 @@ function mapClass(dto: TeacherClassDto): TeacherClass {
     needsReviewCount: dto.needsReviewCount,
     endedAt: dto.endedAt,
     daysRemaining: dto.daysRemaining,
-    studentsPreview: (dto.studentsPreview ?? []).map(mapStudentPreview)
+    studentsPreview: (dto.studentsPreview ?? []).map(mapStudentPreview),
+    coverUrl: dto.coverUrl
   };
 }
 

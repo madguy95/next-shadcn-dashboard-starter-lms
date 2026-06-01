@@ -86,8 +86,11 @@ export type ClassStatusTab = {
 };
 
 export type ClassListParams = {
+  page?: number;
+  size?: number;
   status?: ClassStatus;
   search?: string;
+  courseId?: string;
 };
 
 export type ClassStats = {

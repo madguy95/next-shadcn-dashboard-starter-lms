@@ -90,6 +90,8 @@ export type CourseListParams = {
   tool?: CourseTool;
   status?: CourseStatus;
   search?: string;
+  page?: number;
+  size?: number;
 };
 
 export type CourseStats = {

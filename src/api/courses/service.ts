@@ -127,11 +127,8 @@ function mapCourse(dto: CourseDto): Course {
 
 function buildListQuery(params: CourseListParams): string {
   const search = new URLSearchParams();
-  // Backend supports server-side tool + search filtering and pagination.
-  // The current UI loads all courses then tool-tabs on top of that, so use a
-  // generous default page size to keep behaviour identical to the previous mock.
-  search.set('page', '1');
-  search.set('size', '100');
+  search.set('page', String(params.page ?? 1));
+  search.set('size', String(params.size ?? 10));
   if (params.tool) search.set('tool', params.tool);
   if (params.status) search.set('status', params.status);
   if (params.search) search.set('search', params.search);

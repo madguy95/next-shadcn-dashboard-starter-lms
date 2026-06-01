@@ -263,7 +263,7 @@
   },
   "courses": {
     "title": "Courses",
-    "pageDescription": "{published} published · {drafts} drafts · curriculum library",
+    "pageDescription": "Manage your curriculum library",
     "newCourse": "New course",
     "viewCards": "Cards",
     "viewTable": "Table",
@@ -492,7 +492,7 @@
   },
   "classes": {
     "title": "Classes",
-    "pageDescription": "{ongoing} ongoing · {open} open for enrollment · select a class to see students",
+    "pageDescription": "Select a class to view students and sessions",
     "newClass": "New class",
     "filters": "Filters",
     "loadingList": "Loading classes…",

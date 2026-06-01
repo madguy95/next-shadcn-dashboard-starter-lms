@@ -3,6 +3,13 @@ import { Icons } from '@/components/icons';
 
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
 function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
   return (
@@ -81,6 +88,33 @@ function PaginationNext({ className, ...props }: React.ComponentProps<typeof Pag
   );
 }
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
+
+function PaginationPageSize({
+  value,
+  onChange,
+  label
+}: {
+  value: number;
+  onChange: (value: number) => void;
+  label: string;
+}) {
+  return (
+    <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
+      <SelectTrigger className='h-7 w-[65px] text-[12px]' aria-label={label}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {PAGE_SIZE_OPTIONS.map((n) => (
+          <SelectItem key={n} value={String(n)} className='text-[12px]'>
+            {n}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function PaginationEllipsis({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
@@ -102,5 +136,6 @@ export {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis
+  PaginationEllipsis,
+  PaginationPageSize
 };

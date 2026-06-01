@@ -1,6 +1,6 @@
 'use client';
 
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -32,15 +32,11 @@ const FILTERS: TeacherClassStatusFilter[] = ['all', 'running', 'upcoming', 'ende
 const ALL_COURSES = '__all__';
 
 function useStatusFilter() {
-  const [isPending, startTransition] = React.useTransition();
-  const [statusParam, setStatusParam] = useQueryState(
-    'status',
-    parseAsString.withDefault('all').withOptions({ startTransition })
-  );
+  const [statusParam, setStatusParam] = useQueryState('status', parseAsString.withDefault('all'));
   const status: TeacherClassStatusFilter = isTeacherClassStatusFilter(statusParam)
     ? statusParam
     : 'all';
-  return { status, setStatus: setStatusParam, isPending };
+  return { status, setStatus: setStatusParam };
 }
 
 function StatusDot({ status }: { status: TeacherClassStatus }) {
@@ -60,10 +56,19 @@ function CoverStrip({ cls }: { cls: TeacherClass }) {
     <div
       className={cn(
         'relative h-20 border-b',
-        token.bg,
-        'bg-[repeating-linear-gradient(45deg,color-mix(in_srgb,currentColor_4%,transparent)_0_8px,transparent_8px_16px)]'
+        !cls.coverUrl && token.bg,
+        !cls.coverUrl &&
+          'bg-[repeating-linear-gradient(45deg,color-mix(in_srgb,currentColor_4%,transparent)_0_8px,transparent_8px_16px)]'
       )}
     >
+      {cls.coverUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={cls.coverUrl}
+          alt={cls.title}
+          className='absolute inset-0 h-full w-full object-cover'
+        />
+      )}
       <span className='bg-background absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-medium tracking-wider uppercase'>
         <StatusDot status={cls.status} />
         {t(cls.status)}
@@ -250,31 +255,26 @@ function StatsContent({ stats }: { stats: TeacherClassesStats }) {
 }
 
 export function MyClassesStats() {
-  // Stats are global (computed across every class) so this reads a fixed `all`
-  // key rather than the status filter. Keeping it off the nuqs query state means
-  // MyClassesView is the only `status` subscriber — so switching the filter runs
-  // inside that component's transition (dimmed LoadingOverlay) instead of making
-  // a second subscriber re-suspend and flash the skeleton.
-  const { data } = useSuspenseQuery(teacherClassesSummaryOptions({ status: 'all' }));
+  const { data } = useQuery(teacherClassesSummaryOptions({ status: 'all' }));
+  if (!data) return <MyClassesStatsSkeleton />;
   return <StatsContent stats={data.stats} />;
 }
 
 export function MyClassesView() {
   const t = useTranslations('teacherClasses');
-  const { status, setStatus, isPending } = useStatusFilter();
-  const { data, isFetching } = useSuspenseQuery(teacherClassesSummaryOptions({ status }));
-
+  const { status, setStatus } = useStatusFilter();
+  const { data, isFetching } = useQuery(teacherClassesSummaryOptions({ status }));
   const [search, setSearch] = React.useState('');
   const [course, setCourse] = React.useState<string>(ALL_COURSES);
 
   const courses = React.useMemo(
-    () => Array.from(new Set(data.classes.map((c) => c.courseCode))).sort(),
-    [data.classes]
+    () => Array.from(new Set((data?.classes ?? []).map((c) => c.courseCode))).sort(),
+    [data?.classes]
   );
 
   const visible = React.useMemo(() => {
     const term = search.trim().toLowerCase();
-    return data.classes.filter((c) => {
+    return (data?.classes ?? []).filter((c) => {
       if (course !== ALL_COURSES && c.courseCode !== course) return false;
       if (
         term &&
@@ -283,7 +283,9 @@ export function MyClassesView() {
         return false;
       return true;
     });
-  }, [data.classes, search, course]);
+  }, [data?.classes, search, course]);
+
+  if (!data) return <MyClassesViewSkeleton />;
 
   const courseLabel = course === ALL_COURSES ? t('course.all') : course;
 
@@ -347,7 +349,7 @@ export function MyClassesView() {
         </div>
       </div>
 
-      <LoadingOverlay visible={isPending || isFetching} message={t('updating')}>
+      <LoadingOverlay visible={isFetching} message={t('updating')}>
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'>
           {visible.map((c) => (
             <ClassCard key={c.id} cls={c} />
