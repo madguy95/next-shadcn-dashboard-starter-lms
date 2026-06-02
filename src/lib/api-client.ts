@@ -150,7 +150,13 @@ async function rawFetch(
   retry = true
 ): Promise<Response> {
   const isServer = typeof document === 'undefined';
-  const token = isServer ? await readServerAccessToken() : readAccessToken();
+  // Skip cookie read for public endpoints — avoids `DYNAMIC_SERVER_USAGE` during static ISR rendering.
+  const isPublicEndpoint = endpoint.startsWith('/api/public/');
+  const token = isServer
+    ? isPublicEndpoint
+      ? null
+      : await readServerAccessToken()
+    : readAccessToken();
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');

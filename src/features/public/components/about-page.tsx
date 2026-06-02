@@ -29,7 +29,7 @@ function AboutHero() {
         }}
       />
       <div className='relative z-10 mx-auto max-w-3xl px-6 py-20 md:px-10'>
-        <span className='mb-5 inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] tracking-widest text-white/60 uppercase'>
+        <span className='mb-5 inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] tracking-widest text-cyan-300 uppercase'>
           {t('badge')}
         </span>
         <h1 className='text-4xl font-bold tracking-tight text-white md:text-5xl'>{t('title')}</h1>
