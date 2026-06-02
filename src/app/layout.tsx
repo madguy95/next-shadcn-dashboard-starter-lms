@@ -18,10 +18,6 @@ const META_THEME_COLORS = {
   dark: '#09090b'
 };
 
-// Inline script: reads active_theme cookie before first paint so there's no
-// flash when the user has a non-default theme.
-const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)active_theme=([^;]+)/);if(m)document.documentElement.setAttribute('data-theme',decodeURIComponent(m[1]));}catch(_){}})();`;
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://iqode.vn'),
   title: {
@@ -43,7 +39,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={DEFAULT_LOCALE} suppressHydrationWarning data-theme={DEFAULT_THEME}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SPLASH_INIT_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `

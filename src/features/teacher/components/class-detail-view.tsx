@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -107,11 +108,12 @@ function ClassHeader({ d }: { d: ClassDetail }) {
         )}
       >
         {d.coverUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={d.coverUrl}
             alt={d.title}
-            className='absolute inset-0 h-full w-full object-cover'
+            fill
+            sizes='(min-width: 1024px) 768px, 100vw'
+            className='object-cover'
           />
         )}
       </div>

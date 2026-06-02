@@ -19,6 +19,7 @@ import {
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { publicCoursesOptions } from '@/api/courses/queries';
@@ -130,7 +131,7 @@ function HeroWorkshopFallback({ imageCaption }: { imageCaption: string }) {
   );
 }
 
-function HeroFeedSlide({ item }: { item: HomeFeedItem }) {
+function HeroFeedSlide({ item, priority = false }: { item: HomeFeedItem; priority?: boolean }) {
   const t = useTranslations('blog.homeFeed');
   const { post } = item;
   const isWorkshop = item.kind === 'workshop';
@@ -147,11 +148,13 @@ function HeroFeedSlide({ item }: { item: HomeFeedItem }) {
       {/* cover */}
       <div className='relative h-44 w-full shrink-0 overflow-hidden'>
         {post.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={post.coverUrl}
             alt={post.title}
-            className='absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+            fill
+            sizes='(min-width: 1024px) 420px, (min-width: 768px) 340px, 100vw'
+            priority={priority}
+            className='object-cover transition-transform duration-500 group-hover:scale-105'
           />
         ) : (
           <div className='absolute inset-0 transition-transform duration-500 group-hover:scale-105'>
@@ -290,9 +293,9 @@ function HeroWorkshopCarousel({ imageCaption }: { imageCaption: string }) {
           className='flex transition-transform duration-500 ease-out'
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {items.map((item) => (
+          {items.map((item, i) => (
             <div key={item.post.id} className='w-full shrink-0'>
-              <HeroFeedSlide item={item} />
+              <HeroFeedSlide item={item} priority={i === 0} />
             </div>
           ))}
         </div>
@@ -349,11 +352,12 @@ function CourseCard({ course }: { course: PublicCourse }) {
       {/* Cover */}
       <div className='relative h-40 overflow-hidden bg-gradient-to-br from-blue-50 to-cyan-50'>
         {course.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={course.coverUrl}
             alt={course.title}
-            className='absolute inset-0 h-full w-full object-cover'
+            fill
+            sizes='(min-width: 640px) calc(33vw - 32px), 100vw'
+            className='object-cover'
           />
         ) : (
           <div className='flex h-full items-center justify-center'>

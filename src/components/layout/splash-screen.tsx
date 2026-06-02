@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-const VISIBLE_MS = 1600;
-const FADE_MS = 500;
+const VISIBLE_MS = 400;
+const FADE_MS = 200;
 
 /**
  * First-visit splash with an animated robot mascot.

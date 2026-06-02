@@ -1,6 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -88,11 +89,12 @@ export function TeacherProfileSheet({ teacher, open, onOpenChange }: Props) {
           </SheetDescription>
           <div className='flex items-start gap-4'>
             {teacher.avatarUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
+              <Image
                 src={teacher.avatarUrl}
                 alt={teacher.name}
-                className='size-16 rounded-full object-cover'
+                width={64}
+                height={64}
+                className='rounded-full object-cover'
               />
             ) : (
               <span

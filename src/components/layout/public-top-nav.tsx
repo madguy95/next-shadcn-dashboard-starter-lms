@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Icons } from '@/components/icons';
 import { ChangePasswordDialog } from '@/features/shared/components/change-password-dialog';
 import { useAuth } from '@/components/auth-provider';
@@ -83,6 +83,7 @@ function getInitials(name?: string | null, phone?: string) {
 }
 
 function UserMenu({ user, workspace }: { user: AuthUser; workspace: WorkspaceMeta }) {
+  const { clearUser } = useAuth();
   const t = useTranslations('home.header');
   const tNav = useTranslations('nav');
   const displayName = user.name || user.phone || '';
@@ -123,7 +124,10 @@ function UserMenu({ user, workspace }: { user: AuthUser; workspace: WorkspaceMet
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className='gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400'
-            onSelect={() => logout()}
+            onSelect={() => {
+              clearUser();
+              logout();
+            }}
           >
             <Icons.logout className='size-4' />
             {t('logout')}
@@ -135,9 +139,36 @@ function UserMenu({ user, workspace }: { user: AuthUser; workspace: WorkspaceMet
   );
 }
 
-export function PublicTopNav() {
+function NavAuthActions() {
   const { user } = useAuth();
   const workspace = user ? roleMeta[user.role] : null;
+  const t = useTranslations('home.header');
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return <div className='h-9 w-[148px]' aria-hidden />;
+
+  return user && workspace ? (
+    <UserMenu user={user} workspace={workspace} />
+  ) : (
+    <>
+      <Link
+        href='/login'
+        className='hidden text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white md:inline'
+      >
+        {t('login')}
+      </Link>
+      <Link
+        href='/login?mode=register'
+        className='inline-flex h-9 items-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-blue-700'
+      >
+        {t('navCta')}
+      </Link>
+    </>
+  );
+}
+
+export function PublicTopNav() {
   const t = useTranslations('home.header');
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -181,24 +212,7 @@ export function PublicTopNav() {
           </div>
           <ThemeModeToggle />
 
-          {user && workspace ? (
-            <UserMenu user={user} workspace={workspace} />
-          ) : (
-            <>
-              <Link
-                href='/login'
-                className='hidden text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white md:inline'
-              >
-                {t('login')}
-              </Link>
-              <Link
-                href='/login?mode=register'
-                className='inline-flex h-9 items-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-blue-700'
-              >
-                {t('navCta')}
-              </Link>
-            </>
-          )}
+          <NavAuthActions />
 
           {/* Mobile hamburger */}
           <button

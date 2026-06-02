@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Course } from '@/api/courses';
@@ -53,11 +54,12 @@ export function CourseCard({
         style={course.coverUrl ? undefined : thumbStripeStyle}
       >
         {course.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={course.coverUrl}
             alt={course.title}
-            className='absolute inset-0 h-full w-full object-cover'
+            fill
+            sizes='(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw'
+            className='object-cover'
           />
         ) : (
           <div className='text-muted-foreground font-mono text-[10px]'>{course.cover}</div>

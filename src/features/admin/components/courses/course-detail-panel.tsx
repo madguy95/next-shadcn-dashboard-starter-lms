@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -92,11 +93,12 @@ export function CourseDetailPanel({ course }: { course: Course }) {
         style={course.coverUrl ? undefined : thumbStripeStyle}
       >
         {course.coverUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Image
             src={course.coverUrl}
             alt={course.title}
-            className='absolute inset-0 h-full w-full object-cover'
+            fill
+            sizes='(min-width: 1024px) 33vw, 100vw'
+            className='object-cover'
           />
         ) : (
           <div className='text-muted-foreground font-mono text-[11px]'>

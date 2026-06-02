@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 import { Icons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -323,8 +324,7 @@ function HeroMedia({
   if (coverUrl) {
     return (
       <div className='relative aspect-video w-full overflow-hidden rounded-lg border'>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={coverUrl} alt={course.name} className='h-full w-full object-cover' />
+        <Image src={coverUrl} alt={course.name} fill sizes='480px' className='object-cover' />
       </div>
     );
   }

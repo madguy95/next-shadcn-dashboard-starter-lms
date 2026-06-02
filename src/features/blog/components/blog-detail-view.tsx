@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -117,11 +118,13 @@ function ArticleDetail({
 
       <div className='ring-border relative mb-9 h-[380px] overflow-hidden rounded-2xl ring-1'>
         {post.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={post.coverUrl}
             alt={post.title}
-            className='absolute inset-0 h-full w-full object-cover'
+            fill
+            sizes='(min-width: 1024px) 768px, 100vw'
+            priority
+            className='object-cover'
           />
         ) : (
           <BlogCover hue={post.hue} category={post.category} status={post.status} size={120} />
@@ -182,11 +185,13 @@ function WorkshopDetail({
 
       <div className='ring-border relative mb-8 h-[320px] overflow-hidden rounded-2xl ring-1'>
         {post.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={post.coverUrl}
             alt={post.title}
-            className='absolute inset-0 h-full w-full object-cover'
+            fill
+            sizes='(min-width: 1024px) 768px, 100vw'
+            priority
+            className='object-cover'
           />
         ) : (
           <BlogCover hue={post.hue} category={post.category} status={post.status} size={108} />

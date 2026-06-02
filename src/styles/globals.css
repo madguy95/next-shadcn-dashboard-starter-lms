@@ -165,7 +165,7 @@
    splash this session, eliminating any flash. */
 #iqode-splash {
   opacity: 1;
-  transition: opacity 500ms ease-in-out;
+  transition: opacity 200ms ease-in-out;
 }
 html[data-splash='leaving'] #iqode-splash {
   opacity: 0;

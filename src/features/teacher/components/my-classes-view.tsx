@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { parseAsString, useQueryState } from 'nuqs';
 import * as React from 'react';
@@ -62,11 +63,12 @@ function CoverStrip({ cls }: { cls: TeacherClass }) {
       )}
     >
       {cls.coverUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={cls.coverUrl}
           alt={cls.title}
-          className='absolute inset-0 h-full w-full object-cover'
+          fill
+          sizes='(min-width: 768px) 33vw, 100vw'
+          className='object-cover'
         />
       )}
       <span className='bg-background absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-medium tracking-wider uppercase'>

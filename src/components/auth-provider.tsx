@@ -1,12 +1,12 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { AuthUser } from '@/lib/auth-shared';
 import { AUTH_COOKIE_NAME } from '@/lib/auth-shared';
 
-type AuthContextValue = { user: AuthUser | null };
+type AuthContextValue = { user: AuthUser | null; clearUser: () => void };
 
-const AuthContext = createContext<AuthContextValue>({ user: null });
+const AuthContext = createContext<AuthContextValue>({ user: null, clearUser: () => {} });
 
 function readAuthCookie(): AuthUser | null {
   try {
@@ -39,7 +39,9 @@ export function AuthProvider({
     if (serverUser === undefined) setUser(readAuthCookie());
   }, [serverUser]);
 
-  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
+  const clearUser = useCallback(() => setUser(null), []);
+
+  return <AuthContext.Provider value={{ user, clearUser }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
