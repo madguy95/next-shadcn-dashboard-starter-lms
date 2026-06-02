@@ -228,13 +228,15 @@
       "coursesManage": "Courses",
       "classes": "Classes",
       "enrollments": "Enrollments",
+      "consultationRequests": "Consultation Requests",
       "schedule": "Schedule",
       "myClass": "My class",
       "mySchedule": "My schedule",
       "myChildren": "My children",
       "catalog": "Course catalog",
       "courses": "Courses",
-      "blog": "Blog & Workshops"
+      "blog": "Blog & Workshops",
+      "blogDiscover": "Articles & Workshops"
     },
     "guest": {
       "greeting": "Hello!",
@@ -997,6 +999,57 @@
         "requestedCourseRequired": "Please pick a course.",
         "noteTooLong": "Note must be at most 1000 characters."
       }
+    }
+  },
+  "consultationRequests": {
+    "title": "Consultation Requests",
+    "pageDescription": "Manage consultation requests submitted by parents",
+    "loadingList": "Loading requests…",
+    "noResults": "No requests match the current filter.",
+    "searchPlaceholder": "Search by name or phone…",
+    "status": {
+      "new": "New",
+      "contacted": "Contacted",
+      "enrolled": "Enrolled",
+      "not_interested": "Not interested"
+    },
+    "tabs": {
+      "new": "New",
+      "contacted": "Contacted",
+      "enrolled": "Enrolled",
+      "not_interested": "Not interested"
+    },
+    "list": {
+      "columns": {
+        "parent": "Parent",
+        "child": "Child",
+        "course": "Interested course",
+        "note": "Note",
+        "submitted": "Submitted",
+        "status": "Status"
+      },
+      "openDetail": "View detail",
+      "total": "{count} requests"
+    },
+    "detail": {
+      "empty": "Select a request to view details",
+      "idLabel": "#{id}",
+      "close": "Close",
+      "status": "Status",
+      "childName": "Child name",
+      "createdAt": "Submitted",
+      "interestedCourse": "Interested course",
+      "note": "Consultation note",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "updating": "Updating…",
+      "moveTo": "Move to: {status}"
+    },
+    "toast": {
+      "statusUpdated": "Status updated",
+      "statusError": "Failed to update status",
+      "deleted": "Request deleted",
+      "deleteError": "Failed to delete request"
     }
   },
   "blog": {

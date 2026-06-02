@@ -228,13 +228,15 @@
       "coursesManage": "Khóa học",
       "classes": "Lớp học",
       "enrollments": "Đăng ký",
+      "consultationRequests": "Yêu cầu tư vấn",
       "schedule": "Lịch",
       "myClass": "Lớp của tôi",
       "mySchedule": "Lịch dạy",
       "myChildren": "Hồ sơ con",
       "catalog": "Khóa học (chung)",
       "courses": "Khóa học",
-      "blog": "Blog & Workshop"
+      "blog": "Blog & Workshop",
+      "blogDiscover": "Bài viết & Workshop"
     },
     "guest": {
       "greeting": "Chào bạn!",
@@ -997,6 +999,57 @@
         "requestedCourseRequired": "Hãy chọn khoá học.",
         "noteTooLong": "Ghi chú không được vượt quá 1000 ký tự."
       }
+    }
+  },
+  "consultationRequests": {
+    "title": "Yêu cầu tư vấn",
+    "pageDescription": "Quản lý các yêu cầu tư vấn từ phụ huynh",
+    "loadingList": "Đang tải danh sách…",
+    "noResults": "Không có yêu cầu nào phù hợp.",
+    "searchPlaceholder": "Tìm theo tên, số điện thoại…",
+    "status": {
+      "new": "Mới",
+      "contacted": "Đã liên hệ",
+      "enrolled": "Đã ghi danh",
+      "not_interested": "Không quan tâm"
+    },
+    "tabs": {
+      "new": "Mới",
+      "contacted": "Đã liên hệ",
+      "enrolled": "Đã ghi danh",
+      "not_interested": "Không quan tâm"
+    },
+    "list": {
+      "columns": {
+        "parent": "Phụ huynh",
+        "child": "Tên con",
+        "course": "Khóa học quan tâm",
+        "note": "Ghi chú",
+        "submitted": "Thời gian gửi",
+        "status": "Trạng thái"
+      },
+      "openDetail": "Xem chi tiết",
+      "total": "{count} yêu cầu"
+    },
+    "detail": {
+      "empty": "Chọn một yêu cầu để xem chi tiết",
+      "idLabel": "#{id}",
+      "close": "Đóng",
+      "status": "Trạng thái",
+      "childName": "Tên con",
+      "createdAt": "Thời gian gửi",
+      "interestedCourse": "Khóa học quan tâm",
+      "note": "Nội dung tư vấn",
+      "delete": "Xóa",
+      "deleting": "Đang xóa…",
+      "updating": "Đang cập nhật…",
+      "moveTo": "Chuyển sang: {status}"
+    },
+    "toast": {
+      "statusUpdated": "Đã cập nhật trạng thái",
+      "statusError": "Cập nhật trạng thái thất bại",
+      "deleted": "Đã xóa yêu cầu",
+      "deleteError": "Xóa thất bại"
     }
   },
   "blog": {

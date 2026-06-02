@@ -83,22 +83,16 @@ function StorySection() {
   return (
     <section className='bg-sky-50 py-16 md:py-20'>
       <div className='mx-auto grid max-w-5xl items-center gap-10 px-6 md:grid-cols-2 md:px-10'>
-        {/* image placeholder */}
-        <div className='relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-sky-200 shadow-md'>
-          <div className='flex aspect-[4/3] items-center justify-center'>
-            <div className='flex flex-col items-center gap-3 text-blue-300/60'>
-              <svg viewBox='0 0 80 80' className='w-20 h-20' fill='none'>
-                <circle cx='40' cy='28' r='12' stroke='currentColor' strokeWidth='2.5' />
-                <path
-                  d='M12 72c0-15.464 12.536-28 28-28s28 12.536 28 28'
-                  stroke='currentColor'
-                  strokeWidth='2.5'
-                  strokeLinecap='round'
-                />
-              </svg>
-              <span className='text-xs font-medium tracking-wide'>IQode Lab Team</span>
-            </div>
-          </div>
+        {/* about image */}
+        <div className='relative overflow-hidden rounded-2xl shadow-md'>
+          <Image
+            src='/about.png'
+            alt='IQode Lab Team'
+            width={600}
+            height={450}
+            className='aspect-[4/3] w-full object-cover'
+            priority
+          />
         </div>
 
         {/* content */}
