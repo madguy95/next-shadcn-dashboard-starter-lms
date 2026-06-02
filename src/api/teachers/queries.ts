@@ -5,6 +5,7 @@ import {
   getTeacherOptions,
   getTeacherStatusTabs,
   getTeachers,
+  resetTeacherPassword,
   updateTeacher,
   updateTeacherStatus,
   type TeacherOptionsParams
@@ -85,5 +86,11 @@ export function useDeleteTeacher() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: teacherKeys.all });
     }
+  });
+}
+
+export function useResetTeacherPassword() {
+  return useMutation({
+    mutationFn: (id: number) => resetTeacherPassword(id)
   });
 }

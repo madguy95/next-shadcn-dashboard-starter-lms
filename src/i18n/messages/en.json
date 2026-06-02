@@ -186,7 +186,7 @@
       "phonePlaceholder": "09xx xxx xxx",
       "phoneErrorFormat": "Phone number must be 10 digits and start with 0.",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least 6 characters",
+      "passwordPlaceholder": "At least 4 characters",
       "showPassword": "Show password",
       "hidePassword": "Hide password",
       "forgotPassword": "Forgot password?",
@@ -245,7 +245,8 @@
       "login": "Sign in"
     },
     "workspaceSuffix": "workspace",
-    "guestSubtitle": "Discover"
+    "guestSubtitle": "Discover",
+    "changePassword": "Change password"
   },
   "coursesCatalog": {
     "metaTitle": "Kids Coding Courses · IQode Lab",
@@ -311,6 +312,15 @@
       "menuLabel": "Actions for {name}",
       "statusUpdated": "Updated status for {name}.",
       "statusError": "Could not change status. Please try again.",
+      "resetPasswordTitle": "Reset password?",
+      "resetPasswordDescription": "The password for {name} will be reset to the default. The teacher should change it on their next login.",
+      "resetPasswordConfirm": "Reset",
+      "resetPasswordCancel": "Cancel",
+      "resetPasswordSuccess": "Password reset successfully",
+      "resetPasswordResultDescription": "Temporary password for {name}:",
+      "resetPasswordError": "Could not reset password. Please try again.",
+      "resetPasswordCopy": "Copy",
+      "resetPasswordCopied": "Copied",
       "removeTitle": "Remove teacher?",
       "removeDescription": "Are you sure you want to remove {name}? This action cannot be undone.",
       "removeConfirm": "Remove",
@@ -1898,5 +1908,24 @@
       "privacy": "Privacy policy",
       "terms": "Terms of service"
     }
+  },
+  "changePassword": {
+    "title": "Change password",
+    "description": "Enter your current password and choose a new one.",
+    "currentLabel": "Current password",
+    "currentPlaceholder": "Enter your current password",
+    "newLabel": "New password",
+    "newPlaceholder": "At least 6 characters",
+    "confirmLabel": "Confirm new password",
+    "confirmPlaceholder": "Re-enter your new password",
+    "confirmMismatch": "Passwords do not match.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": "Change password",
+    "submitting": "Updating…",
+    "cancel": "Cancel",
+    "successTitle": "Password changed",
+    "successDesc": "Your password has been updated.",
+    "errorFallback": "Failed to change password"
   }
 }

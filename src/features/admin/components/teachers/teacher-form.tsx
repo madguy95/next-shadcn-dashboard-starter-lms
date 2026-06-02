@@ -26,7 +26,7 @@ export type TeacherFormValues = {
   avatar: File[];
   primarySubject: string;
   location: string;
-  bio: string;
+  bio?: string;
   tags: string[];
   sendOnboardingEmail: boolean;
 };

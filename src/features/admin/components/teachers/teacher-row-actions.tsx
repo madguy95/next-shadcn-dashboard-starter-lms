@@ -16,6 +16,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -28,6 +36,7 @@ import {
 import {
   TEACHER_STATUSES,
   useDeleteTeacher,
+  useResetTeacherPassword,
   useUpdateTeacherStatus,
   type Teacher,
   type TeacherStatus
@@ -39,8 +48,13 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
   const t = useTranslations('teachers');
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = React.useState(false);
+  const [resetResultOpen, setResetResultOpen] = React.useState(false);
+  const [tempPassword, setTempPassword] = React.useState('');
+  const [copied, setCopied] = React.useState(false);
   const updateStatus = useUpdateTeacherStatus();
   const deleteTeacher = useDeleteTeacher();
+  const resetPassword = useResetTeacherPassword();
 
   const handleStatusChange = (next: TeacherStatus) => {
     updateStatus.mutate(
@@ -68,6 +82,28 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
     });
   };
 
+  const handleResetPassword = () => {
+    resetPassword.mutate(teacher.id, {
+      onSuccess: (pwd) => {
+        setTempPassword(pwd);
+        setResetConfirmOpen(false);
+        setResetResultOpen(true);
+      },
+      onError: (e) => {
+        const { title, description } = formatApiError(e, t('actions.resetPasswordError'));
+        toast.error(title, description ? { description } : undefined);
+        setResetConfirmOpen(false);
+      }
+    });
+  };
+
+  const handleCopy = () => {
+    void navigator.clipboard.writeText(tempPassword).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
     <div className='inline-flex justify-end gap-1'>
       <Button variant='ghost' size='sm' className='h-7 px-2 text-[12px]'>
@@ -89,7 +125,7 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
             <Icons.eye className='size-3.5' />
             {t('actions.viewProfile')}
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setResetConfirmOpen(true)}>
             <Icons.lock className='size-3.5' />
             {t('actions.resetPassword')}
           </DropdownMenuItem>
@@ -146,6 +182,51 @@ export function TeacherRowActions({ teacher }: { teacher: Teacher }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('actions.resetPasswordTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('actions.resetPasswordDescription', { name: teacher.name })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={resetPassword.isPending}>
+              {t('actions.resetPasswordCancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={resetPassword.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                handleResetPassword();
+              }}
+            >
+              {t('actions.resetPasswordConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={resetResultOpen} onOpenChange={setResetResultOpen}>
+        <DialogContent className='sm:max-w-sm'>
+          <DialogHeader>
+            <DialogTitle>{t('actions.resetPasswordSuccess')}</DialogTitle>
+            <DialogDescription>
+              {t('actions.resetPasswordResultDescription', { name: teacher.name })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className='flex items-center gap-2 rounded-md border bg-muted px-3 py-2 font-mono text-sm'>
+            <span className='flex-1 select-all'>{tempPassword}</span>
+            <Button variant='ghost' size='icon' className='h-7 w-7 shrink-0' onClick={handleCopy}>
+              {copied ? <Icons.check className='size-3.5' /> : <Icons.copy className='size-3.5' />}
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setResetResultOpen(false)}>OK</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -244,6 +244,10 @@ export async function getTeacherOptions(params: TeacherOptionsParams = {}): Prom
   return mapped;
 }
 
+export async function resetTeacherPassword(id: number): Promise<string> {
+  return apiClient<string>(`/api/teachers/${id}/reset-password`, { method: 'PATCH' });
+}
+
 export async function getTeacherStatusTabs(): Promise<TeacherStatusTab[]> {
   const dto = await apiClient<TeacherStatusTabsDto>('/api/teachers/status-tabs');
   return [

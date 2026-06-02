@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import * as React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { ChangePasswordDialog } from '@/features/shared/components/change-password-dialog';
 import {
   Sidebar,
   SidebarContent,
@@ -70,6 +72,7 @@ export default function AppSidebar() {
   const router = useRouter();
   const { user } = useAuth();
   const tNav = useTranslations('nav');
+  const [changePasswordOpen, setChangePasswordOpen] = React.useState(false);
   // Logged-in users are locked to their account's role.
   // Guests follow the URL so they can preview each role's UI.
   const currentRole = user ? user.role : getRoleFromPathname(pathname);
@@ -277,13 +280,9 @@ export default function AppSidebar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => router.push('/parent/children')}>
-                    <Icons.user className='mr-2 h-4 w-4' />
-                    Hồ sơ con
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => router.push('/courses')}>
-                    <Icons.book className='mr-2 h-4 w-4' />
-                    Đăng ký khóa
+                  <DropdownMenuItem onSelect={() => setChangePasswordOpen(true)}>
+                    <Icons.lock className='mr-2 h-4 w-4' />
+                    {tNav('changePassword')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <form action={logout}>
@@ -321,6 +320,7 @@ export default function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
+      <ChangePasswordDialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
     </Sidebar>
   );
 }

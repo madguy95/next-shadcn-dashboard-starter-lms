@@ -186,7 +186,7 @@
       "phonePlaceholder": "09xx xxx xxx",
       "phoneErrorFormat": "Số điện thoại phải có 10 chữ số, bắt đầu bằng 0.",
       "passwordLabel": "Mật khẩu",
-      "passwordPlaceholder": "Tối thiểu 6 ký tự",
+      "passwordPlaceholder": "Tối thiểu 4 ký tự",
       "showPassword": "Hiện mật khẩu",
       "hidePassword": "Ẩn mật khẩu",
       "forgotPassword": "Quên mật khẩu?",
@@ -245,7 +245,8 @@
       "login": "Đăng nhập"
     },
     "workspaceSuffix": "workspace",
-    "guestSubtitle": "Khám phá"
+    "guestSubtitle": "Khám phá",
+    "changePassword": "Đổi mật khẩu"
   },
   "coursesCatalog": {
     "metaTitle": "Khóa học lập trình cho trẻ em · IQode Lab",
@@ -311,6 +312,15 @@
       "menuLabel": "Thao tác cho {name}",
       "statusUpdated": "Đã cập nhật trạng thái của {name}.",
       "statusError": "Không thể đổi trạng thái. Vui lòng thử lại.",
+      "resetPasswordTitle": "Đặt lại mật khẩu?",
+      "resetPasswordDescription": "Mật khẩu của {name} sẽ được đặt về mật khẩu mặc định. Giáo viên cần đổi mật khẩu sau lần đăng nhập tiếp theo.",
+      "resetPasswordConfirm": "Đặt lại",
+      "resetPasswordCancel": "Hủy",
+      "resetPasswordSuccess": "Đặt lại thành công",
+      "resetPasswordResultDescription": "Mật khẩu tạm thời của {name}:",
+      "resetPasswordError": "Không thể đặt lại mật khẩu. Vui lòng thử lại.",
+      "resetPasswordCopy": "Sao chép",
+      "resetPasswordCopied": "Đã sao chép",
       "removeTitle": "Xóa giáo viên?",
       "removeDescription": "Bạn có chắc muốn xóa {name}? Hành động này không thể hoàn tác.",
       "removeConfirm": "Xóa",
@@ -1898,5 +1908,24 @@
       "privacy": "Chính sách bảo mật",
       "terms": "Điều khoản dịch vụ"
     }
+  },
+  "changePassword": {
+    "title": "Đổi mật khẩu",
+    "description": "Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật.",
+    "currentLabel": "Mật khẩu hiện tại",
+    "currentPlaceholder": "Nhập mật khẩu hiện tại",
+    "newLabel": "Mật khẩu mới",
+    "newPlaceholder": "Tối thiểu 6 ký tự",
+    "confirmLabel": "Xác nhận mật khẩu mới",
+    "confirmPlaceholder": "Nhập lại mật khẩu mới",
+    "confirmMismatch": "Mật khẩu nhập lại không khớp.",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "submit": "Đổi mật khẩu",
+    "submitting": "Đang đổi…",
+    "cancel": "Hủy",
+    "successTitle": "Đổi mật khẩu thành công",
+    "successDesc": "Mật khẩu của bạn đã được cập nhật.",
+    "errorFallback": "Đổi mật khẩu thất bại"
   }
 }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Icons } from '@/components/icons';
+import { ChangePasswordDialog } from '@/features/shared/components/change-password-dialog';
 import { useAuth } from '@/components/auth-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { ThemeModeToggle } from '@/components/themes/theme-mode-toggle';
@@ -83,45 +84,54 @@ function getInitials(name?: string | null, phone?: string) {
 
 function UserMenu({ user, workspace }: { user: AuthUser; workspace: WorkspaceMeta }) {
   const t = useTranslations('home.header');
+  const tNav = useTranslations('nav');
   const displayName = user.name || user.phone || '';
   const initials = getInitials(user.name, user.phone);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type='button'
-          className='flex items-center gap-1.5 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-        >
-          <Avatar className='size-8'>
-            <AvatarFallback className='bg-blue-600 text-xs font-semibold text-white'>
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <Icons.chevronDown className='size-3.5 text-gray-500 dark:text-gray-400' />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-52'>
-        <DropdownMenuLabel className='font-normal'>
-          <p className='text-sm font-medium'>{displayName}</p>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href={workspace.basePath} className='flex items-center gap-2'>
-            <Icons.arrowRight className='size-4' />
-            {t('enterWorkspace', { label: workspace.label })}
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className='gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400'
-          onSelect={() => logout()}
-        >
-          <Icons.logout className='size-4' />
-          {t('logout')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type='button'
+            className='flex items-center gap-1.5 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+          >
+            <Avatar className='size-8'>
+              <AvatarFallback className='bg-blue-600 text-xs font-semibold text-white'>
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <Icons.chevronDown className='size-3.5 text-gray-500 dark:text-gray-400' />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align='end' className='w-52'>
+          <DropdownMenuLabel className='font-normal'>
+            <p className='text-sm font-medium'>{displayName}</p>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href={workspace.basePath} className='flex items-center gap-2'>
+              <Icons.arrowRight className='size-4' />
+              {t('enterWorkspace', { label: workspace.label })}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className='gap-2' onSelect={() => setChangePasswordOpen(true)}>
+            <Icons.lock className='size-4' />
+            {tNav('changePassword')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className='gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400'
+            onSelect={() => logout()}
+          >
+            <Icons.logout className='size-4' />
+            {t('logout')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ChangePasswordDialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
+    </>
   );
 }
 
