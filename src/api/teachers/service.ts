@@ -91,7 +91,8 @@ function mapTeacher(dto: TeacherDto): Teacher {
     gender: dto.gender as Teacher['gender'] | undefined,
     dateOfBirth: dto.dateOfBirth,
     avatarUrl: dto.avatarUrl,
-    location: dto.location
+    location: dto.location,
+    bio: dto.bio
   };
 }
 
@@ -156,6 +157,7 @@ export async function createTeacher(input: CreateTeacherInput): Promise<Teacher>
     gender: input.gender,
     dateOfBirth: input.dateOfBirth ? input.dateOfBirth.slice(0, 10) : undefined,
     location: input.location,
+    bio: input.bio?.trim() || undefined,
     primarySubjectId: primaryId,
     subjectIds,
     avatarUrl,
@@ -197,6 +199,7 @@ export async function updateTeacher(id: number, input: UpdateTeacherInput): Prom
     gender: input.gender,
     dateOfBirth: input.dateOfBirth ? input.dateOfBirth.slice(0, 10) : undefined,
     location: input.location,
+    bio: input.bio?.trim() || undefined,
     primarySubjectId: primaryId,
     subjectIds,
     // Only send when a new avatar was uploaded; null/undefined leaves the existing one untouched.

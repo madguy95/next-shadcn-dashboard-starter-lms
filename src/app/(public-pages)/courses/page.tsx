@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getTranslations } from 'next-intl/server';
 import { publicCoursesOptions, PUBLIC_COURSES_PAGE_SIZE } from '@/api/courses/queries';
@@ -11,7 +13,10 @@ export async function generateMetadata() {
   return {
     title,
     description,
-    alternates: { canonical: '/courses' },
+    alternates: {
+      canonical: '/courses',
+      languages: { 'x-default': '/courses' }
+    },
     openGraph: {
       title,
       description,
@@ -34,13 +39,21 @@ export async function generateMetadata() {
 export default async function CoursesPage({
   searchParams
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; tool?: string; sort?: string }>;
 }) {
-  const { page: pageStr } = await searchParams;
+  const { page: pageStr, q, tool, sort } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? '1', 10) || 1);
 
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(publicCoursesOptions({ page, size: PUBLIC_COURSES_PAGE_SIZE }));
+  await queryClient.prefetchQuery(
+    publicCoursesOptions({
+      page,
+      size: PUBLIC_COURSES_PAGE_SIZE,
+      search: q || undefined,
+      tool: tool || undefined,
+      sort: sort || undefined
+    })
+  );
 
   return (
     <>

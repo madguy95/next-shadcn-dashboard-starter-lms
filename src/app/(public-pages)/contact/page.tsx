@@ -1,9 +1,8 @@
+export const revalidate = 360;
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { PublicTopNav } from '@/components/layout/public-top-nav';
-import { roleMeta } from '@/config/nav-config';
 import { ContactPage } from '@/features/public/components/contact-page';
-import { getAuthUser } from '@/lib/auth';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('contact');
@@ -12,7 +11,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: '/contact' },
+    alternates: {
+      canonical: '/contact',
+      languages: { 'x-default': '/contact' }
+    },
     openGraph: {
       title,
       description,
@@ -29,16 +31,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ContactRoute() {
-  const user = await getAuthUser();
-  const workspace = user ? roleMeta[user.role] : null;
-
-  return (
-    <>
-      <PublicTopNav user={user} workspace={workspace} />
-      <main>
-        <ContactPage />
-      </main>
-    </>
-  );
+export default function ContactRoute() {
+  return <ContactPage />;
 }

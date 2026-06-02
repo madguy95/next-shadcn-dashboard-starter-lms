@@ -33,26 +33,35 @@ import { useFilteredNavGroups } from '@/hooks/use-nav';
 import { logout } from '@/lib/auth-actions';
 import { Icons } from '../icons';
 
-function IQodeRobot({ className }: { className?: string }) {
+function IQodeCircuit({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth={1.8}
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      className={className}
-      aria-hidden='true'
-    >
-      <path d='M12 2v3' />
-      <circle cx='12' cy='2' r='1' fill='currentColor' stroke='none' />
-      <rect x='4' y='5' width='16' height='14' rx='3.2' />
-      <circle cx='9' cy='11' r='1.2' fill='currentColor' stroke='none' />
-      <circle cx='15' cy='11' r='1.2' fill='currentColor' stroke='none' />
-      <path d='M9.5 14.5c1 1 3.5 1 5 0' />
-      <path d='M3 10v3M21 10v3' />
+    <svg viewBox='0 0 24 24' fill='currentColor' className={className} aria-hidden='true'>
+      <circle cx='12' cy='12' r='2' />
+      <line x1='12' y1='10' x2='12' y2='5.5' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='12' cy='4.5' r='1.5' />
+      <line x1='13.4' y1='10.6' x2='17.2' y2='6.8' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='18' cy='6' r='1.5' />
+      <line x1='14' y1='12' x2='18.5' y2='12' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='19.5' cy='12' r='1.5' />
+      <line x1='13.4' y1='13.4' x2='17.2' y2='17.2' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='18' cy='18' r='1.5' />
+      <line x1='10.6' y1='13.4' x2='6.8' y2='17.2' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='6' cy='18' r='1.5' />
+      <line x1='10' y1='12' x2='5.5' y2='12' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='4.5' cy='12' r='1.5' />
     </svg>
+  );
+}
+
+function IQodeLogotype({ className }: { className?: string }) {
+  return (
+    <span className={`font-[family-name:var(--font-outfit)] ${className ?? ''}`}>
+      <span className='leading-none text-cyan-400 dark:text-cyan-300'>IQode</span>
+      <span className='align-baseline leading-none font-medium text-[0.65em] text-amber-500 dark:text-amber-400'>
+        Lab
+      </span>
+      <IQodeCircuit className='ml-0.5 inline size-2.5 -translate-y-1.5 text-amber-400 dark:text-amber-300' />
+    </span>
   );
 }
 
@@ -88,11 +97,11 @@ export default function AppSidebar() {
               onClick={() => router.push(user ? roleMeta[user.role].basePath : '/')}
               className='hover:bg-sidebar-accent'
             >
-              <span className='bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-md'>
-                <IQodeRobot className='size-4' />
+              <span className='grid size-7 shrink-0 place-items-center rounded-md bg-gray-900 dark:bg-gray-800'>
+                <IQodeCircuit className='size-4 text-amber-400' />
               </span>
               <div className='grid flex-1 text-left text-sm leading-tight'>
-                <span className='truncate font-semibold'>IQode Lab</span>
+                <IQodeLogotype className='truncate font-semibold' />
                 <span className='text-muted-foreground truncate text-xs'>
                   {user
                     ? `${roleMeta[user.role].label} ${tNav('workspaceSuffix')}`
@@ -204,10 +213,18 @@ export default function AppSidebar() {
                           tooltip={itemTitle}
                           isActive={pathname === item.url}
                         >
-                          <Link href={item.url}>
-                            <Icon />
-                            <span>{itemTitle}</span>
-                          </Link>
+                          {item.external ? (
+                            <a href={item.url} target='_blank' rel='noopener noreferrer'>
+                              <Icon />
+                              <span>{itemTitle}</span>
+                              <Icons.externalLink className='ml-auto size-3 opacity-50' />
+                            </a>
+                          ) : (
+                            <Link href={item.url}>
+                              <Icon />
+                              <span>{itemTitle}</span>
+                            </Link>
+                          )}
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );

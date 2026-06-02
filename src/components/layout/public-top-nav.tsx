@@ -5,9 +5,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Icons } from '@/components/icons';
+import { useAuth } from '@/components/auth-provider';
 import { LanguageSwitcher } from './language-switcher';
+import { ThemeModeToggle } from '@/components/themes/theme-mode-toggle';
 import { logout } from '@/lib/auth-actions';
 import type { AppRole } from '@/config/nav-config';
+import { roleMeta } from '@/config/nav-config';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 type AuthUser = { name?: string | null; phone?: string; role: AppRole };
 type WorkspaceMeta = { label: string; basePath: string };
@@ -26,22 +38,96 @@ const NAV_ITEMS: {
   { href: '/contact', labelKey: 'navContact', exact: false }
 ];
 
+function CircuitIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox='0 0 24 24' fill='currentColor' className={className} aria-hidden='true'>
+      <circle cx='12' cy='12' r='2' />
+      <line x1='12' y1='10' x2='12' y2='5.5' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='12' cy='4.5' r='1.5' />
+      <line x1='13.4' y1='10.6' x2='17.2' y2='6.8' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='18' cy='6' r='1.5' />
+      <line x1='14' y1='12' x2='18.5' y2='12' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='19.5' cy='12' r='1.5' />
+      <line x1='13.4' y1='13.4' x2='17.2' y2='17.2' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='18' cy='18' r='1.5' />
+      <line x1='10.6' y1='13.4' x2='6.8' y2='17.2' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='6' cy='18' r='1.5' />
+      <line x1='10' y1='12' x2='5.5' y2='12' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='4.5' cy='12' r='1.5' />
+    </svg>
+  );
+}
+
 function Logo() {
   return (
-    <Link href='/' className='flex items-center gap-0.5'>
-      <span className='text-lg font-bold text-gray-900 dark:text-white'>IQode</span>
-      <span className='text-lg font-bold text-orange-500'> Lab</span>
+    <Link href='/' className='flex items-baseline font-[family-name:var(--font-outfit)]'>
+      <span className='leading-none text-xl font-black tracking-tight text-cyan-500 dark:text-cyan-400'>
+        IQode
+      </span>
+      <span className='leading-none text-sm font-medium tracking-tight text-amber-500 dark:text-amber-400'>
+        Lab
+      </span>
+      <CircuitIcon className='ml-0.5 size-3.5 -translate-y-2 text-amber-500 dark:text-amber-400' />
     </Link>
   );
 }
 
-export function PublicTopNav({
-  user,
-  workspace
-}: {
-  user?: AuthUser | null;
-  workspace?: WorkspaceMeta | null;
-}) {
+function getInitials(name?: string | null, phone?: string) {
+  if (name) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return (phone ?? '?').slice(0, 2).toUpperCase();
+}
+
+function UserMenu({ user, workspace }: { user: AuthUser; workspace: WorkspaceMeta }) {
+  const t = useTranslations('home.header');
+  const displayName = user.name || user.phone || '';
+  const initials = getInitials(user.name, user.phone);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type='button'
+          className='flex items-center gap-1.5 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+        >
+          <Avatar className='size-8'>
+            <AvatarFallback className='bg-blue-600 text-xs font-semibold text-white'>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <Icons.chevronDown className='size-3.5 text-gray-500 dark:text-gray-400' />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end' className='w-52'>
+        <DropdownMenuLabel className='font-normal'>
+          <p className='text-sm font-medium'>{displayName}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href={workspace.basePath} className='flex items-center gap-2'>
+            <Icons.arrowRight className='size-4' />
+            {t('enterWorkspace', { label: workspace.label })}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className='gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400'
+          onSelect={() => logout()}
+        >
+          <Icons.logout className='size-4' />
+          {t('logout')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function PublicTopNav() {
+  const { user } = useAuth();
+  const workspace = user ? roleMeta[user.role] : null;
   const t = useTranslations('home.header');
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -83,31 +169,10 @@ export function PublicTopNav({
           <div className='hidden md:flex'>
             <LanguageSwitcher />
           </div>
+          <ThemeModeToggle />
 
           {user && workspace ? (
-            <>
-              <span className='hidden text-sm text-gray-500 dark:text-gray-400 lg:inline'>
-                {user.name || user.phone}
-              </span>
-              <Link
-                href={workspace.basePath}
-                className='inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700'
-              >
-                <span className='hidden sm:inline'>
-                  {t('enterWorkspace', { label: workspace.label })}
-                </span>
-                <span className='sm:hidden'>{workspace.label}</span>
-                <Icons.arrowRight className='size-3.5' />
-              </Link>
-              <form action={logout}>
-                <button
-                  type='submit'
-                  className='hidden text-sm text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:inline'
-                >
-                  {t('logout')}
-                </button>
-              </form>
-            </>
+            <UserMenu user={user} workspace={workspace} />
           ) : (
             <>
               <Link

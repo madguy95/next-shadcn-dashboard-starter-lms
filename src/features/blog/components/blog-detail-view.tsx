@@ -18,31 +18,33 @@ import { BlogTypeBadge } from './blog-type-badge';
 import { DeletePostDialog } from './delete-post-dialog';
 import { WorkshopSignupDialog } from './workshop-signup-dialog';
 
-type Props = { slug: string; canEdit: boolean };
+type Props = { slug: string; canEdit: boolean; basePath: string };
 
-export function BlogDetailView({ slug, canEdit }: Props) {
+export function BlogDetailView({ slug, canEdit, basePath }: Props) {
   const { data } = useSuspenseQuery(blogDetailOptions(slug));
   if (!data) notFound();
   if (data.type === 'workshop') {
-    return <WorkshopDetail post={data} canEdit={canEdit} />;
+    return <WorkshopDetail post={data} canEdit={canEdit} basePath={basePath} />;
   }
-  return <ArticleDetail post={data} canEdit={canEdit} />;
+  return <ArticleDetail post={data} canEdit={canEdit} basePath={basePath} />;
 }
 
 function DetailHeader({
   post,
   canEdit,
-  onAskDelete
+  onAskDelete,
+  basePath
 }: {
   post: BlogPost;
   canEdit: boolean;
   onAskDelete: () => void;
+  basePath: string;
 }) {
   const t = useTranslations('blog.detail');
   return (
     <div className='mb-6 flex items-center justify-between gap-3'>
       <Button asChild variant='ghost' size='sm' className='-ml-2 h-8'>
-        <Link href='/blog'>
+        <Link href={basePath}>
           <Icons.chevronLeft className='size-3.5' />
           {t('back')}
         </Link>
@@ -50,7 +52,7 @@ function DetailHeader({
       {canEdit && (
         <div className='flex items-center gap-2'>
           <Button asChild variant='outline' size='sm' className='h-8'>
-            <Link href={`/blog/${post.slug}/edit`}>
+            <Link href={`${basePath}/${post.slug}/edit`}>
               <Icons.edit className='size-3.5' />
               {t('edit')}
             </Link>
@@ -70,14 +72,27 @@ function DetailHeader({
   );
 }
 
-function ArticleDetail({ post, canEdit }: { post: BlogPost; canEdit: boolean }) {
+function ArticleDetail({
+  post,
+  canEdit,
+  basePath
+}: {
+  post: BlogPost;
+  canEdit: boolean;
+  basePath: string;
+}) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const tCategory = useTranslations('blog.category');
   const tDetail = useTranslations('blog.detail');
 
   return (
     <div className='mx-auto w-full max-w-[920px] pb-16'>
-      <DetailHeader post={post} canEdit={canEdit} onAskDelete={() => setDeleteOpen(true)} />
+      <DetailHeader
+        post={post}
+        canEdit={canEdit}
+        onAskDelete={() => setDeleteOpen(true)}
+        basePath={basePath}
+      />
 
       <div className='mb-3 flex items-center gap-2'>
         <BlogTypeBadge post={post} className='bg-primary/10 shadow-none' />
@@ -136,12 +151,21 @@ function ArticleDetail({ post, canEdit }: { post: BlogPost; canEdit: boolean }) 
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         redirectOnSuccess
+        basePath={basePath}
       />
     </div>
   );
 }
 
-function WorkshopDetail({ post, canEdit }: { post: BlogPost; canEdit: boolean }) {
+function WorkshopDetail({
+  post,
+  canEdit,
+  basePath
+}: {
+  post: BlogPost;
+  canEdit: boolean;
+  basePath: string;
+}) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   // BE inlines the joined class snapshot on the detail response. Single source
   // of truth — editing the class in /admin/classes shows up here on next read.
@@ -149,7 +173,12 @@ function WorkshopDetail({ post, canEdit }: { post: BlogPost; canEdit: boolean })
 
   return (
     <div className='mx-auto w-full max-w-[1100px] pb-16'>
-      <DetailHeader post={post} canEdit={canEdit} onAskDelete={() => setDeleteOpen(true)} />
+      <DetailHeader
+        post={post}
+        canEdit={canEdit}
+        onAskDelete={() => setDeleteOpen(true)}
+        basePath={basePath}
+      />
 
       <div className='ring-border relative mb-8 h-[320px] overflow-hidden rounded-2xl ring-1'>
         {post.coverUrl ? (
@@ -188,6 +217,7 @@ function WorkshopDetail({ post, canEdit }: { post: BlogPost; canEdit: boolean })
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         redirectOnSuccess
+        basePath={basePath}
       />
     </div>
   );

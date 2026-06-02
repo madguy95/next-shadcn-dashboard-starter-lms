@@ -127,6 +127,7 @@ function buildListQuery(params: ClassListParams): string {
   if (params.status) search.set('status', params.status);
   if (params.search) search.set('search', params.search);
   if (params.courseId) search.set('courseId', params.courseId);
+  if (params.location) search.set('location', params.location);
   return search.toString();
 }
 

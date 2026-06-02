@@ -24,7 +24,7 @@ import {
   type TeacherClassesStats,
   type TeacherClassStatus,
   type TeacherClassStatusFilter
-} from '@/api/teacher-classes';
+} from '@/api/teacher/classes';
 import { cn } from '@/lib/utils';
 import { classColorTokens, studentToneClass } from '@/features/teacher/data';
 

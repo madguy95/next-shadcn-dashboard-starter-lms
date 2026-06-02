@@ -28,14 +28,11 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { formatTuition } from '@/lib/format-vnd';
 import type { PublicCourse } from '@/api/courses/types';
 import type { HomeFeedItem } from '@/api/blog';
-import type { AppRole } from '@/config/nav-config';
 import { HomeCourseCardActions } from './home-course-card-actions';
-
-type AuthUser = { name?: string | null; phone?: string; role: AppRole };
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
-function HeroSection({ user }: { user?: AuthUser | null }) {
+function HeroSection() {
   const t = useTranslations('home.hero');
   return (
     <section className='relative min-h-[560px] overflow-hidden bg-[#0b1a2e]'>
@@ -706,10 +703,10 @@ function CtaBannerSection() {
 
 // ─── Page assembly ────────────────────────────────────────────────────────────
 
-export function HomeLanding({ user }: { user?: AuthUser | null }) {
+export function HomeLanding() {
   return (
     <div className='min-h-screen overflow-x-hidden bg-white'>
-      <HeroSection user={user} />
+      <HeroSection />
       <FeaturedCoursesSection />
       <MethodPreviewSection />
       <LearningJourneySection />

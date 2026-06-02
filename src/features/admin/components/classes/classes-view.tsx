@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LoadingOverlay } from '@/components/ui/loading-state';
 import {
   Pagination,
   PaginationContent,
@@ -15,7 +16,13 @@ import {
   PaginationLink,
   PaginationPageSize
 } from '@/components/ui/pagination';
-import { LoadingOverlay } from '@/components/ui/loading-state';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import {
   Sheet,
   SheetClose,
@@ -30,6 +37,8 @@ import {
   isClassStatus,
   type ClassStatusFilter
 } from '@/api/classes';
+import { courseListOptions } from '@/api/courses';
+import { masterDataOptions } from '@/api/master-data';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { AddClassDialog } from './add-class-dialog';
 import { ClassDetailPanel, ClassDetailPanelSkeleton } from './class-detail-panel';
@@ -39,6 +48,8 @@ export function ClassesView() {
   const t = useTranslations('classes');
   const tTable = useTranslations('table');
   const [statusParam, setStatusParam] = useQueryState('status', parseAsString);
+  const [courseParam, setCourseParam] = useQueryState('courseId', parseAsString);
+  const [locationParam, setLocationParam] = useQueryState('location', parseAsString);
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [selectedId, setSelectedId] = useQueryState('selected', parseAsString);
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
@@ -67,10 +78,14 @@ export function ClassesView() {
       page,
       size: perPage,
       status: isClassStatus(statusParam) ? statusParam : undefined,
-      search: search || undefined
+      search: search || undefined,
+      courseId: courseParam ?? undefined,
+      location: locationParam ?? undefined
     })
   );
   const { data: statusTabs } = useQuery(classStatusTabsOptions());
+  const { data: coursesResult } = useQuery(courseListOptions({ page: 1, size: 100 }));
+  const { data: locations } = useQuery(masterDataOptions('location'));
 
   const visible = result?.data ?? [];
   const totalAll = statusTabs?.find((tab) => tab.value === 'all')?.count ?? visible.length;
@@ -93,9 +108,9 @@ export function ClassesView() {
 
   return (
     <div className='flex min-h-0 flex-1 flex-col gap-4'>
-      {/* Search bar pinned at the top. */}
+      {/* Search + filter bar pinned at the top. */}
       <div className='flex shrink-0 flex-wrap items-center gap-2'>
-        <div className='relative w-full sm:ml-auto sm:w-64'>
+        <div className='relative flex-1 sm:max-w-64'>
           <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2' />
           <Input
             value={search}
@@ -107,6 +122,44 @@ export function ClassesView() {
             className='h-8 pl-8 text-[13px]'
           />
         </div>
+        <Select
+          value={courseParam ?? 'all'}
+          onValueChange={(v) => {
+            void setCourseParam(v === 'all' ? null : v);
+            void setPage(1);
+          }}
+        >
+          <SelectTrigger className='h-8 w-44 text-[13px]'>
+            <SelectValue placeholder={t('filterCourse')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>{t('allCourses')}</SelectItem>
+            {coursesResult?.data.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.code} · {c.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={locationParam ?? 'all'}
+          onValueChange={(v) => {
+            void setLocationParam(v === 'all' ? null : v);
+            void setPage(1);
+          }}
+        >
+          <SelectTrigger className='h-8 w-40 text-[13px]'>
+            <SelectValue placeholder={t('filterLocation')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>{t('allLocations')}</SelectItem>
+            {locations?.map((loc) => (
+              <SelectItem key={loc.id} value={loc.code}>
+                {loc.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Master-detail area: list on the left scrolls internally; on lg+ the

@@ -16,6 +16,7 @@ import type {
   CourseStatus,
   CreateCourseInput,
   DuplicateCourseInput,
+  PublicCourseListParams,
   UpdateCourseInput
 } from './types';
 
@@ -29,7 +30,7 @@ export const courseKeys = {
   // Separate key space — public list lives outside the 'admin' subtree so admin
   // mutations don't accidentally invalidate the unauthenticated landing/enrollment query
   // (different endpoint, different shape, different cache lifetime).
-  publicList: (params: { page: number; size: number }) => ['public', 'courses', params] as const,
+  publicList: (params: PublicCourseListParams) => ['public', 'courses', params] as const,
   publicDetail: (id: string) => ['public', 'courses', 'detail', id] as const
 };
 
@@ -56,7 +57,7 @@ export function courseToolTabsOptions() {
   });
 }
 
-export function publicCoursesOptions(params: { page: number; size: number }) {
+export function publicCoursesOptions(params: PublicCourseListParams) {
   return queryOptions({
     queryKey: courseKeys.publicList(params),
     queryFn: () => getPublicCourses(params),

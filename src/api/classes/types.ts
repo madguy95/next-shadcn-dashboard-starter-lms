@@ -91,6 +91,7 @@ export type ClassListParams = {
   status?: ClassStatus;
   search?: string;
   courseId?: string;
+  location?: string;
 };
 
 export type ClassStats = {

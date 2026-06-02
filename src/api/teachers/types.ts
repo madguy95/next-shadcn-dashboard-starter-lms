@@ -36,6 +36,7 @@ export type Teacher = {
   firstName?: string;
   lastName?: string;
   location?: string;
+  bio?: string;
 };
 
 export type TeacherStatusFilter = TeacherStatus | 'all';
@@ -63,6 +64,7 @@ export type CreateTeacherInput = {
   sendOnboardingEmail: boolean;
   gender: Gender;
   dateOfBirth: string;
+  bio?: string;
   // Raw File chosen in the form. The service layer uploads it via /api/files/upload/teacher-avatar
   // and forwards the resulting URL to the create endpoint — callers never need to pre-upload.
   avatar?: File;

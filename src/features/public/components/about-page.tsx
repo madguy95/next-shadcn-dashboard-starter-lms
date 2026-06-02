@@ -7,8 +7,12 @@ import {
   IconRocket,
   IconCircleCheck
 } from '@tabler/icons-react';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { publicTeachersOptions } from '@/api/public-teachers';
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
@@ -168,39 +172,77 @@ function PillarsSection() {
 
 // ─── Team section ─────────────────────────────────────────────────────────────
 
-const TEAM_AVATAR_COLORS = ['bg-blue-600', 'bg-rose-500', 'bg-emerald-600', 'bg-orange-500'];
-const TEAM_ROLE_COLORS = ['text-blue-600', 'text-rose-500', 'text-emerald-600', 'text-orange-500'];
+const AVATAR_BG = ['bg-blue-600', 'bg-rose-500', 'bg-emerald-600', 'bg-orange-500'];
+const SUBJECT_COLOR = ['text-blue-600', 'text-rose-500', 'text-emerald-600', 'text-orange-500'];
 
-function TeamSection() {
+function TeamSectionSkeleton() {
+  return (
+    <section className='bg-sky-50 py-16 md:py-20'>
+      <div className='mx-auto max-w-5xl px-6 md:px-10'>
+        <div className='mx-auto mb-10 h-8 w-40 animate-pulse rounded bg-gray-200' />
+        <div className='flex gap-5 overflow-x-auto pb-2'>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className='flex w-56 shrink-0 flex-col gap-3 rounded-2xl border border-sky-100 bg-white p-5 shadow-sm'
+            >
+              <div className='h-16 w-16 animate-pulse rounded-xl bg-gray-200' />
+              <div className='space-y-2'>
+                <div className='h-4 w-24 animate-pulse rounded bg-gray-200' />
+                <div className='h-3 w-16 animate-pulse rounded bg-gray-200' />
+              </div>
+              <div className='space-y-1'>
+                <div className='h-3 w-full animate-pulse rounded bg-gray-200' />
+                <div className='h-3 w-4/5 animate-pulse rounded bg-gray-200' />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TeamSectionInner() {
   const t = useTranslations('about.team');
-  const members = [
-    { initials: t('m1Initials'), name: t('m1Name'), role: t('m1Role'), bio: t('m1Bio') },
-    { initials: t('m2Initials'), name: t('m2Name'), role: t('m2Role'), bio: t('m2Bio') },
-    { initials: t('m3Initials'), name: t('m3Name'), role: t('m3Role'), bio: t('m3Bio') },
-    { initials: t('m4Initials'), name: t('m4Name'), role: t('m4Role'), bio: t('m4Bio') }
-  ];
+  const { data: teachers } = useSuspenseQuery(publicTeachersOptions());
+
   return (
     <section className='bg-sky-50 py-16 md:py-20'>
       <div className='mx-auto max-w-5xl px-6 md:px-10'>
         <h2 className='mb-10 text-center text-2xl font-bold tracking-tight text-gray-900 md:text-3xl'>
           {t('heading')}
         </h2>
-        <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-4'>
-          {members.map((m, i) => (
+        <div className='flex gap-5 overflow-x-auto pb-2'>
+          {teachers.map((teacher, i) => (
             <div
-              key={i}
-              className='flex flex-col gap-3 rounded-2xl border border-sky-100 bg-white p-5 shadow-sm'
+              key={teacher.id}
+              className='flex w-56 shrink-0 flex-col gap-3 rounded-2xl border border-sky-100 bg-white p-5 shadow-sm'
             >
-              <div
-                className={`flex h-16 w-16 items-center justify-center rounded-xl text-lg font-bold text-white ${TEAM_AVATAR_COLORS[i]}`}
-              >
-                {m.initials}
-              </div>
+              {teacher.avatarUrl ? (
+                <Image
+                  src={teacher.avatarUrl}
+                  alt={teacher.name}
+                  width={64}
+                  height={64}
+                  className='h-16 w-16 rounded-xl object-cover'
+                />
+              ) : (
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-xl text-lg font-bold text-white ${AVATAR_BG[i % AVATAR_BG.length]}`}
+                >
+                  {teacher.initials}
+                </div>
+              )}
               <div>
-                <div className='text-sm font-semibold text-gray-900'>{m.name}</div>
-                <div className={`text-xs font-medium ${TEAM_ROLE_COLORS[i]}`}>{m.role}</div>
+                <div className='text-sm font-semibold text-gray-900'>{teacher.name}</div>
+                <div className={`text-xs font-medium ${SUBJECT_COLOR[i % SUBJECT_COLOR.length]}`}>
+                  {teacher.subjects.slice(0, 2).join(' · ')}
+                </div>
               </div>
-              <p className='text-xs leading-relaxed text-gray-500'>{m.bio}</p>
+              {teacher.bio && (
+                <p className='text-xs leading-relaxed text-gray-500'>{teacher.bio}</p>
+              )}
             </div>
           ))}
         </div>
@@ -224,6 +266,14 @@ function TeamSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+function TeamSection() {
+  return (
+    <Suspense fallback={<TeamSectionSkeleton />}>
+      <TeamSectionInner />
+    </Suspense>
   );
 }
 

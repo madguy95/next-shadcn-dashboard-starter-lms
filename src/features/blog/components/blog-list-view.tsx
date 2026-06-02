@@ -18,7 +18,7 @@ const VALID_FILTERS: BlogFilter[] = ['all', 'article', 'workshop', 'draft'];
 const isFilter = (v: string | null | undefined): v is BlogFilter =>
   !!v && VALID_FILTERS.includes(v as BlogFilter);
 
-export function BlogListView({ canEdit }: { canEdit: boolean }) {
+export function BlogListView({ canEdit, basePath }: { canEdit: boolean; basePath: string }) {
   const t = useTranslations('blog.list');
   // Filter + search live in the URL so deep links + back/forward preserve view state.
   const [filterParam, setFilterParam] = useQueryState('tab', parseAsString);
@@ -83,7 +83,7 @@ export function BlogListView({ canEdit }: { canEdit: boolean }) {
       </div>
 
       {gridPosts.length === 0 ? (
-        <EmptyState canEdit={canEdit} hasSearch={!!search} />
+        <EmptyState canEdit={canEdit} hasSearch={!!search} basePath={basePath} />
       ) : (
         <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
           {gridPosts.map((p) => (
@@ -96,12 +96,25 @@ export function BlogListView({ canEdit }: { canEdit: boolean }) {
         <span>{t('summary', { total: data.total, visibleTotal: data.visibleTotal })}</span>
       </div>
 
-      <DeletePostDialog post={pendingDelete} open={deleteOpen} onOpenChange={setDeleteOpen} />
+      <DeletePostDialog
+        post={pendingDelete}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        basePath={basePath}
+      />
     </div>
   );
 }
 
-function EmptyState({ canEdit, hasSearch }: { canEdit: boolean; hasSearch: boolean }) {
+function EmptyState({
+  canEdit,
+  hasSearch,
+  basePath
+}: {
+  canEdit: boolean;
+  hasSearch: boolean;
+  basePath: string;
+}) {
   const t = useTranslations('blog.list');
   return (
     <div className='bg-card text-muted-foreground grid min-h-[220px] place-items-center rounded-lg border border-dashed p-6 text-sm'>
@@ -119,7 +132,7 @@ function EmptyState({ canEdit, hasSearch }: { canEdit: boolean; hasSearch: boole
         </div>
         {canEdit && !hasSearch && (
           <Button asChild size='sm' className='mt-4'>
-            <Link href='/blog/new'>
+            <Link href={`${basePath}/new`}>
               <Icons.add className='size-3.5' />
               {t('newPost')}
             </Link>
@@ -130,7 +143,13 @@ function EmptyState({ canEdit, hasSearch }: { canEdit: boolean; hasSearch: boole
   );
 }
 
-export function BlogListHeaderAction({ canEdit }: { canEdit: boolean }) {
+export function BlogListHeaderAction({
+  canEdit,
+  basePath
+}: {
+  canEdit: boolean;
+  basePath: string;
+}) {
   const t = useTranslations('blog.list');
   return (
     <div className='flex items-center gap-2'>
@@ -140,7 +159,7 @@ export function BlogListHeaderAction({ canEdit }: { canEdit: boolean }) {
       </Button>
       {canEdit && (
         <Button asChild size='sm' className='h-9'>
-          <Link href='/blog/new'>
+          <Link href={`${basePath}/new`}>
             <Icons.add className='size-3.5' />
             {t('newPost')}
           </Link>

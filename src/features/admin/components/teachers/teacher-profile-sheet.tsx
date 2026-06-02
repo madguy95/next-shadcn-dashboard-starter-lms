@@ -49,6 +49,7 @@ function teacherToFormValues(teacher: Teacher): TeacherFormValues {
     avatar: [],
     primarySubject: teacher.subjects[0] ?? '',
     location: teacher.location ?? '',
+    bio: teacher.bio ?? '',
     tags: teacher.subjects.slice(1),
     sendOnboardingEmail: false
   };
@@ -153,6 +154,7 @@ export function TeacherProfileSheet({ teacher, open, onOpenChange }: Props) {
                       gender: value.gender as Gender,
                       primarySubject: value.primarySubject,
                       location: value.location,
+                      bio: value.bio,
                       tags: value.tags,
                       avatar: value.avatar[0]
                     }
@@ -189,6 +191,14 @@ export function TeacherProfileSheet({ teacher, open, onOpenChange }: Props) {
                   label={t('addDialog.location')}
                   value={teacher.location ?? tProfile('notProvided')}
                 />
+                {teacher.bio && (
+                  <div className='px-3 py-2 text-[12px]'>
+                    <dt className='text-muted-foreground mb-1'>{t('addDialog.bio')}</dt>
+                    <dd className='text-foreground leading-relaxed whitespace-pre-wrap'>
+                      {teacher.bio}
+                    </dd>
+                  </div>
+                )}
               </Section>
 
               <Separator />

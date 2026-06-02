@@ -132,6 +132,14 @@ export type DuplicateCourseInput = {
   code?: string;
 };
 
+export type PublicCourseListParams = {
+  page: number;
+  size: number;
+  search?: string;
+  tool?: string;
+  sort?: string;
+};
+
 // Lean public payload returned by GET /api/public/courses for the marketing landing page.
 // Always represents a published course; no internal status / sessions / discounts.
 export type PublicCourse = {

@@ -1,9 +1,8 @@
+export const revalidate = 360;
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { PublicTopNav } from '@/components/layout/public-top-nav';
 import { MethodPage } from '@/features/public/components/method-page';
-import { roleMeta } from '@/config/nav-config';
-import { getAuthUser } from '@/lib/auth';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('method');
@@ -12,7 +11,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: '/method' },
+    alternates: {
+      canonical: '/method',
+      languages: { 'x-default': '/method' }
+    },
     openGraph: {
       title,
       description,
@@ -29,16 +31,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function MethodRoute() {
-  const user = await getAuthUser();
-  const workspace = user ? roleMeta[user.role] : null;
-
-  return (
-    <>
-      <PublicTopNav user={user} workspace={workspace} />
-      <main>
-        <MethodPage />
-      </main>
-    </>
-  );
+export default function MethodRoute() {
+  return <MethodPage />;
 }

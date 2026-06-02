@@ -19,11 +19,12 @@ type Props = {
   post: BlogPost | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // Whether to navigate back to /blog after a successful delete (true on detail pages).
+  basePath: string;
+  // Whether to navigate back after a successful delete (true on detail pages).
   redirectOnSuccess?: boolean;
 };
 
-export function DeletePostDialog({ post, open, onOpenChange, redirectOnSuccess }: Props) {
+export function DeletePostDialog({ post, open, onOpenChange, redirectOnSuccess, basePath }: Props) {
   const router = useRouter();
   const t = useTranslations('blog.delete');
   const mutation = useDeleteBlogPost();
@@ -34,7 +35,7 @@ export function DeletePostDialog({ post, open, onOpenChange, redirectOnSuccess }
       await mutation.mutateAsync(post.id);
       toast.success(t('success'));
       onOpenChange(false);
-      if (redirectOnSuccess) router.push('/blog');
+      if (redirectOnSuccess) router.push(basePath);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('failure'));
     }

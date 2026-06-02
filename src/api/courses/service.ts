@@ -16,6 +16,7 @@ import type {
   DuplicateCourseInput,
   PublicCourse,
   PublicCourseDetail,
+  PublicCourseListParams,
   UpdateCourseInput
 } from './types';
 
@@ -279,13 +280,16 @@ export async function setCourseStatus(id: string, status: CourseStatus): Promise
  * Public, unauthenticated course catalog. Hits a permitAll endpoint so it can be called
  * from the marketing site without a JWT. Uses server-side pagination for SEO.
  */
-export async function getPublicCourses(params: {
-  page: number;
-  size: number;
-}): Promise<Paginated<PublicCourse>> {
-  const paged = await apiClientPaged<PublicCourse>(
-    `/api/public/courses?page=${params.page}&size=${params.size}`
-  );
+export async function getPublicCourses(
+  params: PublicCourseListParams
+): Promise<Paginated<PublicCourse>> {
+  const qs = new URLSearchParams();
+  qs.set('page', String(params.page));
+  qs.set('size', String(params.size));
+  if (params.search) qs.set('search', params.search);
+  if (params.tool) qs.set('tool', params.tool);
+  if (params.sort) qs.set('sort', params.sort);
+  const paged = await apiClientPaged<PublicCourse>(`/api/public/courses?${qs.toString()}`);
   return {
     data: paged.data,
     total: paged.totalElements,

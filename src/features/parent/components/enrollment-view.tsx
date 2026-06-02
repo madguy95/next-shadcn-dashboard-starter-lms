@@ -1,9 +1,10 @@
 'use client';
 
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/auth-provider';
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { publicCoursesOptions, PUBLIC_COURSES_PAGE_SIZE } from '@/api/courses/queries';
+import { masterDataOptions } from '@/api/master-data';
 import { cn } from '@/lib/utils';
 import {
   formatVND,
@@ -34,19 +36,7 @@ import { ConsultationRequestDialog } from '@/features/public/components/consulta
 import { ClassPickerDialog } from './class-picker-dialog';
 import { ConfirmEnrollmentDialog } from './confirm-enrollment-dialog';
 import { CourseDetailSheet } from './course-detail-sheet';
-
-const FILTER_GROUPS = [
-  { key: 'age', label: 'Độ tuổi', opts: ['Tất cả', '6–8', '9–11', '12+'] },
-  {
-    key: 'type',
-    label: 'Loại khóa',
-    opts: ['Tất cả', 'Lập trình', 'Robotics', 'AI', 'Toán tư duy']
-  },
-  { key: 'day', label: 'Ngày học', opts: ['Tất cả', 'T2–T6', 'Cuối tuần'] },
-  { key: 'time', label: 'Giờ', opts: ['Tất cả', 'Sáng', 'Chiều', 'Tối'] }
-] as const;
-
-type FilterKey = (typeof FILTER_GROUPS)[number]['key'];
+import type { MasterDataItem } from '@/api/master-data';
 
 // ─── Hero ───────────────────────────────────────────────────────────────────
 // Dark marketing hero matching the about/method pages. Role-aware copy comes
@@ -275,64 +265,49 @@ function CourseCard({
 // ─── Filter bar ───────────────────────────────────────────────────────────────
 
 function FilterBar({
-  filters,
-  setFilters,
+  search,
+  onSearch,
+  tool,
+  onTool,
+  toolItems,
   sort,
-  setSort
+  onSort
 }: {
-  filters: Record<FilterKey, string>;
-  setFilters: (f: Record<FilterKey, string>) => void;
+  search: string;
+  onSearch: (v: string) => void;
+  tool: string;
+  onTool: (v: string) => void;
+  toolItems: MasterDataItem[];
   sort: string;
-  setSort: (v: string) => void;
+  onSort: (v: string) => void;
 }) {
   return (
     <div className='flex flex-wrap items-center gap-2 border-t border-gray-100 bg-gray-50/60 p-4'>
-      <div className='mr-1 inline-flex items-center gap-1.5 text-xs text-gray-400'>
-        <Icons.adjustments className='size-3.5' />
-        Lọc:
-      </div>
-      {FILTER_GROUPS.map((g) => {
-        const v = filters[g.key];
-        const on = v !== 'Tất cả';
-        const cycle = () => {
-          const i = (g.opts as readonly string[]).indexOf(v);
-          setFilters({ ...filters, [g.key]: g.opts[(i + 1) % g.opts.length] });
-        };
-        return (
-          <button
-            key={g.key}
-            type='button'
-            onClick={cycle}
-            className={cn(
-              'inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs transition-colors',
-              on
-                ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-            )}
-          >
-            <span className={on ? 'text-white/80' : 'text-gray-400'}>{g.label}:</span>
-            <span className='font-medium'>{v}</span>
-            {on ? (
-              <Icons.close
-                className='size-3 opacity-80'
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilters({ ...filters, [g.key]: 'Tất cả' });
-                }}
-              />
-            ) : (
-              <Icons.chevronDown className='size-3 opacity-50' />
-            )}
-          </button>
-        );
-      })}
-      <div className='flex-1' />
-      <div className='relative w-full sm:w-56'>
+      <div className='relative flex-1 sm:max-w-56'>
         <Icons.search className='absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-gray-400' />
-        <Input placeholder='Tìm khóa học…' className='h-8 border-gray-200 bg-white pl-8 text-xs' />
+        <Input
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+          placeholder='Tìm khóa học…'
+          className='h-8 border-gray-200 bg-white pl-8 text-xs'
+        />
       </div>
-      <Select value={sort} onValueChange={setSort}>
-        <SelectTrigger className='h-8 border-gray-200 bg-white text-xs'>
+      <Select value={tool || 'all'} onValueChange={(v) => onTool(v === 'all' ? '' : v)}>
+        <SelectTrigger className='h-8 w-36 border-gray-200 bg-white text-xs'>
+          <SelectValue placeholder='Công cụ' />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='all'>Tất cả công cụ</SelectItem>
+          {toolItems.map((item) => (
+            <SelectItem key={item.id} value={item.code}>
+              {item.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <div className='flex-1' />
+      <Select value={sort} onValueChange={onSort}>
+        <SelectTrigger className='h-8 w-40 border-gray-200 bg-white text-xs'>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -739,12 +714,21 @@ function buildPageRange(current: number, total: number): (number | '...')[] {
 }
 
 function CoursePagination({ page, totalPages }: { page: number; totalPages: number }) {
+  const searchParams = useSearchParams();
   if (totalPages <= 1) return null;
+
+  const buildUrl = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(p));
+    params.delete('course');
+    return `/courses?${params.toString()}`;
+  };
+
   const pages = buildPageRange(page, totalPages);
   return (
     <div className='flex items-center justify-center gap-1 border-t border-gray-100 py-5'>
       <Link
-        href={`/courses?page=${page - 1}`}
+        href={buildUrl(page - 1)}
         aria-disabled={page === 1}
         className={cn(
           'inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50',
@@ -762,7 +746,7 @@ function CoursePagination({ page, totalPages }: { page: number; totalPages: numb
         ) : (
           <Link
             key={p}
-            href={`/courses?page=${p}`}
+            href={buildUrl(p)}
             className={cn(
               'inline-flex h-8 w-8 items-center justify-center rounded-lg border text-sm transition-colors',
               p === page
@@ -776,7 +760,7 @@ function CoursePagination({ page, totalPages }: { page: number; totalPages: numb
       )}
 
       <Link
-        href={`/courses?page=${page + 1}`}
+        href={buildUrl(page + 1)}
         aria-disabled={page === totalPages}
         className={cn(
           'inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50',
@@ -799,17 +783,29 @@ export function EnrollmentView({ page }: { page: number }) {
   const [childIdx, setChildIdx] = useState(0);
   const child = parentChildren[childIdx];
 
+  const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
+  const [tool, setTool] = useQueryState('tool', parseAsString);
+  const [sort, setSort] = useState('popular');
+
   // Public course list is server-prefetched in app/(public-pages)/courses/page.tsx and
-  // hydrated via <HydrationBoundary>. useSuspenseQuery picks that up — no skeleton on
-  // first paint. Subsequent navigations (no hydration) suspend until cache populates.
-  const { data: pagedCourses } = useSuspenseQuery(
-    publicCoursesOptions({ page, size: PUBLIC_COURSES_PAGE_SIZE })
+  // hydrated via <HydrationBoundary>. useQuery picks that up from cache — no skeleton on
+  // first paint. Filter changes refetch with keepPreviousData while the new results load.
+  const { data: pagedCourses, isFetching } = useQuery(
+    publicCoursesOptions({
+      page,
+      size: PUBLIC_COURSES_PAGE_SIZE,
+      search: search || undefined,
+      tool: tool ?? undefined,
+      sort: sort !== 'popular' ? sort : undefined
+    })
   );
+  const { data: toolItems } = useQuery(masterDataOptions('tool'));
+
   const courses = useMemo<ParentCourse[]>(
-    () => pagedCourses.data.map(publicCourseToParentCourse),
+    () => (pagedCourses?.data ?? []).map(publicCourseToParentCourse),
     [pagedCourses]
   );
-  const totalPages = pagedCourses.pageCount;
+  const totalPages = pagedCourses?.pageCount ?? 1;
 
   // Deep-link: /courses?course=SC-101 opens that course's detail sheet on mount.
   // Match by `code` (stable, user-friendly) rather than DB id.
@@ -857,14 +853,6 @@ export function EnrollmentView({ page }: { page: number }) {
   const [note, setNote] = useState('');
   const [reqId] = useState(() => `REQ-${Math.floor(1000 + Math.random() * 9000)}`);
 
-  const [filters, setFilters] = useState<Record<FilterKey, string>>({
-    age: 'Tất cả',
-    type: 'Tất cả',
-    day: 'Tất cả',
-    time: 'Tất cả'
-  });
-  const [sort, setSort] = useState('popular');
-
   // The original "conflict" warning was hard-coded against a mock id; without real enrollment
   // data we can't reliably detect overlapping courses, so leave the banner off for now.
   const hasConflict = false;
@@ -898,21 +886,32 @@ export function EnrollmentView({ page }: { page: number }) {
               <div className='flex min-w-0 items-baseline gap-2'>
                 <h2 className='text-lg font-bold tracking-tight text-gray-900'>Khóa học phù hợp</h2>
                 <span className='rounded-full bg-gray-100 px-2 py-0.5 font-mono text-[11px] text-gray-500'>
-                  {`${pagedCourses.total} kết quả`}
+                  {`${pagedCourses?.total ?? 0} kết quả`}
                 </span>
               </div>
             </div>
 
             <RoleBanner role={role} child={child} onSwitchChild={switchChild} />
 
-            <FilterBar filters={filters} setFilters={setFilters} sort={sort} setSort={setSort} />
+            <FilterBar
+              search={search}
+              onSearch={(v) => {
+                void setSearch(v || null);
+              }}
+              tool={tool ?? ''}
+              onTool={(v) => {
+                void setTool(v || null);
+              }}
+              toolItems={toolItems ?? []}
+              sort={sort}
+              onSort={setSort}
+            />
 
-            {/* No loading / error branches here — useSuspenseQuery guarantees data is present
-                (Suspense fallback handles loading, ErrorBoundary handles failures). */}
             <div
               className={cn(
                 'grid grid-cols-1 gap-4 p-5 sm:grid-cols-2',
-                !hasSidebar && 'lg:grid-cols-3'
+                !hasSidebar && 'lg:grid-cols-3',
+                isFetching && 'opacity-60 transition-opacity duration-150'
               )}
             >
               {courses.length === 0 ? (

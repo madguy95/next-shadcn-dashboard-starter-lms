@@ -334,6 +334,8 @@
       "tags": "Tags",
       "addTagPlaceholder": "Add tag…",
       "removeTag": "Remove {tag}",
+      "bio": "About",
+      "bioPlaceholder": "A few sentences about teaching experience, style…",
       "sendOnboardingEmail": "Send onboarding email with class assignment & schedule.",
       "sendInvite": "Send invite",
       "successToast": "Invite sent to {name}.",
@@ -349,7 +351,8 @@
         "locationRequired": "Please select a location.",
         "dateOfBirthRequired": "Please select a date of birth.",
         "dateOfBirthFuture": "Date of birth cannot be in the future.",
-        "genderRequired": "Please select a gender."
+        "genderRequired": "Please select a gender.",
+        "bioTooLong": "Bio must not exceed 500 characters."
       }
     },
     "gender": {
@@ -384,6 +387,10 @@
     "loadingList": "Loading courses…",
     "updatingList": "Updating…",
     "searchPlaceholder": "Search courses…",
+    "filterTool": "Tool",
+    "allTools": "All tools",
+    "filterStatus": "Status",
+    "allStatuses": "All statuses",
     "noResults": "No courses match your filters.",
     "selectedBadge": "SELECTED",
     "tools": {
@@ -612,6 +619,10 @@
     "loadingList": "Loading classes…",
     "updatingList": "Updating…",
     "searchPlaceholder": "Search classes…",
+    "filterCourse": "Course",
+    "allCourses": "All courses",
+    "filterLocation": "Location",
+    "allLocations": "All locations",
     "noResults": "No classes match your filters.",
     "ofTotal": "{count} of {total}",
     "tabs": {

@@ -34,6 +34,7 @@ const defaultValues: TeacherFormValues = {
   avatar: [],
   primarySubject: '',
   location: '',
+  bio: '',
   tags: [],
   sendOnboardingEmail: true
 };

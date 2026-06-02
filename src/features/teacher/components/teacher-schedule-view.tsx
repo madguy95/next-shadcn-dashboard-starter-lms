@@ -15,7 +15,7 @@ import {
   type TeacherScheduleDay,
   type TeacherScheduleEvent,
   type TeacherScheduleWeek
-} from '@/api/teacher-schedule';
+} from '@/api/teacher/schedule';
 import { classColorTokens } from '@/features/teacher/data';
 import { cn } from '@/lib/utils';
 

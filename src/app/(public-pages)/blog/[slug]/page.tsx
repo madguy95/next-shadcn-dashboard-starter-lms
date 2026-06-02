@@ -3,10 +3,21 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import PageContainer from '@/components/layout/page-container';
-import { blogDetailOptions, getBlogPostBySlug } from '@/api/blog';
+import { blogDetailOptions, getBlogPostBySlug, getBlogPosts } from '@/api/blog';
+import type { BlogPost } from '@/api/blog';
 import { BlogDetailSkeleton, BlogDetailView } from '@/features/blog/components/blog-detail-view';
-import { getAuthUser } from '@/lib/auth';
 import { getQueryClient } from '@/lib/query-client';
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  try {
+    const result = await getBlogPosts({ filter: 'all', includeDrafts: false });
+    return result.data.filter((p) => p.status === 'published').map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -17,7 +28,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title,
     description,
-    alternates: { canonical: canonicalUrl },
+    alternates: {
+      canonical: canonicalUrl,
+      languages: { 'x-default': canonicalUrl }
+    },
     openGraph: {
       title,
       description,
@@ -38,23 +52,55 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://iqode.vn';
+
+function buildArticleJsonLd(post: BlogPost, slug: string) {
+  const url = `${SITE_URL}/blog/${slug}`;
+  const datePublished = (() => {
+    const d = new Date(post.publishedAt);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  })();
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    url,
+    ...(datePublished ? { datePublished } : {}),
+    ...(post.coverUrl ? { image: post.coverUrl } : {}),
+    author: { '@type': 'Person', name: post.author.name },
+    publisher: {
+      '@type': 'Organization',
+      name: 'IQode Lab',
+      url: SITE_URL
+    }
+  };
+}
+
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [user, post] = await Promise.all([getAuthUser(), getBlogPostBySlug(slug)]);
-  if (!post) notFound();
-
-  const canEdit = user?.role === 'admin';
-  // Drafts never reach non-admin viewers, regardless of how the URL was obtained.
-  if (post.status === 'draft' && !canEdit) notFound();
 
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(blogDetailOptions(slug));
+  await queryClient.prefetchQuery(blogDetailOptions(slug));
+
+  const post = queryClient.getQueryData<BlogPost>(blogDetailOptions(slug).queryKey);
+  if (!post) notFound();
+  if (post.status === 'draft') notFound();
 
   return (
     <PageContainer scrollable={true}>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildArticleJsonLd(post, slug))
+            .replace(/</g, '\\u003c')
+            .replace(/>/g, '\\u003e')
+            .replace(/&/g, '\\u0026')
+        }}
+      />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={<BlogDetailSkeleton />}>
-          <BlogDetailView slug={slug} canEdit={canEdit} />
+          <BlogDetailView slug={slug} canEdit={false} basePath='/blog' />
         </Suspense>
       </HydrationBoundary>
     </PageContainer>

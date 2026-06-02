@@ -9,6 +9,7 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAppForm, useFormFields } from '@/components/ui/tanstack-form';
 import { masterDataOptions } from '@/api/master-data';
@@ -25,6 +26,7 @@ export type TeacherFormValues = {
   avatar: File[];
   primarySubject: string;
   location: string;
+  bio: string;
   tags: string[];
   sendOnboardingEmail: boolean;
 };
@@ -78,6 +80,7 @@ export function TeacherForm({
         avatar: z.array(z.instanceof(File)).max(1),
         primarySubject: z.string().min(1, tValidation('primarySubjectRequired')),
         location: z.string().min(1, tValidation('locationRequired')),
+        bio: z.string().max(500, tValidation('bioTooLong')).optional().default(''),
         tags: z.array(z.string()),
         sendOnboardingEmail: z.boolean()
       }),
@@ -239,6 +242,31 @@ export function TeacherForm({
               maxFiles={1}
             />
           </div>
+
+          <form.AppField name='bio'>
+            {(field) => (
+              <field.FieldSet className='md:col-span-2'>
+                <field.Field>
+                  <field.FieldLabel className='text-muted-foreground text-[12px]'>
+                    {t('addDialog.bio')}
+                  </field.FieldLabel>
+                  <Textarea
+                    rows={3}
+                    maxLength={500}
+                    placeholder={t('addDialog.bioPlaceholder')}
+                    value={field.state.value ?? ''}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    className='resize-none text-sm'
+                  />
+                  <p className='text-muted-foreground mt-1 text-right text-[11px]'>
+                    {(field.state.value ?? '').length}/500
+                  </p>
+                </field.Field>
+                <field.FieldError />
+              </field.FieldSet>
+            )}
+          </form.AppField>
 
           <form.AppField name='tags' mode='array'>
             {(field) => {

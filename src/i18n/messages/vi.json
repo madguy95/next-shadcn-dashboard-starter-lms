@@ -334,6 +334,8 @@
       "tags": "Thẻ",
       "addTagPlaceholder": "Thêm thẻ…",
       "removeTag": "Xóa {tag}",
+      "bio": "Giới thiệu bản thân",
+      "bioPlaceholder": "Vài câu về kinh nghiệm giảng dạy, phong cách dạy học…",
       "sendOnboardingEmail": "Gửi email onboarding kèm lịch dạy và lớp được phân công.",
       "sendInvite": "Gửi lời mời",
       "successToast": "Đã gửi lời mời tới {name}.",
@@ -349,7 +351,8 @@
         "locationRequired": "Vui lòng chọn cơ sở.",
         "dateOfBirthRequired": "Vui lòng chọn ngày sinh.",
         "dateOfBirthFuture": "Ngày sinh không được ở tương lai.",
-        "genderRequired": "Vui lòng chọn giới tính."
+        "genderRequired": "Vui lòng chọn giới tính.",
+        "bioTooLong": "Giới thiệu không được vượt quá 500 ký tự."
       }
     },
     "gender": {
@@ -384,6 +387,10 @@
     "loadingList": "Đang tải khóa học…",
     "updatingList": "Đang cập nhật…",
     "searchPlaceholder": "Tìm khóa học…",
+    "filterTool": "Công cụ",
+    "allTools": "Tất cả công cụ",
+    "filterStatus": "Trạng thái",
+    "allStatuses": "Tất cả trạng thái",
     "noResults": "Không có khóa học phù hợp.",
     "selectedBadge": "ĐANG CHỌN",
     "tools": {
@@ -612,6 +619,10 @@
     "loadingList": "Đang tải danh sách lớp…",
     "updatingList": "Đang cập nhật…",
     "searchPlaceholder": "Tìm lớp…",
+    "filterCourse": "Khóa học",
+    "allCourses": "Tất cả khóa học",
+    "filterLocation": "Cơ sở",
+    "allLocations": "Tất cả cơ sở",
     "noResults": "Không có lớp phù hợp.",
     "ofTotal": "{count} / {total}",
     "tabs": {

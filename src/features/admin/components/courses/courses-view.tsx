@@ -16,6 +16,13 @@ import {
   PaginationPageSize
 } from '@/components/ui/pagination';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -23,10 +30,9 @@ import {
   SheetHeader,
   SheetTitle
 } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
-import { courseListOptions, courseToolTabsOptions, type CourseToolFilter } from '@/api/courses';
+import { courseListOptions, type CourseToolFilter, COURSE_STATUSES } from '@/api/courses';
+import { masterDataOptions } from '@/api/master-data';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { cn } from '@/lib/utils';
 import { AddCourseDialog } from './add-course-dialog';
 import { CourseCard, CourseCardSkeleton } from './course-card';
 import { CourseDetailPanel, CourseDetailPanelSkeleton } from './course-detail-panel';
@@ -35,6 +41,7 @@ export function CoursesView() {
   const t = useTranslations('courses');
   const tTable = useTranslations('table');
   const [toolParam, setToolParam] = useQueryState('tool', parseAsString);
+  const [statusParam, setStatusParam] = useQueryState('status', parseAsString);
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [selectedId, setSelectedId] = useQueryState('selected', parseAsString);
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
@@ -62,12 +69,13 @@ export function CoursesView() {
   } = useQuery(
     courseListOptions({
       tool: tool === 'all' ? undefined : tool,
+      status: (statusParam as (typeof COURSE_STATUSES)[number]) || undefined,
       search: search || undefined,
       page,
       size: perPage
     })
   );
-  const { data: toolTabs } = useQuery(courseToolTabsOptions());
+  const { data: toolItems } = useQuery(masterDataOptions('tool'));
 
   const visible = result?.data ?? [];
   const selected = visible.find((c) => c.id === selectedId) ?? visible[0];
@@ -92,31 +100,7 @@ export function CoursesView() {
       {/* Left: filter chips + search pinned at top, cards scroll below. */}
       <div className='flex min-h-0 flex-1 flex-col gap-4 lg:flex-[8]'>
         <div className='flex shrink-0 flex-wrap items-center gap-2'>
-          {toolTabs
-            ? toolTabs.map((tab) => {
-                const active = tool === tab.value;
-                return (
-                  <button
-                    key={tab.value}
-                    type='button'
-                    onClick={() => {
-                      void setToolParam(tab.value === 'all' ? null : tab.value);
-                      void setPage(1);
-                    }}
-                    className={cn(
-                      'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px]',
-                      active ? 'bg-foreground text-background border-foreground' : 'hover:bg-accent'
-                    )}
-                  >
-                    {t(`tools.${tab.value}`)}
-                    <span className='font-mono opacity-60'>{tab.count}</span>
-                  </button>
-                );
-              })
-            : Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className='h-8 w-24 rounded-full' />
-              ))}
-          <div className='relative w-full sm:ml-auto sm:w-64'>
+          <div className='relative flex-1 sm:max-w-64'>
             <Icons.search className='text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2' />
             <Input
               value={search}
@@ -128,6 +112,44 @@ export function CoursesView() {
               className='h-8 pl-8 text-[13px]'
             />
           </div>
+          <Select
+            value={toolParam ?? 'all'}
+            onValueChange={(v) => {
+              void setToolParam(v === 'all' ? null : v);
+              void setPage(1);
+            }}
+          >
+            <SelectTrigger className='h-8 w-40 text-[13px]'>
+              <SelectValue placeholder={t('filterTool')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>{t('allTools')}</SelectItem>
+              {toolItems?.map((item) => (
+                <SelectItem key={item.id} value={item.code}>
+                  {item.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={statusParam ?? 'all'}
+            onValueChange={(v) => {
+              void setStatusParam(v === 'all' ? null : v);
+              void setPage(1);
+            }}
+          >
+            <SelectTrigger className='h-8 w-40 text-[13px]'>
+              <SelectValue placeholder={t('filterStatus')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>{t('allStatuses')}</SelectItem>
+              {COURSE_STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {t(`status.${s}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <LoadingOverlay visible={!isLoading && isFetching} message={t('updatingList')}>

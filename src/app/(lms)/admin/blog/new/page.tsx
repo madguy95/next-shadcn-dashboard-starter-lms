@@ -9,15 +9,13 @@ export async function generateMetadata() {
   return { title: t('metaTitleNew') };
 }
 
-export default async function NewBlogPostPage() {
+export default async function AdminNewBlogPostPage() {
   const user = await getAuthUser();
-  // Editor is admin-only. notFound() (rather than redirect) so the URL doesn't
-  // leak the feature's existence to non-admin viewers via the URL bar.
   if (user?.role !== 'admin') notFound();
 
   return (
     <PageContainer scrollable={true}>
-      <BlogEditorView mode='create' />
+      <BlogEditorView mode='create' basePath='/admin/blog' />
     </PageContainer>
   );
 }

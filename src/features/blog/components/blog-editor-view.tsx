@@ -105,16 +105,16 @@ function fromPost(post: BlogPost): FormState {
   };
 }
 
-type Props = { mode: 'create' } | { mode: 'edit'; slug: string };
+type Props = ({ mode: 'create' } | { mode: 'edit'; slug: string }) & { basePath: string };
 
 export function BlogEditorView(props: Props) {
-  if (props.mode === 'create') return <Editor mode='create' />;
-  return <EditWrapper slug={props.slug} />;
+  if (props.mode === 'create') return <Editor mode='create' basePath={props.basePath} />;
+  return <EditWrapper slug={props.slug} basePath={props.basePath} />;
 }
 
 // Edit mode needs to load the post before mounting the form so initial values
 // are correct; useSuspenseQuery streams it in via the page-level Suspense boundary.
-function EditWrapper({ slug }: { slug: string }) {
+function EditWrapper({ slug, basePath }: { slug: string; basePath: string }) {
   const { data } = useSuspenseQuery(blogDetailOptions(slug));
   const t = useTranslations('blog.detail');
   if (!data) {
@@ -124,10 +124,10 @@ function EditWrapper({ slug }: { slug: string }) {
       </div>
     );
   }
-  return <Editor mode='edit' initial={data} />;
+  return <Editor mode='edit' initial={data} basePath={basePath} />;
 }
 
-function Editor({ mode, initial }: { mode: Mode; initial?: BlogPost }) {
+function Editor({ mode, initial, basePath }: { mode: Mode; initial?: BlogPost; basePath: string }) {
   const router = useRouter();
   const t = useTranslations('blog.editor');
   const create = useCreateBlogPost();
@@ -203,11 +203,11 @@ function Editor({ mode, initial }: { mode: Mode; initial?: BlogPost }) {
       if (mode === 'edit' && initial) {
         const post = await update.mutateAsync({ id: initial.id, input: payload });
         toast.success(status === 'draft' ? t('draftSaved') : t('postUpdated'));
-        router.push(`/blog/${post.slug}`);
+        router.push(`${basePath}/${post.slug}`);
       } else {
         const post = await create.mutateAsync(payload);
         toast.success(status === 'draft' ? t('draftSaved') : t('postPublished'));
-        router.push(`/blog/${post.slug}`);
+        router.push(`${basePath}/${post.slug}`);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('saveFailed'));

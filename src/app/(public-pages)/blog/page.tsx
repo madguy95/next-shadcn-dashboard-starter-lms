@@ -18,7 +18,10 @@ export async function generateMetadata() {
   return {
     title,
     description,
-    alternates: { canonical: '/blog' },
+    alternates: {
+      canonical: '/blog',
+      languages: { 'x-default': '/blog' }
+    },
     openGraph: {
       title,
       description,
@@ -35,15 +38,16 @@ export async function generateMetadata() {
   };
 }
 
+export const revalidate = 60;
+
+const BASE = '/blog';
+
 export default async function BlogPage() {
   const user = await getAuthUser();
-  const canEdit = user?.role === 'admin';
   const t = await getTranslations('blog');
 
   const queryClient = getQueryClient();
-  // Default tab view — prefetch only the "all" filter. Other filters fetch on
-  // navigation, which is cheap and keeps the initial payload small.
-  void queryClient.prefetchQuery(blogListOptions({ filter: 'all', includeDrafts: canEdit }));
+  await queryClient.prefetchQuery(blogListOptions({ filter: 'all', includeDrafts: false }));
 
   const role = user?.role ?? 'parent';
   const description = t(`intro.${role}`);
@@ -52,11 +56,11 @@ export default async function BlogPage() {
     <PageContainer
       pageTitle={t('pageTitle')}
       pageDescription={description}
-      pageHeaderAction={<BlogListHeaderAction canEdit={canEdit} />}
+      pageHeaderAction={<BlogListHeaderAction canEdit={false} basePath={BASE} />}
     >
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={<BlogListSkeleton />}>
-          <BlogListView canEdit={canEdit} />
+          <BlogListView canEdit={false} basePath={BASE} />
         </Suspense>
       </HydrationBoundary>
     </PageContainer>

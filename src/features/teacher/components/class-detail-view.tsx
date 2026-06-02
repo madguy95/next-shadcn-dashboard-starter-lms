@@ -38,7 +38,7 @@ import {
   type ClassStudent,
   type StudentNote,
   type StudentNoteRating
-} from '@/api/teacher-class-detail';
+} from '@/api/teacher/class-detail';
 import { formatApiError } from '@/lib/api-client';
 import { ClassDetailSkeleton } from './class-detail-skeleton';
 import {

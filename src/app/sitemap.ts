@@ -19,12 +19,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { data } = await getBlogPosts({ filter: 'all', includeDrafts: false });
     blogRoutes = data
       .filter((p) => p.status === 'published')
-      .map((p) => ({
-        url: `${siteUrl}/blog/${p.slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly' as const,
-        priority: 0.7
-      }));
+      .map((p) => {
+        const parsed = new Date(p.publishedAt);
+        const lastModified = isNaN(parsed.getTime()) ? now : parsed;
+        return {
+          url: `${siteUrl}/blog/${p.slug}`,
+          lastModified,
+          changeFrequency: 'weekly' as const,
+          priority: 0.7
+        };
+      });
   } catch {
     // Blog API unavailable at build time — sitemap still serves static pages
   }
