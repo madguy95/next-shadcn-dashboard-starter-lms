@@ -1,10 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { Icons } from '@/components/icons';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
-import { roleMeta } from '@/config/nav-config';
-import { getAuthUser } from '@/lib/auth';
+import { LoginBrandText } from './login-brand-text';
 import { LoginForm } from './login-form';
 
 export async function generateMetadata() {
@@ -12,17 +11,9 @@ export async function generateMetadata() {
   return { title: t('metaTitle') };
 }
 
-type SearchParams = { mode?: string };
+export default async function LoginPage() {
+  const t = await getTranslations('auth');
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const [{ mode }, user, t] = await Promise.all([
-    searchParams,
-    getAuthUser(),
-    getTranslations('auth')
-  ]);
-  // Already logged in → no reason to see the login form. Send them to their workspace.
-  if (user) redirect(roleMeta[user.role].basePath);
-  const initialMode: 'login' | 'register' = mode === 'register' ? 'register' : 'login';
   return (
     <div className='relative grid min-h-screen overflow-hidden bg-black text-white lg:grid-cols-[1.1fr_1fr]'>
       <div className='relative hidden flex-col justify-between p-10 lg:flex'>
@@ -60,14 +51,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <span className='text-5xl font-bold tracking-tight text-cyan-400'>IQode</span>
             <span className='text-2xl font-light text-orange-300'>Lab</span>
           </div>
-          <p className='mt-4 max-w-md text-2xl leading-snug text-white/90'>
-            {initialMode === 'register' ? t('welcomeTitleRegister') : t('welcomeTitleLogin')}
-            <br />
-            <span className='text-white/60'>
-              {initialMode === 'register' ? t('welcomeSubRegister') : t('welcomeSubLogin')}{' '}
-              <span className='font-medium text-white'>{t('tagline')}</span>
-            </span>
-          </p>
+          <Suspense>
+            <LoginBrandText />
+          </Suspense>
         </div>
 
         <div className='relative z-10 max-w-sm space-y-3 text-sm text-white/50'>
@@ -94,12 +80,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <Icons.chevronLeft className='size-3.5' />
           {t('backHomeShort')}
         </Link>
-        {/*
-          Language switcher lives on the form panel (white) so it's reachable
-          on both mobile and desktop without overlapping the dark brand panel.
-          Overrides keep it readable on the white surface; the dropdown menu
-          itself already uses theme tokens.
-        */}
         <LanguageSwitcher className='absolute top-6 right-6 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900' />
 
         <div className='w-full max-w-sm'>
@@ -110,7 +90,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </div>
           </div>
 
-          <LoginForm initialMode={initialMode} />
+          <Suspense>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
     </div>

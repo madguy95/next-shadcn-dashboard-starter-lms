@@ -1,14 +1,14 @@
 import Providers from '@/components/layout/providers';
+import { ClientLocaleProvider } from '@/components/layout/client-locale-provider';
 import { SPLASH_INIT_SCRIPT, SplashScreen } from '@/components/layout/splash-screen';
 import { Toaster } from '@/components/ui/sonner';
 import { fontVariables } from '@/components/themes/font.config';
-import { DEFAULT_THEME, THEMES } from '@/components/themes/theme.config';
+import { DEFAULT_THEME } from '@/components/themes/theme.config';
 import ThemeProvider from '@/components/themes/theme-provider';
 import { cn } from '@/lib/utils';
+import { DEFAULT_LOCALE } from '@/i18n/config';
 import type { Metadata, Viewport } from 'next';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { getMessages } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import '../styles/globals.css';
@@ -17,6 +17,10 @@ const META_THEME_COLORS = {
   light: '#ffffff',
   dark: '#09090b'
 };
+
+// Inline script: reads active_theme cookie before first paint so there's no
+// flash when the user has a non-default theme.
+const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)active_theme=([^;]+)/);if(m)document.documentElement.setAttribute('data-theme',decodeURIComponent(m[1]));}catch(_){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://iqode.vn'),
@@ -33,25 +37,17 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const activeThemeValue = cookieStore.get('active_theme')?.value;
-  const isValidTheme = THEMES.some((t) => t.value === activeThemeValue);
-  const themeToApply = isValidTheme ? activeThemeValue! : DEFAULT_THEME;
-
-  const locale = await getLocale();
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning data-theme={themeToApply}>
+    <html lang={DEFAULT_LOCALE} suppressHydrationWarning data-theme={DEFAULT_THEME}>
       <head>
-        {/* Splash pre-paint hide: must run BEFORE anything else so the splash
-            never flashes when the user has already seen it this session. */}
         <script dangerouslySetInnerHTML={{ __html: SPLASH_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                // Set meta theme color
                 if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '${META_THEME_COLORS.dark}')
                 }
@@ -67,7 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
       >
         <NextTopLoader color='var(--primary)' showSpinner={false} />
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <ClientLocaleProvider defaultMessages={messages}>
           <NuqsAdapter>
             <ThemeProvider
               attribute='class'
@@ -76,14 +72,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               disableTransitionOnChange
               enableColorScheme
             >
-              <Providers activeThemeValue={themeToApply}>
+              <Providers>
                 <SplashScreen />
                 <Toaster />
                 {children}
               </Providers>
             </ThemeProvider>
           </NuqsAdapter>
-        </NextIntlClientProvider>
+        </ClientLocaleProvider>
       </body>
     </html>
   );

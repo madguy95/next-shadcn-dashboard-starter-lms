@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Icons } from '@/components/icons';
@@ -17,9 +18,11 @@ import { cn } from '@/lib/utils';
 
 type Mode = 'login' | 'register';
 
-export function LoginForm({ initialMode = 'login' }: { initialMode?: Mode }) {
+export function LoginForm() {
   const router = useRouter();
   const t = useTranslations('auth.form');
+  const searchParams = useSearchParams();
+  const initialMode: Mode = searchParams.get('mode') === 'register' ? 'register' : 'login';
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');

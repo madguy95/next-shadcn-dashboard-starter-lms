@@ -1,4 +1,5 @@
 export const revalidate = 360;
+export const fetchCache = 'default-cache';
 
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata } from 'next';

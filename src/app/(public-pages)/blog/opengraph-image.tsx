@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
 export const alt = 'Blog IQode Lab — Bài viết & workshop về giáo dục công nghệ';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';

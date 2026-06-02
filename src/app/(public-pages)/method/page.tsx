@@ -1,4 +1,5 @@
 export const revalidate = 360;
+export const fetchCache = 'default-cache';
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';

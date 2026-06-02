@@ -19,6 +19,12 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function readThemeCookie(): string | null {
+  if (typeof window === 'undefined') return null;
+  const m = document.cookie.match(/(?:^|;\s*)active_theme=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 export function ActiveThemeProvider({
   children,
   initialTheme
@@ -26,8 +32,9 @@ export function ActiveThemeProvider({
   children: ReactNode;
   initialTheme?: string;
 }) {
-  const themeToUse = initialTheme || DEFAULT_THEME;
-  const [activeTheme, setActiveTheme] = useState<string>(themeToUse);
+  const [activeTheme, setActiveTheme] = useState<string>(
+    () => initialTheme ?? readThemeCookie() ?? DEFAULT_THEME
+  );
 
   useEffect(() => {
     // Only update if theme has changed

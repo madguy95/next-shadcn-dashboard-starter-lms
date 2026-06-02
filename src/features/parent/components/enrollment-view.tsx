@@ -775,7 +775,7 @@ function CoursePagination({ page, totalPages }: { page: number; totalPages: numb
 
 // ─── Main view ────────────────────────────────────────────────────────────────
 
-export function EnrollmentView({ page }: { page: number }) {
+export function EnrollmentView() {
   const { user } = useAuth();
   const role = user?.role ?? null;
   const isParent = role === 'parent';
@@ -783,13 +783,13 @@ export function EnrollmentView({ page }: { page: number }) {
   const [childIdx, setChildIdx] = useState(0);
   const child = parentChildren[childIdx];
 
+  const searchParams = useSearchParams();
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1);
+
   const [search, setSearch] = useQueryState('q', parseAsString.withDefault(''));
   const [tool, setTool] = useQueryState('tool', parseAsString);
   const [sort, setSort] = useState('popular');
 
-  // Public course list is server-prefetched in app/(public-pages)/courses/page.tsx and
-  // hydrated via <HydrationBoundary>. useQuery picks that up from cache — no skeleton on
-  // first paint. Filter changes refetch with keepPreviousData while the new results load.
   const { data: pagedCourses, isFetching } = useQuery(
     publicCoursesOptions({
       page,
@@ -808,8 +808,6 @@ export function EnrollmentView({ page }: { page: number }) {
   const totalPages = pagedCourses?.pageCount ?? 1;
 
   // Deep-link: /courses?course=SC-101 opens that course's detail sheet on mount.
-  // Match by `code` (stable, user-friendly) rather than DB id.
-  const searchParams = useSearchParams();
   const initialCourseCode = searchParams.get('course');
 
   const [courseId, setCourseId] = useState<string | null>(null);

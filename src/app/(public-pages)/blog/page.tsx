@@ -8,7 +8,6 @@ import {
   BlogListSkeleton,
   BlogListView
 } from '@/features/blog/components/blog-list-view';
-import { getAuthUser } from '@/lib/auth';
 import { getQueryClient } from '@/lib/query-client';
 
 export async function generateMetadata() {
@@ -43,14 +42,12 @@ export const revalidate = 60;
 const BASE = '/blog';
 
 export default async function BlogPage() {
-  const user = await getAuthUser();
   const t = await getTranslations('blog');
 
   const queryClient = getQueryClient();
   await queryClient.prefetchQuery(blogListOptions({ filter: 'all', includeDrafts: false }));
 
-  const role = user?.role ?? 'parent';
-  const description = t(`intro.${role}`);
+  const description = t('intro.parent');
 
   return (
     <PageContainer
