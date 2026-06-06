@@ -4,6 +4,26 @@ import { IconBrandFacebook, IconMail, IconMapPin, IconPhone } from '@tabler/icon
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+function CircuitIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox='0 0 24 24' fill='currentColor' className={className} aria-hidden='true'>
+      <circle cx='12' cy='12' r='2' />
+      <line x1='12' y1='10' x2='12' y2='5.5' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='12' cy='4.5' r='1.5' />
+      <line x1='13.4' y1='10.6' x2='17.2' y2='6.8' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='18' cy='6' r='1.5' />
+      <line x1='14' y1='12' x2='18.5' y2='12' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='19.5' cy='12' r='1.5' />
+      <line x1='13.4' y1='13.4' x2='17.2' y2='17.2' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='18' cy='18' r='1.5' />
+      <line x1='10.6' y1='13.4' x2='6.8' y2='17.2' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='6' cy='18' r='1.5' />
+      <line x1='10' y1='12' x2='5.5' y2='12' stroke='currentColor' strokeWidth='1.4' />
+      <circle cx='4.5' cy='12' r='1.5' />
+    </svg>
+  );
+}
+
 export function PublicFooter() {
   const t = useTranslations('home.footer');
   return (
@@ -11,10 +31,15 @@ export function PublicFooter() {
       <div className='mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:gap-14'>
         {/* brand */}
         <div className='flex-1'>
-          <div className='mb-3 text-lg font-bold'>
-            <span className='text-white'>IQode</span>
-            <span className='text-orange-400'> Lab</span>
-          </div>
+          <Link href='/' className='mb-3 flex items-baseline font-[family-name:var(--font-outfit)]'>
+            <span className='text-xl font-black leading-none tracking-tight text-cyan-400'>
+              IQode
+            </span>
+            <span className='text-sm font-medium leading-none tracking-tight text-amber-400'>
+              Lab
+            </span>
+            <CircuitIcon className='ml-0.5 size-3.5 -translate-y-2 text-amber-400' />
+          </Link>
           <p className='max-w-xs text-xs leading-relaxed text-gray-400'>{t('brand')}</p>
           <div className='mt-5 flex items-center gap-3'>
             <a

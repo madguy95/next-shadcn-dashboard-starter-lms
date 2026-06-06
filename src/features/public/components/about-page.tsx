@@ -271,69 +271,6 @@ function TeamSection() {
   );
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-
-function AboutFooter() {
-  const t = useTranslations('about.footer');
-  return (
-    <footer className='border-t border-gray-800 bg-gray-900 px-4 py-8 md:px-10'>
-      <div className='mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-start md:gap-12'>
-        <div className='flex-1'>
-          <div className='mb-2 text-lg font-bold'>
-            <span className='text-white'>IQode</span>
-            <span className='text-orange-400'> Lab</span>
-          </div>
-          <p className='max-w-xs text-xs leading-relaxed text-gray-400'>{t('brand')}</p>
-          <div className='mt-4 flex items-center gap-3'>
-            <IconCircleCheck size={16} className='text-gray-500' />
-            <IconCode size={16} className='text-gray-500' />
-          </div>
-        </div>
-        <div>
-          <div className='mb-3 text-xs font-semibold tracking-widest text-gray-500 uppercase'>
-            {t('exploreHeading')}
-          </div>
-          <ul className='space-y-2'>
-            {[
-              { href: '/courses', label: t('linkCourses') },
-              { href: '/method', label: t('linkMethod') },
-              { href: '/about', label: t('linkAbout') },
-              { href: '/blog', label: t('linkBlog') }
-            ].map(({ href, label }) => (
-              <li key={href}>
-                <Link href={href} className='text-sm text-gray-400 hover:text-white'>
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <div className='mb-3 text-xs font-semibold tracking-widest text-gray-500 uppercase'>
-            {t('contactHeading')}
-          </div>
-          <ul className='space-y-2 text-sm text-gray-400'>
-            <li>📍 {t('address')}</li>
-            <li>📞 {t('phone')}</li>
-            <li>✉️ {t('email')}</li>
-          </ul>
-        </div>
-      </div>
-      <div className='mx-auto mt-8 flex max-w-5xl items-center justify-between border-t border-gray-800 pt-6 text-xs text-gray-600'>
-        <span>{t('copyright')}</span>
-        <div className='flex gap-4'>
-          <Link href='/privacy-policy' className='hover:text-gray-400'>
-            {t('privacy')}
-          </Link>
-          <Link href='/terms-of-service' className='hover:text-gray-400'>
-            {t('terms')}
-          </Link>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 // ─── Page assembly ────────────────────────────────────────────────────────────
 
 export function AboutPage() {
@@ -344,7 +281,6 @@ export function AboutPage() {
       <StorySection />
       <PillarsSection />
       <TeamSection />
-      <AboutFooter />
     </div>
   );
 }

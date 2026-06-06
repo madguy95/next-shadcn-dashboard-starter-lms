@@ -521,41 +521,85 @@ function MethodPreviewSection() {
 
 // ─── Learning journey ─────────────────────────────────────────────────────────
 
-const STAGE_COLORS = [
-  { badge: 'bg-blue-600', border: 'border-blue-100', accent: 'text-blue-600' },
-  { badge: 'bg-cyan-600', border: 'border-cyan-100', accent: 'text-cyan-600' },
-  { badge: 'bg-green-600', border: 'border-green-100', accent: 'text-green-600' },
-  { badge: 'bg-purple-600', border: 'border-purple-100', accent: 'text-purple-600' }
+const STEP_COLORS = [
+  {
+    badge: 'bg-blue-600',
+    border: 'border-blue-100',
+    accent: 'text-blue-600',
+    tag: 'bg-blue-50 text-blue-700'
+  },
+  {
+    badge: 'bg-cyan-600',
+    border: 'border-cyan-100',
+    accent: 'text-cyan-600',
+    tag: 'bg-cyan-50 text-cyan-700'
+  },
+  {
+    badge: 'bg-green-600',
+    border: 'border-green-100',
+    accent: 'text-green-600',
+    tag: 'bg-green-50 text-green-700'
+  },
+  {
+    badge: 'bg-orange-500',
+    border: 'border-orange-100',
+    accent: 'text-orange-600',
+    tag: 'bg-orange-50 text-orange-700'
+  },
+  {
+    badge: 'bg-purple-600',
+    border: 'border-purple-100',
+    accent: 'text-purple-600',
+    tag: 'bg-purple-50 text-purple-700'
+  }
 ];
 
 function LearningJourneySection() {
   const t = useTranslations('home.journey');
-  const stages = [
+  const steps = [
     {
       badge: t('s1Badge'),
       title: t('s1Title'),
-      age: t('s1Age'),
-      items: [t('s1i1'), t('s1i2'), t('s1i3')]
+      course: t('s1Course'),
+      meta: t('s1Meta'),
+      desc: t('s1Desc'),
+      skills: t('s1Skills')
     },
     {
       badge: t('s2Badge'),
       title: t('s2Title'),
-      age: t('s2Age'),
-      items: [t('s2i1'), t('s2i2'), t('s2i3')]
+      course: t('s2Course'),
+      meta: t('s2Meta'),
+      desc: t('s2Desc'),
+      skills: t('s2Skills')
     },
     {
       badge: t('s3Badge'),
       title: t('s3Title'),
-      age: t('s3Age'),
-      items: [t('s3i1'), t('s3i2'), t('s3i3')]
+      course: t('s3Course'),
+      meta: t('s3Meta'),
+      desc: t('s3Desc'),
+      skills: t('s3Skills')
     },
     {
       badge: t('s4Badge'),
       title: t('s4Title'),
-      age: t('s4Age'),
-      items: [t('s4i1'), t('s4i2'), t('s4i3')]
+      course: t('s4Course'),
+      meta: t('s4Meta'),
+      desc: t('s4Desc'),
+      skills: t('s4Skills')
+    },
+    {
+      badge: t('s5Badge'),
+      title: t('s5Title'),
+      course: t('s5Course'),
+      meta: t('s5Meta'),
+      desc: t('s5Desc'),
+      skills: t('s5Skills')
     }
   ];
+  const rhythmSteps = [t('rhythm1'), t('rhythm2'), t('rhythm3'), t('rhythm4'), t('rhythm5')];
+
   return (
     <section className='bg-white py-16 md:py-20'>
       <div className='mx-auto max-w-5xl px-6 md:px-10'>
@@ -566,37 +610,92 @@ function LearningJourneySection() {
           <h2 className='text-2xl font-bold tracking-tight text-gray-900 md:text-3xl'>
             {t('heading')}
           </h2>
-          <p className='mt-3 max-w-xl mx-auto text-sm text-gray-500'>{t('desc')}</p>
+          <p className='mt-3 mx-auto max-w-2xl text-sm text-gray-500'>{t('desc')}</p>
         </div>
 
-        <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-4'>
-          {stages.map((stage, i) => {
-            const { badge, border, accent } = STAGE_COLORS[i];
+        {/* Steps grid: 2 cols, last step full-width */}
+        <div className='grid gap-5 sm:grid-cols-2'>
+          {steps.map((step, i) => {
+            const { badge, border, accent, tag } = STEP_COLORS[i];
+            const skills = step.skills
+              .split('·')
+              .map((s) => s.trim())
+              .filter(Boolean);
             return (
               <div
                 key={i}
-                className={`flex flex-col gap-4 rounded-2xl border ${border} bg-white p-5 shadow-sm`}
+                className={`flex flex-col gap-3 rounded-2xl border ${border} bg-white p-5 shadow-sm${i === 4 ? ' sm:col-span-2' : ''}`}
               >
                 <span
-                  className={`inline-flex w-fit items-center rounded-full ${badge} px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-white uppercase`}
+                  className={`inline-flex w-fit rounded-full ${badge} px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-white uppercase`}
                 >
-                  {stage.badge}
+                  {step.badge}
                 </span>
                 <div>
-                  <div className={`text-sm font-bold ${accent}`}>{stage.title}</div>
-                  <div className='mt-0.5 text-xs text-gray-400'>{stage.age}</div>
+                  <div className={`text-sm font-bold ${accent}`}>{step.title}</div>
+                  <div className='mt-0.5 text-xs font-semibold text-gray-700'>{step.course}</div>
+                  <div className='mt-0.5 text-xs text-gray-400'>{step.meta}</div>
                 </div>
-                <ul className='space-y-1.5'>
-                  {stage.items.map((item) => (
-                    <li key={item} className='flex items-start gap-2 text-xs text-gray-600'>
-                      <span className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${badge}`} />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <p className='text-xs leading-relaxed text-gray-600'>{step.desc}</p>
+                <div className='border-t border-gray-50 pt-2.5'>
+                  <div className='mb-1.5 text-[9px] font-bold tracking-widest text-gray-400 uppercase'>
+                    {t('skillsLabel')}
+                  </div>
+                  <div className='flex flex-wrap gap-1.5'>
+                    {skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tag}`}
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Parallel track */}
+        <div className='mt-5 rounded-2xl border border-teal-100 bg-teal-50 p-5'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6'>
+            <span className='inline-flex w-fit shrink-0 rounded-full bg-teal-600 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-white uppercase'>
+              {t('parallelBadge')}
+            </span>
+            <div className='flex-1'>
+              <div className='text-sm font-bold text-teal-700'>{t('parallelTitle')}</div>
+              <div className='mt-0.5 text-xs font-semibold text-gray-700'>
+                {t('parallelCourse')}
+              </div>
+              <div className='mt-0.5 text-xs text-gray-400'>{t('parallelMeta')}</div>
+              <p className='mt-2 text-xs leading-relaxed text-gray-600'>{t('parallelDesc')}</p>
+              <div className='mt-2.5 border-t border-teal-100 pt-2.5'>
+                <div className='mb-1 text-[9px] font-bold tracking-widest text-gray-400 uppercase'>
+                  {t('skillsLabel')}
+                </div>
+                <p className='text-[10px] font-medium text-teal-700'>{t('parallelSkills')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Method rhythm footer */}
+        <div className='mt-5 rounded-2xl bg-gray-950 px-6 py-7 text-center'>
+          <div className='text-sm font-bold text-white'>{t('rhythmHeading')}</div>
+          <div className='mt-4 flex flex-wrap items-center justify-center gap-2'>
+            {rhythmSteps.map((step, i) => (
+              <div key={step} className='flex items-center gap-2'>
+                <span className='rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-white'>
+                  {step}
+                </span>
+                {i < rhythmSteps.length - 1 && <span className='text-sm text-white/30'>→</span>}
+              </div>
+            ))}
+          </div>
+          <p className='mt-3 mx-auto max-w-xl text-xs leading-relaxed text-white/50'>
+            {t('rhythmDesc')}
+          </p>
         </div>
 
         <div className='mt-8 flex justify-center'>
